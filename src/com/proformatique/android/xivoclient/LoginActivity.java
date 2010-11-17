@@ -104,7 +104,11 @@ public class LoginActivity extends Activity {
 				saveLoginPassword();
 			}
 
-			// intent vers tabhost
+			/**
+			 * Parsing and Displaying xlets content
+			 */
+			Intent defineIntent = new Intent(this, XletsContainerTabActivity.class);
+			startActivity(defineIntent);
 		}
 			
 		
