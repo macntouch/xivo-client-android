@@ -7,7 +7,11 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -35,6 +39,8 @@ public class Connection {
 	Socket networkConnection;
 	DataInputStream input;
 	String responseLine;
+	String sessionId;
+	JSONObject jCapa;
 	
 	public Connection(String login, String password,
 			Activity callingActivity) {
@@ -80,7 +86,7 @@ public class Connection {
 	/**
 	 * Perform authentication by Json array on Xivo CTI server
 	 * 
-	 * @return error code
+	 * @return error or success code
 	 */
 	private int loginCTI(){
 		
@@ -106,58 +112,85 @@ public class Connection {
 		 * First step : check that login is allowed on server
 		 */
 		try {
+			System.out.println("Client: " + jLogin.toString());
 			PrintStream output = new PrintStream(networkConnection.getOutputStream());
 			output.println(jLogin.toString());
 		} catch (IOException e) {
 			return Constants.NO_NETWORK_AVAILABLE;
 		}
 		
+		ReadLineObject = readJsonObjectCTI();
+		
+		try {
+		    if (ReadLineObject.getString("class").equals(Constants.XIVO_LOGIN_OK)){
+
+				/**
+				 * Second step : check that password is allowed on server
+				 */
+				int codePassword = passwordCTI(ReadLineObject);
+				
+				/**
+				 * Third step : send configuration options on server
+				 */
+				if (codePassword > 0) {
+					ReadLineObject = readJsonObjectCTI();
+					if (ReadLineObject.getString("class").equals(Constants.XIVO_PASSWORD_OK))
+					{
+						int codeCapas = capasCTI();
+						if (codeCapas > 0) {
+							ReadLineObject = readJsonObjectCTI();
+							
+							if (ReadLineObject.getString("class").equals(Constants.XIVO_LOGIN_CAPAS_OK)){
+								jCapa = ReadLineObject;
+								System.out.println(jCapa.length());
+								return Constants.CONNECTION_OK;
+							}
+						}
+					}
+				}
+			}
+		    
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+		return Constants.LOGIN_KO;
+	}
+
+	/**
+	 * Perform a read action on the stream from CTI server
+	 * @return JSON object retrieved
+	 */
+	private JSONObject readJsonObjectCTI() {
+		JSONObject ReadLineObject;
+		
 		try {
 			while ((responseLine = input.readLine()) != null) {
 				try {
 					ReadLineObject = new JSONObject(responseLine);
 					System.out.println("Server: " + responseLine);
-					if (ReadLineObject.getString("class").equals(Constants.XIVO_LOGIN_OK)){
-
-						/**
-						 * Second step : check that password is allowed on server
-						 */
-						int codePassword = passwordCTI(ReadLineObject);
-						
-						/**
-						 * Third step : send configuration options on server
-						 */
-						if (codePassword > 1) {
-							return capasCTI();
-						}
-					}
-					else return Constants.XIVO_LOGIN_KO;
+					return ReadLineObject;
 				}
 				catch (Exception e) {
 					e.printStackTrace();
-					return Constants.NO_NETWORK_AVAILABLE;
+
 				}
-					
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return null;
 
-		
-		
-		return Constants.CONNECTION_OK;
-	}
-
-	private int capasCTI() {
-		// TODO Auto-generated method stub
-		return 0;
 	}
 
 	private int passwordCTI(JSONObject jsonSessionRead) throws JSONException {
 		byte[] sDigest = null;
-		String sessionId = jsonSessionRead.getString("sessionid");
+		sessionId = jsonSessionRead.getString("sessionid");
 		JSONObject jsonPasswordAuthent = new JSONObject();
 		
+		/**
+		 * Encrypt password for communication with algorithm SHA1
+		 */
 		MessageDigest sha1;
 		try {
 			sha1 = MessageDigest.getInstance("SHA1");
@@ -168,9 +201,39 @@ public class Connection {
 		
 		jsonPasswordAuthent.accumulate("class", "login_pass");
 		jsonPasswordAuthent.accumulate("hashedpassword", bytes2String(sDigest));
+		PrintStream output;
+		try {
+			output = new PrintStream(networkConnection.getOutputStream());
+			output.println(jsonPasswordAuthent.toString());
+		} catch (IOException e) {
+			return Constants.NO_NETWORK_AVAILABLE;
+		}
 
-		return 0;
+		return Constants.CONNECTION_OK;
 	}
+
+	private int capasCTI() throws JSONException {
+		JSONObject jsonCapas = new JSONObject();
+		
+		jsonCapas.accumulate("class", "login_capas");
+		jsonCapas.accumulate("agentlogin", "now");
+		jsonCapas.accumulate("capaid", "client");
+		jsonCapas.accumulate("lastconnwins", "false");
+		jsonCapas.accumulate("loginkind", "agent");
+		jsonCapas.accumulate("phonenumber", "101");
+		jsonCapas.accumulate("state", "");
+		
+		PrintStream output;
+		try {
+			output = new PrintStream(networkConnection.getOutputStream());
+			output.println(jsonCapas.toString());
+		} catch (IOException e) {
+			return Constants.NO_NETWORK_AVAILABLE;
+		}
+
+		return Constants.CONNECTION_OK;
+	}
+
 
 	private static String bytes2String(byte[] bytes) {
         StringBuilder string = new StringBuilder();

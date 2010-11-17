@@ -10,6 +10,7 @@ public final class Constants {
 	public static final int NOT_CTI_SERVER = -3;
 	public static final int JSON_POPULATE_ERROR = -4;	
 	public static final int CONNECTION_OK = 1;
+	public static final int LOGIN_KO = 0;
 
 	
 	/**
@@ -20,5 +21,6 @@ public final class Constants {
 	public static final String XIVO_VERSION = "1.1";
 	public static final String XIVO_LOGIN_OK = "login_id_ok";
 	public static final String XIVO_PASSWORD_OK = "login_pass_ok";
-	public static final int XIVO_LOGIN_KO = 0;
+	public static final String XIVO_LOGIN_KO = "loginko";
+	public static final String XIVO_LOGIN_CAPAS_OK = "login_capas_ok";
 }

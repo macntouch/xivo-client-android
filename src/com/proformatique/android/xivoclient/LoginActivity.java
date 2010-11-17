@@ -64,11 +64,13 @@ public class LoginActivity extends Activity {
 		
 		int connectionCode = connection.initialize();
 		
-		if (connectionCode < 0){
+		if (connectionCode < 1){
 			Toast.makeText(this, R.string.connection_failed
 					, Toast.LENGTH_LONG).show();
 		}
 		else{
+			Toast.makeText(this, R.string.connection_ok
+					, Toast.LENGTH_LONG).show();
 			// intent vers tabhost
 		}
 			
