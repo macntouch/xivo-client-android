@@ -1,5 +1,7 @@
 package com.proformatique.android.xivoclient;
 
+import com.proformatique.android.xivoclient.tools.Constants;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -7,16 +9,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.proformatique.android.xivoclient.tools.Constants;
-
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -34,6 +28,7 @@ public class Connection {
 	int serverPort;
 	String login;
 	String password;
+	Boolean saveLogin;
 	Activity callingActivity;
 	SharedPreferences settings;
 	Socket networkConnection;
@@ -51,6 +46,7 @@ public class Connection {
 		this.settings = PreferenceManager.getDefaultSharedPreferences(callingActivity);
 		this.serverAdress = this.settings.getString("server_adress", "");
 		this.serverPort = Integer.parseInt(this.settings.getString("server_port", "5003"));
+		this.saveLogin = this.settings.getBoolean("save_login", true);
 
 	}
 
