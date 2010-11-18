@@ -18,6 +18,7 @@
 
     <!-- Messages strings -->
     <string name="connection_failed">Connection failed !</string>
+    <string name="no_web_connection">Connection failed : network unavailable !</string>
     <string name="connection_ok">Connection ok</string>
     <string name="login_ok">User logged</string>
 
@@ -32,7 +33,7 @@
     <string name="xlet_services_label">features</string>
     <string name="xlet_services_desc">Services</string>
     <string name="xlet_histo_label">history</string>
-    <string name="xlet_histo_desc">Logs</string>
+    <string name="xlet_histo_desc">Call logs</string>
     <string name="xlet_directory_label">directory</string>
     <string name="xlet_directory_desc">Directory</string>
 

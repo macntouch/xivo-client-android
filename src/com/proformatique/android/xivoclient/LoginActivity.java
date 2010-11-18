@@ -3,6 +3,9 @@ package com.proformatique.android.xivoclient;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.NetworkInfo.State;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
@@ -87,31 +90,42 @@ public class LoginActivity extends Activity {
     	EditText eLogin = (EditText) findViewById(R.id.login); 
     	EditText ePassword = (EditText) findViewById(R.id.password); 
     	
-		Connection connection = new Connection(eLogin.getText().toString(),
-				ePassword.getText().toString(), this);
-		
-		int connectionCode = connection.initialize();
-		
-		if (connectionCode < 1){
-			Toast.makeText(this, R.string.connection_failed
-					, Toast.LENGTH_LONG).show();
-		}
-		else{
-			Toast.makeText(this, R.string.connection_ok
-					, Toast.LENGTH_LONG).show();
-			
-			if (connection.saveLogin){
-				saveLoginPassword();
-			}
+		/**
+		 * Checking that web connection exists  
+		 */
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
 
-			/**
-			 * Parsing and Displaying xlets content
-			 */
-			Intent defineIntent = new Intent(this, XletsContainerTabActivity.class);
-			startActivity(defineIntent);
-		}
+        if (netInfo.getState().compareTo(State.CONNECTED)==0) {
+    	
+	    	Connection connection = new Connection(eLogin.getText().toString(),
+					ePassword.getText().toString(), this);
 			
-		
+			int connectionCode = connection.initialize();
+			
+			if (connectionCode < 1){
+				Toast.makeText(this, R.string.connection_failed
+						, Toast.LENGTH_LONG).show();
+			}
+			else{
+				Toast.makeText(this, R.string.connection_ok
+						, Toast.LENGTH_LONG).show();
+				
+				if (connection.saveLogin){
+					saveLoginPassword();
+				}
+	
+				/**
+				 * Parsing and Displaying xlets content
+				 */
+				Intent defineIntent = new Intent(this, XletsContainerTabActivity.class);
+				startActivity(defineIntent);
+			}
+			
+        }
+        else
+        	Toast.makeText(this, R.string.no_web_connection
+					, Toast.LENGTH_LONG).show();
     }
 
 	private void saveLoginPassword() {

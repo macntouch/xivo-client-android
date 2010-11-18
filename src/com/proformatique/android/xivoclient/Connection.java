@@ -38,6 +38,7 @@ public class Connection {
 	String responseLine;
 	String sessionId;
 	JSONObject jCapa;
+	static Connection connection;
 	
 	public Connection(String login, String password,
 			Activity callingActivity) {
@@ -49,6 +50,7 @@ public class Connection {
 		this.serverAdress = this.settings.getString("server_adress", "");
 		this.serverPort = Integer.parseInt(this.settings.getString("server_port", "5003"));
 		this.saveLogin = this.settings.getBoolean("save_login", true);
+		connection = this;
 
 	}
 
@@ -59,25 +61,25 @@ public class Connection {
 	 */
 	public int initialize() {
 		
-		try {
-			networkConnection = new Socket(serverAdress, serverPort);
-
-			input = new DataInputStream(networkConnection.getInputStream());
-            String responseLine;
-            
-			while ((responseLine = input.readLine()) != null) {
-
-                   if (responseLine.contains("XiVO CTI Server")) {
-                	   return loginCTI();
-                   }
-               }
-			return Constants.NOT_CTI_SERVER;
-			
-		} catch (UnknownHostException e) {
-			return Constants.BAD_HOST;
-		} catch (IOException e) {
-			return Constants.NO_NETWORK_AVAILABLE;
-		}
+			try {
+				networkConnection = new Socket(serverAdress, serverPort);
+	
+				input = new DataInputStream(networkConnection.getInputStream());
+	            String responseLine;
+	            
+				while ((responseLine = input.readLine()) != null) {
+	
+	                   if (responseLine.contains("XiVO CTI Server")) {
+	                	   return loginCTI();
+	                   }
+	               }
+				return Constants.NOT_CTI_SERVER;
+				
+			} catch (UnknownHostException e) {
+				return Constants.BAD_HOST;
+			} catch (IOException e) {
+				return Constants.NO_NETWORK_AVAILABLE;
+			}
 		
 	}
 	
