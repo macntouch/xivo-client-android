@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.widget.Toast;
 
 /**
@@ -24,6 +25,7 @@ import android.widget.Toast;
  */
 public class Connection {
 
+	private static final String LOG_TAG = "CONNECTION";
 	String serverAdress;
 	int serverPort;
 	String login;
@@ -108,7 +110,7 @@ public class Connection {
 		 * First step : check that login is allowed on server
 		 */
 		try {
-			System.out.println("Client: " + jLogin.toString());
+			Log.d( LOG_TAG, "Client: " + jLogin.toString());
 			PrintStream output = new PrintStream(networkConnection.getOutputStream());
 			output.println(jLogin.toString());
 		} catch (IOException e) {
@@ -138,7 +140,8 @@ public class Connection {
 							
 							if (ReadLineObject.getString("class").equals(Constants.XIVO_LOGIN_CAPAS_OK)){
 								jCapa = ReadLineObject;
-								System.out.println(jCapa.length());
+								Log.d( LOG_TAG, "jCapa length : " + jCapa.length());
+
 								return Constants.CONNECTION_OK;
 							}
 						}
@@ -164,7 +167,8 @@ public class Connection {
 			while ((responseLine = input.readLine()) != null) {
 				try {
 					ReadLineObject = new JSONObject(responseLine);
-					System.out.println("Server: " + responseLine);
+					Log.d( LOG_TAG, "Server: " + responseLine);
+					
 					return ReadLineObject;
 				}
 				catch (Exception e) {
