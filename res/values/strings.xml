@@ -21,4 +21,17 @@
     <string name="connection_ok">Connection ok</string>
     <string name="login_ok">User logged</string>
 
+    <!-- Xlets descriptions
+         IMPORTANT : use this file to put label and description
+         of your xlet unless it won't be loaded !
+     -->
+    <string name="xlet_identity_label">identity</string>
+    <string name="xlet_identity_desc">Identity</string>
+    <string name="xlet_dialer_label">dial</string>
+    <string name="xlet_dialer_desc">Dialer</string>
+    <string name="xlet_services_label">features</string>
+    <string name="xlet_services_desc">Services</string>
+    <string name="xlet_histo_label">history</string>
+    <string name="xlet_histo_desc">Logs</string>
+
 </resources>
