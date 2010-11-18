@@ -33,5 +33,7 @@
     <string name="xlet_services_desc">Services</string>
     <string name="xlet_histo_label">history</string>
     <string name="xlet_histo_desc">Logs</string>
+    <string name="xlet_directory_label">directory</string>
+    <string name="xlet_directory_desc">Directory</string>
 
 </resources>

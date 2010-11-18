@@ -52,6 +52,42 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".xlets.XletDialer"
+                  android:label="@string/xlet_dialer_label"
+                  android:description="@string/xlet_dialer_desc">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="xivo.intent.action.LOAD_XLET" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".xlets.XletServices"
+                  android:label="@string/xlet_services_label"
+                  android:description="@string/xlet_services_desc">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="xivo.intent.action.LOAD_XLET" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".xlets.XletHisto"
+                  android:label="@string/xlet_histo_label"
+                  android:description="@string/xlet_histo_desc">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="xivo.intent.action.LOAD_XLET" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".xlets.XletDirectory"
+                  android:label="@string/xlet_directory_label"
+                  android:description="@string/xlet_directory_desc">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="xivo.intent.action.LOAD_XLET" />
+            </intent-filter>
+        </activity>
+
     </application>
     <uses-sdk android:minSdkVersion="6" />
 
