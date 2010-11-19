@@ -82,8 +82,6 @@ public class XletsContainerTabActivity extends TabActivity {
 					    spec = tabHost.newTabSpec(label).setIndicator(desc).setContent(intent);
 	
 					    tabHost.addTab(spec);
-					    
-//					    tabWidget.getChildAt(i).getLayoutParams().width = 300;
 		
 				    } catch (ClassNotFoundException e) {
 						e.printStackTrace();

@@ -33,12 +33,12 @@ public class Connection {
 	Boolean saveLogin;
 	Activity callingActivity;
 	SharedPreferences settings;
-	Socket networkConnection;
 	DataInputStream input;
 	String responseLine;
 	String sessionId;
 	JSONObject jCapa;
-	static Connection connection;
+	public static Connection connection;
+	public Socket networkConnection;
 	
 	public Connection(String login, String password,
 			Activity callingActivity) {
@@ -162,7 +162,7 @@ public class Connection {
 	 * Perform a read action on the stream from CTI server
 	 * @return JSON object retrieved
 	 */
-	private JSONObject readJsonObjectCTI() {
+	public JSONObject readJsonObjectCTI() {
 		JSONObject ReadLineObject;
 		
 		try {
@@ -246,4 +246,34 @@ public class Connection {
         return string.toString();
 	}
 
+	/**
+	 * Perform a read action on the stream from CTI server
+	 * And return the object corresponding at input parameter ctiClass 
+	 * @return JSON object retrieved
+	 */
+	public JSONObject readJsonObjectCTI(String ctiClass) {
+		JSONObject ReadLineObject;
+		
+		try {
+			while ((responseLine = input.readLine()) != null) {
+				try {
+					ReadLineObject = new JSONObject(responseLine);
+					Log.d( LOG_TAG, "Server: " + responseLine);
+					
+					if (ReadLineObject.get("class").equals(ctiClass))
+					   return ReadLineObject;
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+
+	}
+	
+	
 }
