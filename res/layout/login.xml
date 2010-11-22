@@ -22,6 +22,13 @@
     android:layout_height="wrap_content" 
     android:layout_marginTop="20dp" android:layout_width="270dp" android:layout_marginBottom="20dp">
     
+    <TextView android:id="@+id/connect_status"
+        android:text="@string/connected"   
+        android:layout_gravity="center_horizontal" 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        />
+
     <TextView android:id="@+id/login_text"
         android:text="@string/login"   
         android:layout_gravity="left" 
@@ -34,7 +41,6 @@
               android:layout_gravity="right"
               android:layout_width="250dp" 
               android:layout_marginBottom="10dp"/> 
-              
               
     <TextView android:id="@+id/password_text"
         android:text = "@string/password"   
