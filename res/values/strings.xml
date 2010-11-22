@@ -3,11 +3,13 @@
     <string name="app_name">Xivo Client for Android</string>
     <string name="login">Login</string>
     <string name="password">Password</string>
+    <string name="connected">User connected</string>
     <string name="ok">OK</string>
 
     <!-- Menu strings -->
     <string name="settings">Settings</string>
     <string name="about">About</string>
+    <string name="disconnect">Disconnect</string>
     <string name="exit">Exit</string>
 
     <!-- Preferences strings -->
@@ -21,6 +23,8 @@
     <string name="no_web_connection">Connection failed : network unavailable !</string>
     <string name="connection_ok">Connection ok</string>
     <string name="login_ok">User logged</string>
+    <string name="loading">Please wait while loading ...</string>
+    
 
     <!-- Xlets descriptions
          IMPORTANT : use this file to put label and description
