@@ -1,18 +1,24 @@
 package com.proformatique.android.xivoclient;
 
+import com.proformatique.android.xivoclient.tools.Constants;
+
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.NetworkInfo.State;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class LoginActivity extends Activity {
@@ -51,6 +57,12 @@ public class LoginActivity extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_settings, menu);
+    	MenuItem mi = menu.findItem(R.id.menu_disconnect);
+        if (Connection.connection != null) 
+        	if (Connection.connection.connected) mi.setVisible(true);
+        	else mi.setVisible(false);
+        else mi.setVisible(false);
+
         return true;
     }
     
@@ -65,6 +77,9 @@ public class LoginActivity extends Activity {
             return true;
         case R.id.menu_about:
             menuAbout();
+            return true;
+        case R.id.menu_disconnect:
+        	Connection.connection.disconnect();
             return true;
         default:
             return super.onOptionsItemSelected(item);
@@ -87,45 +102,7 @@ public class LoginActivity extends Activity {
 	}
 	
     public void clickOnButtonOk(View v) {
-    	EditText eLogin = (EditText) findViewById(R.id.login); 
-    	EditText ePassword = (EditText) findViewById(R.id.password); 
-    	
-		/**
-		 * Checking that web connection exists  
-		 */
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-
-        if (netInfo.getState().compareTo(State.CONNECTED)==0) {
-    	
-	    	Connection connection = new Connection(eLogin.getText().toString(),
-					ePassword.getText().toString(), this);
-			
-			int connectionCode = connection.initialize();
-			
-			if (connectionCode < 1){
-				Toast.makeText(this, R.string.connection_failed
-						, Toast.LENGTH_LONG).show();
-			}
-			else{
-				Toast.makeText(this, R.string.connection_ok
-						, Toast.LENGTH_LONG).show();
-				
-				if (connection.saveLogin){
-					saveLoginPassword();
-				}
-	
-				/**
-				 * Parsing and Displaying xlets content
-				 */
-				Intent defineIntent = new Intent(this, XletsContainerTabActivity.class);
-				startActivity(defineIntent);
-			}
-			
-        }
-        else
-        	Toast.makeText(this, R.string.no_web_connection
-					, Toast.LENGTH_LONG).show();
+    	new ConnectTask().execute();
     }
 
 	private void saveLoginPassword() {
@@ -150,4 +127,91 @@ public class LoginActivity extends Activity {
 
 	}
 	
+	/**
+	 * Creating a AsyncTask to execute connection process
+	 * @author cquaquin
+	 */
+	 private class ConnectTask extends AsyncTask<Void, Integer, Integer> {
+		 ProgressDialog dialog;
+		    @Override
+		    protected void onPreExecute() {
+		        dialog = new ProgressDialog(LoginActivity.this);
+		        dialog.setMessage(getString(R.string.loading));
+		        dialog.setIndeterminate(true);
+		        dialog.setCancelable(false);
+		        dialog.show();
+		    }
+
+		    @Override
+			protected Integer doInBackground(Void... params) {
+		    	EditText eLogin = (EditText) LoginActivity.this.findViewById(R.id.login); 
+		    	EditText ePassword = (EditText) LoginActivity.this.findViewById(R.id.password); 
+		    	
+				/**
+				 * Checking that web connection exists
+				 */
+		        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+		        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+
+		        if (netInfo.getState().compareTo(State.CONNECTED)==0) {
+		    	
+			    	Connection connection = new Connection(eLogin.getText().toString(),
+							ePassword.getText().toString(), LoginActivity.this);
+					
+			    	InitialListLoader initList = new InitialListLoader();
+					int connectionCode = connection.initialize();
+					
+					if (connectionCode >= 1){
+						return initList.startLoading();
+					}
+					return connectionCode;
+		        }
+		        else return Constants.NO_NETWORK_AVAILABLE;
+			}
+
+			protected void onPostExecute(Integer result) {
+	         
+	            if (result == Constants.NO_NETWORK_AVAILABLE){
+		            dialog.dismiss();
+	            	Toast.makeText(LoginActivity.this, R.string.no_web_connection
+							, Toast.LENGTH_LONG).show();
+	            }
+	            else if (result < 1){
+		            dialog.dismiss();
+
+					Toast.makeText(LoginActivity.this, R.string.connection_failed
+							, Toast.LENGTH_LONG).show();
+				}
+				else{
+					
+					if (Connection.connection.saveLogin){
+						saveLoginPassword();
+					}
+		
+			    	EditText eLogin = (EditText) LoginActivity.this.findViewById(R.id.login); 
+			    	EditText ePassword = (EditText) LoginActivity.this.findViewById(R.id.password);
+			    	TextView eLoginV = (TextView) LoginActivity.this.findViewById(R.id.login_text); 
+			    	TextView ePasswordV = (TextView) LoginActivity.this.findViewById(R.id.password_text);
+			    	Button eButton = (Button) LoginActivity.this.findViewById(R.id.b_ok);
+			    	TextView eStatus = (TextView) LoginActivity.this.findViewById(R.id.connect_status); 
+			    	
+			    	eLogin.setVisibility(View.INVISIBLE);
+			    	ePassword.setVisibility(View.INVISIBLE);
+			    	eLoginV.setVisibility(View.INVISIBLE);
+			    	ePasswordV.setVisibility(View.INVISIBLE);
+			    	eButton.setVisibility(View.INVISIBLE);
+			    	eStatus.setVisibility(View.VISIBLE);
+
+			    	dialog.dismiss();
+			    	
+					/**
+					 * Parsing and Displaying xlets content
+					 */
+					Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
+					startActivity(defineIntent);
+				}
+	         
+			}
+	 }
+
 }

@@ -1,11 +1,14 @@
 package com.proformatique.android.xivoclient;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.proformatique.android.xivoclient.xlets.XletIdentity;
 
 import android.app.TabActivity;
 import android.content.Intent;
@@ -14,14 +17,24 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.TabHost;
 import android.widget.TabWidget;
+import android.widget.Toast;
 
 public class XletsContainerTabActivity extends TabActivity {
 
-	public static final String ACTION_XLET_LOAD = "xivo.intent.action.LOAD_XLET";
+	public static final String ACTION_XLET_LOAD_TAB = "xivo.intent.action.LOAD_XLET_TAB";
 	private static final String LOG_TAG = "XLETS_LOADING";
+	private static List<String> Xletslist = new ArrayList<String>();
+	Thread thread;
+	Handler handler;
+	public static boolean cancel = false;
 	
 	public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
@@ -31,7 +44,7 @@ public class XletsContainerTabActivity extends TabActivity {
 	    final TabWidget tabWidget = tabHost.getTabWidget();
 
 	    Resources res = getResources(); // Resource object to get Drawables
-	    TabHost.TabSpec spec;  // Resusable TabSpec for each tab
+	    TabHost.TabSpec spec;  // Reusable TabSpec for each tab
 	    Intent intent;  // Reusable Intent for each tab
 
 	    /**
@@ -52,7 +65,7 @@ public class XletsContainerTabActivity extends TabActivity {
          * that declared an intent of type ACTION_XLET_LOAD in the Manifest file
          */
 	    PackageManager pm = getPackageManager();
-        Intent xletIntent = new Intent( ACTION_XLET_LOAD );
+        Intent xletIntent = new Intent( ACTION_XLET_LOAD_TAB );
         
         List<ResolveInfo> list = pm.queryIntentActivities(xletIntent, PackageManager.GET_RESOLVED_FILTER);
         
@@ -82,6 +95,8 @@ public class XletsContainerTabActivity extends TabActivity {
 					    spec = tabHost.newTabSpec(label).setIndicator(desc).setContent(intent);
 	
 					    tabHost.addTab(spec);
+					    
+					    Xletslist.add(label);
 		
 				    } catch (ClassNotFoundException e) {
 						e.printStackTrace();
@@ -89,15 +104,22 @@ public class XletsContainerTabActivity extends TabActivity {
 				}
 
 			} catch (Exception e1) {
-				Log.d( LOG_TAG, "Missing label or description declaration for Xlet Activity : "+ aInfo.name);
+			  Log.d( LOG_TAG, "Missing label or description declaration for Xlet Activity : "+ aInfo.name);
 			}
         }
         
 	    tabHost.setCurrentTab(0);
+	    InitialListLoader.initialListLoader.Xletslist = Xletslist;
+	    startJsonListener();
+	    
+		/**
+		 * Displaying xlet Identity content
+		 */
+		XletIdentity xletId = new XletIdentity(XletsContainerTabActivity.this);
         
 	}
 	
-	private ArrayList<String> decodeJsonObject(JSONObject jSonObj, String parent){
+	public static ArrayList<String> decodeJsonObject(JSONObject jSonObj, String parent){
 		Log.d( LOG_TAG, "JSON : "+ jSonObj);
 		
 		try {
@@ -116,4 +138,87 @@ public class XletsContainerTabActivity extends TabActivity {
 		return null;
 		
 	}
+	
+	/**
+	 * Permanent Listener for reading incoming JSON lines  
+	 */
+	private void startJsonListener(){
+		cancel = false;
+    	handler = new Handler() {
+    		public void handleMessage(Message msg) {
+       			switch(msg.what) {
+       				case 1:
+       					break;
+       			}
+       		} 
+       	};
+
+        thread = new Thread() {
+        	public void run() {
+           		int i = 0;
+					while(i < 1) {
+						if(cancel) break;
+						
+						try {
+							Message msg = handler.obtainMessage(1, 
+									Connection.connection.readData());
+							handler.sendMessage(msg);
+           				} catch (IOException e) {
+           					e.printStackTrace();
+						} catch (JSONException e) {
+							e.printStackTrace();
+						}
+           		 	}
+       		 };
+        };
+
+        thread.start();
+	}
+	
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_settings_connected, menu);
+        return true;
+    }
+    
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+        case R.id.menu_settings:
+            menuSettings();
+            return true;
+        case R.id.menu_exit:
+            menuExit();
+            return true;
+        case R.id.menu_disconnect:
+            menuDisconnect();
+            return true;
+        case R.id.menu_about:
+            menuAbout();
+            return true;
+        default:
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+	private void menuAbout() {
+		Intent defineIntent = new Intent(this, AboutActivity.class);
+		startActivity(defineIntent);
+	}
+
+	private void menuDisconnect() {
+		Connection.connection.disconnect();
+		this.finish();
+	}
+
+	private void menuExit() {
+		finish();
+	}
+
+	private void menuSettings() {
+		Intent defineIntent = new Intent(this, SettingsActivity.class);
+		startActivity(defineIntent);
+		
+	}
+
 }

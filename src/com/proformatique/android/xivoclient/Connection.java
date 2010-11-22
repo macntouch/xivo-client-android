@@ -15,6 +15,10 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 /**
@@ -39,6 +43,7 @@ public class Connection {
 	JSONObject jCapa;
 	public static Connection connection;
 	public Socket networkConnection;
+	boolean connected = false;
 	
 	public Connection(String login, String password,
 			Activity callingActivity) {
@@ -50,6 +55,7 @@ public class Connection {
 		this.serverAdress = this.settings.getString("server_adress", "");
 		this.serverPort = Integer.parseInt(this.settings.getString("server_port", "5003"));
 		this.saveLogin = this.settings.getBoolean("save_login", true);
+		
 		connection = this;
 
 	}
@@ -143,7 +149,9 @@ public class Connection {
 							if (ReadLineObject.getString("class").equals(Constants.XIVO_LOGIN_CAPAS_OK)){
 								jCapa = ReadLineObject;
 								Log.d( LOG_TAG, "jCapa length : " + jCapa.length());
-
+								InitialListLoader.initialListLoader.xivoId = jCapa.getString("xivo_userid");
+								
+								connected=true;
 								return Constants.CONNECTION_OK;
 							}
 						}
@@ -155,6 +163,10 @@ public class Connection {
 			e.printStackTrace();
 		}
 		
+		try {
+			networkConnection.close();
+		} catch (IOException e) {
+		}
 		return Constants.LOGIN_KO;
 	}
 
@@ -275,5 +287,51 @@ public class Connection {
 
 	}
 	
+	JSONObject readData() throws IOException, JSONException{
+		while (networkConnection.isConnected()) {
+			responseLine = input.readLine();
+			
+			Log.d( LOG_TAG, "Server from ReadData: " + responseLine);
+			
+            JSONObject myString = new JSONObject(responseLine);
+			String myClass = (String) myString.get("function");
+
+			if (myClass.equals("displaysheet")) {
+				return myString;
+			}
+		}
+		return null;
+		
+	}
+
+	public int disconnect(){
+		
+		try {
+			XletsContainerTabActivity.cancel = true;
+			connected = false;
+			networkConnection.close();
+			
+	    	EditText eLogin = (EditText) callingActivity.findViewById(R.id.login); 
+	    	EditText ePassword = (EditText) callingActivity.findViewById(R.id.password);
+	    	TextView eLoginV = (TextView) callingActivity.findViewById(R.id.login_text); 
+	    	TextView ePasswordV = (TextView) callingActivity.findViewById(R.id.password_text);
+	    	Button eButton = (Button) callingActivity.findViewById(R.id.b_ok);
+	    	TextView eStatus = (TextView) callingActivity.findViewById(R.id.connect_status); 
+	    	
+	    	eLogin.setVisibility(View.VISIBLE);
+	    	ePassword.setVisibility(View.VISIBLE);
+	    	eLoginV.setVisibility(View.VISIBLE);
+	    	ePasswordV.setVisibility(View.VISIBLE);
+	    	eButton.setVisibility(View.VISIBLE);
+	    	eStatus.setVisibility(View.INVISIBLE);
+			
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+			return Constants.NO_NETWORK_AVAILABLE;
+		}
+		return Constants.OK;
+		
+	}
 	
 }
