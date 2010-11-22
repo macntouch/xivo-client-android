@@ -44,39 +44,12 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".xlets.XletIdentity"
-                  android:label="@string/xlet_identity_label"
-                  android:description="@string/xlet_identity_desc">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <action android:name="xivo.intent.action.LOAD_XLET" />
-            </intent-filter>
-        </activity>
-
         <activity android:name=".xlets.XletDialer"
                   android:label="@string/xlet_dialer_label"
                   android:description="@string/xlet_dialer_desc">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <action android:name="xivo.intent.action.LOAD_XLET" />
-            </intent-filter>
-        </activity>
-
-        <activity android:name=".xlets.XletServices"
-                  android:label="@string/xlet_services_label"
-                  android:description="@string/xlet_services_desc">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <action android:name="xivo.intent.action.LOAD_XLET" />
-            </intent-filter>
-        </activity>
-
-        <activity android:name=".xlets.XletHisto"
-                  android:label="@string/xlet_histo_label"
-                  android:description="@string/xlet_histo_desc">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <action android:name="xivo.intent.action.LOAD_XLET" />
+                <action android:name="xivo.intent.action.LOAD_XLET_TAB" />
             </intent-filter>
         </activity>
 
@@ -85,7 +58,25 @@
                   android:description="@string/xlet_directory_desc">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <action android:name="xivo.intent.action.LOAD_XLET" />
+                <action android:name="xivo.intent.action.LOAD_XLET_TAB" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".xlets.XletServices"
+                  android:label="@string/xlet_services_label"
+                  android:description="@string/xlet_services_desc">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="xivo.intent.action.LOAD_XLET_TAB" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".xlets.XletHisto"
+                  android:label="@string/xlet_histo_label"
+                  android:description="@string/xlet_histo_desc">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="xivo.intent.action.LOAD_XLET_TAB" />
             </intent-filter>
         </activity>
 
