@@ -10,6 +10,10 @@
             android:key="server_port"
             android:title="@string/server_port" 
             android:defaultValue="5003"/>
+    <EditTextPreference
+            android:key="mobile_number"
+            android:title="@string/mobile_number" 
+            android:defaultValue=""/>
     <CheckBoxPreference
             android:key="save_login"
             android:title="@string/save_login"

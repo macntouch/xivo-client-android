@@ -1,9 +1,11 @@
 package com.proformatique.android.xivoclient;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
+import android.telephony.TelephonyManager;
 
 public class SettingsActivity extends PreferenceActivity{
 
@@ -17,8 +19,23 @@ public class SettingsActivity extends PreferenceActivity{
         settingsPrefs = getPreferenceManager().getSharedPreferences();
         
         /**
+         * Init value for mobile number
+         */
+        if (settingsPrefs.getString("mobile_number", "").equals("")){
+        	TelephonyManager tMgr =(TelephonyManager)getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+        	String mobileNumber = tMgr.getLine1Number();
+        	SharedPreferences.Editor editor = settingsPrefs.edit();
+        	editor.putString("mobile_number", mobileNumber);
+        	/**
+        	 * TODO : Check that default value is visible when no data exists 
+        	 *        in EditText field
+        	 */
+            //editor.commit();
+        }
+        
+        /**
          * This Listener will trigger when users disable the "save_login" parameter,
-         * so the app can erase login and password saved 
+         * so the app can erase previously saved login and password
          *  
          */
         settingsPrefs.registerOnSharedPreferenceChangeListener(new OnSharedPreferenceChangeListener() {

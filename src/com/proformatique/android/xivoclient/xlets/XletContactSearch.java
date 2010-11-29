@@ -100,7 +100,7 @@ public class XletContactSearch extends Activity implements XletInterface{
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		setContentView(R.layout.xlet_directory);
+		setContentView(R.layout.xlet_search);
 		initDirectory();
 		
 		IncomingReceiver receiver = new IncomingReceiver();
@@ -122,7 +122,7 @@ public class XletContactSearch extends Activity implements XletInterface{
 		usersAdapter = new AlternativeAdapter(
 				this,
 				usersList,
-				R.layout.xlet_directory_items,
+				R.layout.xlet_search_items,
 				new String[] { "fullname","phonenum","stateid" },
 				new int[] { R.id.fullname, R.id.phonenum, R.id.stateid } );
 		
