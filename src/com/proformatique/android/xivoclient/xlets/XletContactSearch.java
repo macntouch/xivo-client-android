@@ -6,8 +6,12 @@ import java.util.List;
 import java.util.Map;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -16,16 +20,18 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import com.proformatique.android.xivoclient.InitialListLoader;
+import com.proformatique.android.xivoclient.JsonLoopListener;
 import com.proformatique.android.xivoclient.R;
 
-public class XletDirectory extends Activity implements XletInterface{
+public class XletContactSearch extends Activity implements XletInterface{
 	
 	private static final String LOG_TAG = "XLET DIRECTORY";
 	private  List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();
+	AlternativeAdapter usersAdapter = null;
 
 
 	/**
-	 * Adapter class based on SimpleAdapter
+	 * Adapter subclass based on SimpleAdapter
 	 * Allow modifying fields displayed in the ListView
 	 * 
 	 * @author cquaquin
@@ -53,13 +59,13 @@ public class XletDirectory extends Activity implements XletInterface{
 			  icon.setBackgroundResource(R.drawable.sym_presence_idle);
 		  }
 		  else if (text.getText().equals("away")){
-			  icon.setBackgroundResource(R.drawable.sym_presence_away);
+			  icon.setBackgroundResource(R.drawable.sym_presence_idle);
 		  }
 		  else if (text.getText().equals("donotdisturb")){
-			  icon.setBackgroundResource(R.drawable.sym_presence_offline);
+			  icon.setBackgroundResource(R.drawable.sym_presence_away);
 		  }
 		  else if (text.getText().equals("outtolunch")){
-			  icon.setBackgroundResource(R.drawable.sym_presence_away);
+			  icon.setBackgroundResource(R.drawable.sym_presence_idle);
 		  }
 		  else {
 			  icon.setBackgroundResource(R.drawable.sym_presence_offline);
@@ -70,18 +76,50 @@ public class XletDirectory extends Activity implements XletInterface{
 		}
 	}
 	
+	/**
+	 * BroadcastReceiver, intercept Intents with action ACTION_LOAD_USER_LIST
+	 * to perform an reload of the displayed list
+	 * @author cquaquin
+	 *
+	 */
+	public class IncomingReceiver extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+	        if (intent.getAction().equals(JsonLoopListener.ACTION_LOAD_USER_LIST)) {
+	        	Log.d( LOG_TAG , "Received Broadcast ");
+	        	if (usersAdapter != null) usersAdapter.notifyDataSetChanged();
+	        }
+			
+		}
+	}
+
+
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.xlet_directory);
 		initDirectory();
+		
+		IncomingReceiver receiver = new IncomingReceiver();
+
+		/**
+		 *  Register a BroadcastReceiver for Intent action that trigger a change
+		 *  in the users list from our Activity
+		 */
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(JsonLoopListener.ACTION_LOAD_USER_LIST);
+        registerReceiver(receiver, new IntentFilter(filter));
+		
+		
 	}
 
 	private void initDirectory() {
 		usersList = InitialListLoader.initialListLoader.usersList;
 
-		AlternativeAdapter usersAdapter = new AlternativeAdapter(
+		usersAdapter = new AlternativeAdapter(
 				this,
 				usersList,
 				R.layout.xlet_directory_items,

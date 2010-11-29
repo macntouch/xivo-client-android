@@ -288,18 +288,19 @@ public class Connection {
 	}
 	
 	JSONObject readData() throws IOException, JSONException{
+
+		if (networkConnection.isClosed()){
+			disconnect();
+			return null;
+		}
+		
 		while (networkConnection.isConnected()) {
 			responseLine = input.readLine();
-			
 			Log.d( LOG_TAG, "Server from ReadData: " + responseLine);
-			
-            JSONObject myString = new JSONObject(responseLine);
-			String myClass = (String) myString.get("function");
-
-			if (myClass.equals("displaysheet")) {
-				return myString;
-			}
+            JSONObject jsonString = new JSONObject(responseLine);
+			return jsonString;
 		}
+
 		return null;
 		
 	}
@@ -307,7 +308,7 @@ public class Connection {
 	public int disconnect(){
 		
 		try {
-			XletsContainerTabActivity.cancel = true;
+			JsonLoopListener.cancel = true;
 			connected = false;
 			networkConnection.close();
 			

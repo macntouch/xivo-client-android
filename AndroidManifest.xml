@@ -53,9 +53,9 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".xlets.XletDirectory"
-                  android:label="@string/xlet_directory_label"
-                  android:description="@string/xlet_directory_desc">
+        <activity android:name=".xlets.XletContactSearch"
+                  android:label="@string/xlet_search_label"
+                  android:description="@string/xlet_search_desc">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="xivo.intent.action.LOAD_XLET_TAB" />

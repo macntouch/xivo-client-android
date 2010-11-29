@@ -38,7 +38,7 @@
     <string name="xlet_services_desc">Services</string>
     <string name="xlet_histo_label">history</string>
     <string name="xlet_histo_desc">Call logs</string>
-    <string name="xlet_directory_label">directory</string>
-    <string name="xlet_directory_desc">Directory</string>
+    <string name="xlet_search_label">search</string>
+    <string name="xlet_search_desc">Contacts</string>
 
 </resources>

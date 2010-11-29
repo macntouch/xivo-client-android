@@ -32,9 +32,6 @@ public class XletsContainerTabActivity extends TabActivity {
 	public static final String ACTION_XLET_LOAD_TAB = "xivo.intent.action.LOAD_XLET_TAB";
 	private static final String LOG_TAG = "XLETS_LOADING";
 	private static List<String> Xletslist = new ArrayList<String>();
-	Thread thread;
-	Handler handler;
-	public static boolean cancel = false;
 	
 	public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
@@ -110,7 +107,9 @@ public class XletsContainerTabActivity extends TabActivity {
         
 	    tabHost.setCurrentTab(0);
 	    InitialListLoader.initialListLoader.Xletslist = Xletslist;
-	    startJsonListener();
+	    JsonLoopListener jsonLoop = new JsonLoopListener(this);
+	    
+//	    startJsonListener();
 	    
 		/**
 		 * Displaying xlet Identity content
@@ -139,41 +138,6 @@ public class XletsContainerTabActivity extends TabActivity {
 		
 	}
 	
-	/**
-	 * Permanent Listener for reading incoming JSON lines  
-	 */
-	private void startJsonListener(){
-		cancel = false;
-    	handler = new Handler() {
-    		public void handleMessage(Message msg) {
-       			switch(msg.what) {
-       				case 1:
-       					break;
-       			}
-       		} 
-       	};
-
-        thread = new Thread() {
-        	public void run() {
-           		int i = 0;
-					while(i < 1) {
-						if(cancel) break;
-						
-						try {
-							Message msg = handler.obtainMessage(1, 
-									Connection.connection.readData());
-							handler.sendMessage(msg);
-           				} catch (IOException e) {
-           					e.printStackTrace();
-						} catch (JSONException e) {
-							e.printStackTrace();
-						}
-           		 	}
-       		 };
-        };
-
-        thread.start();
-	}
 	
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();

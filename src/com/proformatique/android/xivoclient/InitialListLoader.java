@@ -24,6 +24,10 @@ import com.proformatique.android.xivoclient.tools.Constants;
 public class InitialListLoader {
 
 	private static final String LOG_TAG = "LOAD_LISTS";
+	
+	/**
+	 * Reference available lists
+	 */
 	String[] lists = new String[] { "users"};//,"history", "phones"};
 
 	public List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();
