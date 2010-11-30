@@ -79,7 +79,12 @@ public class XletsContainerTabActivity extends TabActivity {
 			
 			try {
 				label = getString(aInfo.labelRes);
-				desc = getString(aInfo.descriptionRes);
+
+				try {
+					desc = getString(aInfo.descriptionRes);
+				}catch (Exception e) {
+					desc = getString(R.string.class.getField("xlet_"+label+"_desc").getInt(null));
+				}
 				
 				/**
 				 * Control that xlet is available for the connected user,

@@ -11,7 +11,9 @@ import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -30,10 +32,19 @@ public class XletDialer extends Activity implements XletInterface{
 	}
 	
     public void clickOnCall(View v) {
+    	
+    	String mobileNumber = "";
+    	Boolean useMobile;
+    	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+       	useMobile = settings.getBoolean("use_mobile_number",false);
+       	
+       	if (useMobile) 
+       		mobileNumber = settings.getString("mobile_number","");
+    	
     	/**
     	 * Creating Call Json object
     	 */
-    	JSONObject jCalling = createJsonCallingObject("originate", null, 
+    	JSONObject jCalling = createJsonCallingObject("originate", mobileNumber, 
     			phoneNumber.getText().toString());
 		try {
 			Log.d( LOG_TAG, "jCalling: " + jCalling.toString());
@@ -42,7 +53,6 @@ public class XletDialer extends Activity implements XletInterface{
 		} catch (IOException e) {
 			
 		}
-	
     	
     }
     
@@ -55,7 +65,9 @@ public class XletDialer extends Activity implements XletInterface{
 		
 		if (phoneNumberSrc == null)
 			phoneSrc = "user:special:me";
-		else phoneSrc = phoneNumberSrc;
+		else if (phoneNumberSrc.equals(""))
+			phoneSrc = "user:special:me";
+		else phoneSrc = "ext:"+phoneNumberSrc;
 		
 		try {
 			jObj.accumulate("direction", Constants.XIVO_SERVER);

@@ -10,13 +10,24 @@
             android:key="server_port"
             android:title="@string/server_port" 
             android:defaultValue="5003"/>
-    <EditTextPreference
-            android:key="mobile_number"
-            android:title="@string/mobile_number" 
-            android:defaultValue=""/>
     <CheckBoxPreference
             android:key="save_login"
             android:title="@string/save_login"
             android:defaultValue="true"/>
-   </PreferenceCategory>         
+  </PreferenceCategory>         
+  <PreferenceCategory android:title="@string/calling_settings">  
+    <CheckBoxPreference
+            android:key="use_mobile_number"
+            android:title="@string/use_mobile" 
+            android:defaultValue="false"
+            android:summaryOn="@string/use_mobile_on" 
+            android:summary="@string/mobile_number_used" 
+            android:summaryOff="@string/use_mobile_off"/>
+    <EditTextPreference
+            android:key="mobile_number"
+            android:title="@string/mobile_number" 
+            android:defaultValue=""
+            android:dependency="use_mobile_number"
+            />
+  </PreferenceCategory>         
 </PreferenceScreen> 

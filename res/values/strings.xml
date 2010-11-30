@@ -17,7 +17,12 @@
     <string name="server_address">Server address</string>
     <string name="server_port">Server port</string>
     <string name="mobile_number">Mobile number</string>
+    <string name="use_mobile">Use mobile n° for calls</string>
+    <string name="use_mobile_on">Mobile calls</string>
+    <string name="use_mobile_off">Default calls</string>
+    <string name="mobile_number_used">Use mobile number for calls</string>
     <string name="connection">Connection</string>
+    <string name="calling_settings">Calling</string>
 
     <!-- Messages strings -->
     <string name="connection_failed">Connection failed !</string>
@@ -33,12 +38,12 @@
      -->
     <string name="xlet_identity_label">identity</string>
     <string name="xlet_identity_desc">Identity</string>
-    <string name="xlet_dialer_label">dial</string>
-    <string name="xlet_dialer_desc">Dialer</string>
-    <string name="xlet_services_label">features</string>
-    <string name="xlet_services_desc">Services</string>
-    <string name="xlet_histo_label">history</string>
-    <string name="xlet_histo_desc">Call logs</string>
+    <string name="xlet_dial_label">dial</string>
+    <string name="xlet_dial_desc">Dialer</string>
+    <string name="xlet_features_label">features</string>
+    <string name="xlet_features_desc">Services</string>
+    <string name="xlet_history_label">history</string>
+    <string name="xlet_history_desc">Call logs</string>
     <string name="xlet_search_label">search</string>
     <string name="xlet_search_desc">Contacts</string>
 

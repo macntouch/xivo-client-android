@@ -4,10 +4,17 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
+import android.preference.EditTextPreference;
+import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 public class SettingsActivity extends PreferenceActivity{
+
+	private static final String LOG_TAG = "SETTINGS";
 
 	SharedPreferences settingsPrefs;
 	
@@ -15,23 +22,26 @@ public class SettingsActivity extends PreferenceActivity{
 	protected void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.settings);
         settingsPrefs = getPreferenceManager().getSharedPreferences();
+        addPreferencesFromResource(R.xml.settings);
         
         /**
          * Init value for mobile number
          */
         if (settingsPrefs.getString("mobile_number", "").equals("")){
-        	TelephonyManager tMgr =(TelephonyManager)getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
-        	String mobileNumber = tMgr.getLine1Number();
-        	SharedPreferences.Editor editor = settingsPrefs.edit();
-        	editor.putString("mobile_number", mobileNumber);
+        	
         	/**
         	 * TODO : Check that default value is visible when no data exists 
         	 *        in EditText field
         	 */
-            //editor.commit();
+        	TelephonyManager tMgr =(TelephonyManager)getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+        	String mobileNumber = tMgr.getLine1Number();
+        	SharedPreferences.Editor editor = settingsPrefs.edit();
+        	editor.putString("mobile_number", mobileNumber);
+        	
+            editor.commit();
         }
+        
         
         /**
          * This Listener will trigger when users disable the "save_login" parameter,
@@ -61,6 +71,17 @@ public class SettingsActivity extends PreferenceActivity{
 						
 					}
 				}
+/*				
+				if (key.equals("use_mobile_number")){
+					Boolean useMobile = sharedPreferences.getBoolean(key, true);
+					
+					if (!useMobile){
+						Preference eMobile = getPreferenceScreen().findPreference("mobile_number");
+						eMobile.set
+						
+					}
+				}
+*/
 				
 			}
 		});
