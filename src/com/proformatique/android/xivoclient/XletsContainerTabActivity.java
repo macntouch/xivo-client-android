@@ -9,9 +9,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.proformatique.android.xivoclient.xlets.XletIdentity;
+import com.proformatique.android.xivoclient.xlets.XletContactSearch.IncomingReceiver;
 
 import android.app.TabActivity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -43,6 +47,16 @@ public class XletsContainerTabActivity extends TabActivity {
 	    Resources res = getResources(); // Resource object to get Drawables
 	    TabHost.TabSpec spec;  // Reusable TabSpec for each tab
 	    Intent intent;  // Reusable Intent for each tab
+	    
+		IncomingReceiver receiver = new IncomingReceiver();
+
+		/**
+		 *  Register a BroadcastReceiver for Intent action that trigger
+		 *  a disconnection
+		 */
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(JsonLoopListener.ACTION_DISCONNECT);
+        registerReceiver(receiver, new IntentFilter(filter));
 
 	    /**
 	     * Get the list of xlets available for connected user
@@ -112,9 +126,11 @@ public class XletsContainerTabActivity extends TabActivity {
         
 	    tabHost.setCurrentTab(0);
 	    InitialListLoader.initialListLoader.Xletslist = Xletslist;
-	    JsonLoopListener jsonLoop = new JsonLoopListener(this);
 	    
-//	    startJsonListener();
+	    /**
+	     * Call of the singleton JsonLoopListener
+	     */
+	    JsonLoopListener jsonLoop = JsonLoopListener.getInstance(this);
 	    
 		/**
 		 * Displaying xlet Identity content
@@ -142,6 +158,28 @@ public class XletsContainerTabActivity extends TabActivity {
 		return null;
 		
 	}
+	
+	/**
+	 * BroadcastReceiver, intercept Intents with action ACTION_DISCONNECT
+	 * to perform an reload of the displayed list
+	 * @author cquaquin
+	 *
+	 */
+	public class IncomingReceiver extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+	        if (intent.getAction().equals(JsonLoopListener.ACTION_DISCONNECT)) {
+	        	Log.d( LOG_TAG , "Received Broadcast ");
+
+	    		Connection.connection.disconnect();
+	    		XletsContainerTabActivity.this.finish();
+	        	
+	        }
+			
+		}
+	}
+
 	
 	
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -177,7 +215,7 @@ public class XletsContainerTabActivity extends TabActivity {
 
 	private void menuDisconnect() {
 		Connection.connection.disconnect();
-		this.finish();
+		XletsContainerTabActivity.this.finish();
 	}
 
 	private void menuExit() {

@@ -36,7 +36,7 @@ public class LoginActivity extends Activity {
         
         settings = PreferenceManager.getDefaultSharedPreferences(this);
         loginSettings = this.getSharedPreferences("login_settings", 0);
-        
+
         /**
          * Set the default saved login/password into corresponding fields 
          * if parameter "save_login" is on
@@ -52,6 +52,14 @@ public class LoginActivity extends Activity {
         	EditText ePassword = (EditText) findViewById(R.id.password);
         	ePassword.setText(password);
         }
+        
+        if (Connection.connection != null) {
+        	displayElements(false);
+        	Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
+			startActivity(defineIntent);
+        }
+        else displayElements(true);
+
     }
     
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -80,6 +88,7 @@ public class LoginActivity extends Activity {
             return true;
         case R.id.menu_disconnect:
         	Connection.connection.disconnect();
+        	displayElements(true);
             return true;
         default:
             return super.onOptionsItemSelected(item);
@@ -101,6 +110,12 @@ public class LoginActivity extends Activity {
 		
 	}
 	
+    public void clickOnButtonBack(View v) {
+    	Intent defineIntent = new Intent(LoginActivity.this, 
+    			XletsContainerTabActivity.class);
+		startActivity(defineIntent);
+    }
+
     public void clickOnButtonOk(View v) {
     	new ConnectTask().execute();
     }
@@ -125,6 +140,32 @@ public class LoginActivity extends Activity {
             editor.commit();
             }
 
+	}
+	
+	public void displayElements(boolean display){
+    	EditText eLogin = (EditText) LoginActivity.this.findViewById(R.id.login); 
+    	EditText ePassword = (EditText) LoginActivity.this.findViewById(R.id.password);
+    	TextView eLoginV = (TextView) LoginActivity.this.findViewById(R.id.login_text); 
+    	TextView ePasswordV = (TextView) LoginActivity.this.findViewById(R.id.password_text);
+    	Button eButton = (Button) LoginActivity.this.findViewById(R.id.b_ok);
+    	TextView eStatus = (TextView) LoginActivity.this.findViewById(R.id.connect_status); 
+    	
+		if (display){
+	    	eLogin.setVisibility(View.VISIBLE);
+	    	ePassword.setVisibility(View.VISIBLE);
+	    	eLoginV.setVisibility(View.VISIBLE);
+	    	ePasswordV.setVisibility(View.VISIBLE);
+	    	eButton.setVisibility(View.VISIBLE);
+	    	eStatus.setVisibility(View.INVISIBLE);
+		}
+		else {
+	    	eLogin.setVisibility(View.INVISIBLE);
+	    	ePassword.setVisibility(View.INVISIBLE);
+	    	eLoginV.setVisibility(View.INVISIBLE);
+	    	ePasswordV.setVisibility(View.INVISIBLE);
+	    	eButton.setVisibility(View.INVISIBLE);
+	    	eStatus.setVisibility(View.VISIBLE);
+		}
 	}
 	
 	/**
@@ -187,7 +228,10 @@ public class LoginActivity extends Activity {
 					if (Connection.connection.saveLogin){
 						saveLoginPassword();
 					}
-		
+
+					displayElements(false);
+
+					/*
 			    	EditText eLogin = (EditText) LoginActivity.this.findViewById(R.id.login); 
 			    	EditText ePassword = (EditText) LoginActivity.this.findViewById(R.id.password);
 			    	TextView eLoginV = (TextView) LoginActivity.this.findViewById(R.id.login_text); 
@@ -201,14 +245,19 @@ public class LoginActivity extends Activity {
 			    	ePasswordV.setVisibility(View.INVISIBLE);
 			    	eButton.setVisibility(View.INVISIBLE);
 			    	eStatus.setVisibility(View.VISIBLE);
-
+*/
 			    	dialog.dismiss();
 			    	
-					/**
-					 * Parsing and Displaying xlets content
-					 */
-					Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
-					startActivity(defineIntent);
+			    	runOnUiThread(new Runnable() {
+			    	    public void run() {
+							/**
+							 * Parsing and Displaying xlets content
+							 */
+							Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
+							startActivity(defineIntent);
+			    	    }
+			    	});
+
 				}
 	         
 			}

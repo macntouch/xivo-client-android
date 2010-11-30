@@ -12,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import org.json.JSONException;
 import org.json.JSONObject;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -97,6 +98,13 @@ public class Connection {
 	private int loginCTI(){
 		
 		JSONObject ReadLineObject;
+		String releaseOS = android.os.Build.VERSION.RELEASE;
+		Log.d( LOG_TAG, "release OS : " + releaseOS);
+		
+		/**
+		 * TODO : replace the "ident" value "undef@X11-LE" by
+		 * the specific android one, when Xivo server will accept it.
+		 */
 		
 		/**
 		 * Creating first Json login array
@@ -106,6 +114,7 @@ public class Connection {
 			jLogin.accumulate("class","login_id");
 			jLogin.accumulate("company", Constants.XIVO_CONTEXT);
 			jLogin.accumulate("ident","undef@X11-LE");
+//			jLogin.accumulate("ident","android-"+releaseOS);
 			jLogin.accumulate("userid",login);
 			jLogin.accumulate("version",Constants.XIVO_LOGIN_VERSION);
 			jLogin.accumulate("xivoversion",Constants.XIVO_VERSION);

@@ -7,6 +7,8 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.proformatique.android.xivoclient.tools.Constants;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
@@ -16,13 +18,27 @@ import android.util.Log;
 public class JsonLoopListener {
 	
     public static final String ACTION_LOAD_USER_LIST = "xivo.intent.action.LOAD_USER_LIST";
+    public static final String ACTION_DISCONNECT = "xivo.intent.action.ACTION_DISCONNECT";
+    
 	Context context;
     Thread thread;
 	Handler handler;
 	protected String LOG_TAG = "JSONLOOP";
 	public static boolean cancel = false;
+	private static JsonLoopListener instance;
 
-	public JsonLoopListener(Context context) {
+	public static JsonLoopListener getInstance(Context context) {
+        if (null == instance) {
+            instance = new JsonLoopListener(context);
+        } else if (cancel == true) {
+        	instance.startJsonListener();
+        }
+        	
+        return instance;
+	}
+
+	
+	private JsonLoopListener(Context context) {
 		this.context = context;
 		startJsonListener();
 	}
@@ -47,6 +63,14 @@ public class JsonLoopListener {
        			        i.setAction(ACTION_LOAD_USER_LIST);
        			        context.sendBroadcast(i);
        			        break;
+       				case Constants.NO_NETWORK_AVAILABLE:
+       			    	Intent i2 = new Intent();
+       			        i2.setAction(ACTION_DISCONNECT);
+       			        context.sendBroadcast(i2);
+       				case Constants.JSON_POPULATE_ERROR:
+       			    	Intent i3 = new Intent();
+       			        i3.setAction(ACTION_DISCONNECT);
+       			        context.sendBroadcast(i3);
        			}
        		} 
        	};
@@ -55,6 +79,7 @@ public class JsonLoopListener {
         	public void run() {
            		int i = 0;
 					while(i < 1) {
+						
 						if (cancel) break;
 						
 						try {
@@ -82,10 +107,15 @@ public class JsonLoopListener {
 
 								handler.sendEmptyMessage(1);
 							}
+           				} catch (NullPointerException e) {
+           					cancel = true;
+           					handler.sendEmptyMessage(Constants.JSON_POPULATE_ERROR);
            				} catch (IOException e) {
-           					e.printStackTrace();
+           					cancel = true;
+           					handler.sendEmptyMessage(Constants.NO_NETWORK_AVAILABLE);
 						} catch (JSONException e) {
-							e.printStackTrace();
+							cancel = true;
+							handler.sendEmptyMessage(Constants.JSON_POPULATE_ERROR);
 						}
            		 	}
        		 };

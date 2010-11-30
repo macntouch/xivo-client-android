@@ -112,8 +112,6 @@ public class XletContactSearch extends Activity implements XletInterface{
         IntentFilter filter = new IntentFilter();
         filter.addAction(JsonLoopListener.ACTION_LOAD_USER_LIST);
         registerReceiver(receiver, new IntentFilter(filter));
-		
-		
 	}
 
 	private void initDirectory() {

@@ -7,16 +7,19 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.proformatique.android.xivoclient.Connection;
+import com.proformatique.android.xivoclient.LoginActivity;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 public class XletDialer extends Activity implements XletInterface{
 
@@ -32,30 +35,69 @@ public class XletDialer extends Activity implements XletInterface{
 	}
 	
     public void clickOnCall(View v) {
-    	
-    	String mobileNumber = "";
-    	Boolean useMobile;
-    	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-       	useMobile = settings.getBoolean("use_mobile_number",false);
-       	
-       	if (useMobile) 
-       		mobileNumber = settings.getString("mobile_number","");
-    	
-    	/**
-    	 * Creating Call Json object
-    	 */
-    	JSONObject jCalling = createJsonCallingObject("originate", mobileNumber, 
-    			phoneNumber.getText().toString());
-		try {
-			Log.d( LOG_TAG, "jCalling: " + jCalling.toString());
-			PrintStream output = new PrintStream(Connection.connection.networkConnection.getOutputStream());
-			output.println(jCalling.toString());
-		} catch (IOException e) {
-			
-		}
-    	
+    	new CallJsonTask().execute();
     }
     
+	/**
+	 * Creating a AsyncTask to run call process
+	 * @author cquaquin
+	 */
+	 private class CallJsonTask extends AsyncTask<Void, Integer, Integer> {
+
+		@Override
+		protected Integer doInBackground(Void... params) {
+
+	    	/**
+	    	 * If the user enabled "use_mobile_number" setting, the call takes
+	    	 * the mobile number for source phone. 
+	    	 */
+	    	String mobileNumber = "";
+	    	Boolean useMobile;
+	    	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(XletDialer.this);
+	       	useMobile = settings.getBoolean("use_mobile_number",false);
+	       	
+	       	if (useMobile) 
+	       		mobileNumber = settings.getString("mobile_number","");
+	    	
+	    	/**
+	    	 * Creating Call Json object
+	    	 */
+	    	JSONObject jCalling = createJsonCallingObject("originate", mobileNumber, 
+	    			phoneNumber.getText().toString());
+			try {
+				Log.d( LOG_TAG, "jCalling: " + jCalling.toString());
+				PrintStream output = new PrintStream(Connection.connection.networkConnection.getOutputStream());
+				output.println(jCalling.toString());
+
+				return Constants.OK; 
+				
+			} catch (IOException e) {
+				return Constants.NO_NETWORK_AVAILABLE;
+			}
+	    	
+		}
+
+		@Override
+		protected void onPostExecute(Integer result) {
+			
+			if (result == Constants.OK)
+				Toast.makeText(XletDialer.this, R.string.call_ok
+						, Toast.LENGTH_LONG).show();
+			else Toast.makeText(XletDialer.this, R.string.no_web_connection
+					, Toast.LENGTH_LONG).show();
+
+		}
+
+	 }
+    
+	 /**
+	  * Prepare the Json string for calling process
+	  * 
+	  * @param inputClass
+	  * @param phoneNumberSrc
+	  * @param phoneNumberDest
+	  * @return
+	  */
 	private JSONObject createJsonCallingObject(String inputClass, 
 			String phoneNumberSrc,
 			String phoneNumberDest) {
