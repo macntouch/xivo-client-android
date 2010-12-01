@@ -319,6 +319,7 @@ public class Connection {
 		try {
 			JsonLoopListener.cancel = true;
 			connected = false;
+			networkConnection.shutdownOutput();
 			networkConnection.close();
 			
 	    	EditText eLogin = (EditText) callingActivity.findViewById(R.id.login); 

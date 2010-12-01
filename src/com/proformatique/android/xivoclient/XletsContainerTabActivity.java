@@ -36,6 +36,7 @@ public class XletsContainerTabActivity extends TabActivity {
 
 	private static final String LOG_TAG = "XLETS_LOADING";
 	private static List<String> Xletslist = new ArrayList<String>();
+	IncomingReceiver receiver;
 	
 	public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
@@ -48,7 +49,7 @@ public class XletsContainerTabActivity extends TabActivity {
 	    TabHost.TabSpec spec;  // Reusable TabSpec for each tab
 	    Intent intent;  // Reusable Intent for each tab
 	    
-		IncomingReceiver receiver = new IncomingReceiver();
+		receiver = new IncomingReceiver();
 
 		/**
 		 *  Register a BroadcastReceiver for Intent action that trigger
@@ -218,6 +219,7 @@ public class XletsContainerTabActivity extends TabActivity {
 
 	private void menuDisconnect() {
 		Connection.connection.disconnect();
+		unregisterReceiver(receiver);
 		XletsContainerTabActivity.this.finish();
 	}
 
