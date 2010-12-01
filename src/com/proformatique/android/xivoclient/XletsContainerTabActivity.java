@@ -9,6 +9,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.proformatique.android.xivoclient.tools.Constants;
+import com.proformatique.android.xivoclient.xlets.XletContactSearch;
+import com.proformatique.android.xivoclient.xlets.XletDialer;
 import com.proformatique.android.xivoclient.xlets.XletIdentity;
 import com.proformatique.android.xivoclient.xlets.XletContactSearch.IncomingReceiver;
 
@@ -30,6 +32,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TabHost;
 import android.widget.TabWidget;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class XletsContainerTabActivity extends TabActivity {
@@ -56,7 +59,7 @@ public class XletsContainerTabActivity extends TabActivity {
 		 *  a disconnection
 		 */
         IntentFilter filter = new IntentFilter();
-        filter.addAction(JsonLoopListener.ACTION_DISCONNECT);
+        filter.addAction(Constants.ACTION_DISCONNECT);
         registerReceiver(receiver, new IntentFilter(filter));
 
 	    /**
@@ -173,7 +176,7 @@ public class XletsContainerTabActivity extends TabActivity {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-	        if (intent.getAction().equals(JsonLoopListener.ACTION_DISCONNECT)) {
+	        if (intent.getAction().equals(Constants.ACTION_DISCONNECT)) {
 	        	Log.d( LOG_TAG , "Received Broadcast ");
 
 	    		Connection.connection.disconnect();
@@ -230,19 +233,9 @@ public class XletsContainerTabActivity extends TabActivity {
 	private void menuSettings() {
 		Intent defineIntent = new Intent(this, SettingsActivity.class);
 		startActivity(defineIntent);
-		
 	}
 
-	@Override
-	protected void onNewIntent(Intent intent) {
-		super.onNewIntent(intent);
-
-		if (intent.getAction().equals(Constants.ACTION_XLET_DIAL_CALL)){
-			
-			getTabHost().setCurrentTab(0);
-		}
-	}
-	
-	
-
+	public void switchTab(int tab){
+		getTabHost().setCurrentTab(tab);
+    }
 }

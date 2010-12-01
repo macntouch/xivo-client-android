@@ -7,12 +7,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.proformatique.android.xivoclient.Connection;
+import com.proformatique.android.xivoclient.JsonLoopListener;
 import com.proformatique.android.xivoclient.LoginActivity;
 import com.proformatique.android.xivoclient.R;
+import com.proformatique.android.xivoclient.XletsContainerTabActivity;
 import com.proformatique.android.xivoclient.tools.Constants;
+import com.proformatique.android.xivoclient.xlets.XletContactSearch.IncomingReceiver;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -34,25 +40,17 @@ public class XletDialer extends Activity implements XletInterface{
 		setContentView(R.layout.xlet_dialer);
 		phoneNumber = (EditText) findViewById(R.id.number);
 		
-	}
-	
-	/*
-    @Override
-	protected void onNewIntent(Intent intent) {
-		super.onNewIntent(intent);
+		IncomingReceiver receiver = new IncomingReceiver();
 
-		if (intent.getAction().equals(Constants.ACTION_XLET_DIAL_CALL)){
-			Bundle extra = intent.getExtras();
-	
-			if (extra != null){
-				phoneNumber.setText(extra.getString("numToCall"));
-				new CallJsonTask().execute();
-			}
-		}
+		/**
+		 *  Register a BroadcastReceiver for Intent action that trigger a call
+		 */
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Constants.ACTION_XLET_DIAL_CALL);
+        registerReceiver(receiver, new IntentFilter(filter));
 
 	}
-	*/
-
+	
 	public void clickOnCall(View v) {
     	new CallJsonTask().execute();
     }
@@ -142,7 +140,33 @@ public class XletDialer extends Activity implements XletInterface{
 		}
 	}
 
-	
+	/**
+	 * BroadcastReceiver, intercept Intents with action ACTION_XLET_DIAL_CALL
+	 * to perform a call
+	 * @author cquaquin
+	 *
+	 */
+	public class IncomingReceiver extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+	        if (intent.getAction().equals(Constants.ACTION_XLET_DIAL_CALL)) {
+	        	Log.d( LOG_TAG , "Received Broadcast ");
+				Bundle extra = intent.getExtras();
+		
+				if (extra != null){
+					XletsContainerTabActivity parentAct;
+					phoneNumber.setText(extra.getString("numToCall"));
+					parentAct = (XletsContainerTabActivity)XletDialer.this.getParent();
+					parentAct.switchTab(0);
+					
+					new CallJsonTask().execute();
+				}
+
+	        }
+		}
+	}
+
     public void clickOn1(View v) {
     	phoneNumber.append("1");
     }

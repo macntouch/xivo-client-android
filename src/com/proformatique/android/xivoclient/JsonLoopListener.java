@@ -17,8 +17,6 @@ import android.util.Log;
 
 public class JsonLoopListener {
 	
-    public static final String ACTION_LOAD_USER_LIST = "xivo.intent.action.LOAD_USER_LIST";
-    public static final String ACTION_DISCONNECT = "xivo.intent.action.ACTION_DISCONNECT";
     
 	Context context;
     Thread thread;
@@ -60,16 +58,16 @@ public class JsonLoopListener {
        					 */
        					Log.d( LOG_TAG , "Send Broadcast "+msg.what);
        			    	Intent i = new Intent();
-       			        i.setAction(ACTION_LOAD_USER_LIST);
+       			        i.setAction(Constants.ACTION_LOAD_USER_LIST);
        			        context.sendBroadcast(i);
        			        break;
        				case Constants.NO_NETWORK_AVAILABLE:
        			    	Intent i2 = new Intent();
-       			        i2.setAction(ACTION_DISCONNECT);
+       			        i2.setAction(Constants.ACTION_DISCONNECT);
        			        context.sendBroadcast(i2);
        				case Constants.JSON_POPULATE_ERROR:
        			    	Intent i3 = new Intent();
-       			        i3.setAction(ACTION_DISCONNECT);
+       			        i3.setAction(Constants.ACTION_DISCONNECT);
        			        context.sendBroadcast(i3);
        			}
        		} 
