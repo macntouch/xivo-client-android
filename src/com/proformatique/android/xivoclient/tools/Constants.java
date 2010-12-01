@@ -26,4 +26,11 @@ public final class Constants {
 	public static final String XIVO_PASSWORD_OK = "login_pass_ok";
 	public static final String XIVO_LOGIN_KO = "loginko";
 	public static final String XIVO_LOGIN_CAPAS_OK = "login_capas_ok";
+	
+	/**
+	 * Intent actions
+	 */
+	public static final String ACTION_XLET_LOAD_TAB = "xivo.intent.action.LOAD_XLET_TAB";
+	public static final String ACTION_XLET_DIAL_CALL = "xivo.intent.action.CALL_XLET_DIAL";
+	
 }

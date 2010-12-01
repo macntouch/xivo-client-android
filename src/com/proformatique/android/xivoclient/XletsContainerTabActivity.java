@@ -8,6 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.xlets.XletIdentity;
 import com.proformatique.android.xivoclient.xlets.XletContactSearch.IncomingReceiver;
 
@@ -33,7 +34,6 @@ import android.widget.Toast;
 
 public class XletsContainerTabActivity extends TabActivity {
 
-	public static final String ACTION_XLET_LOAD_TAB = "xivo.intent.action.LOAD_XLET_TAB";
 	private static final String LOG_TAG = "XLETS_LOADING";
 	private static List<String> Xletslist = new ArrayList<String>();
 	
@@ -76,7 +76,7 @@ public class XletsContainerTabActivity extends TabActivity {
          * that declared an intent of type ACTION_XLET_LOAD in the Manifest file
          */
 	    PackageManager pm = getPackageManager();
-        Intent xletIntent = new Intent( ACTION_XLET_LOAD_TAB );
+        Intent xletIntent = new Intent( Constants.ACTION_XLET_LOAD_TAB );
         
         List<ResolveInfo> list = pm.queryIntentActivities(xletIntent, PackageManager.GET_RESOLVED_FILTER);
         
@@ -91,14 +91,17 @@ public class XletsContainerTabActivity extends TabActivity {
 			String label;
 			String desc;
 			
+			
 			try {
 				label = getString(aInfo.labelRes);
 
-				try {
-					desc = getString(aInfo.descriptionRes);
-				}catch (Exception e) {
-					desc = getString(R.string.class.getField("xlet_"+label+"_desc").getInt(null));
-				}
+	            int currentapiVersion = android.os.Build.VERSION.SDK_INT;
+
+	            if (currentapiVersion >= android.os.Build.VERSION_CODES.FROYO) 
+	                desc = getString(aInfo.descriptionRes);
+	            else
+	                desc = getString(R.string.class.getField("xlet_"+label+"_desc")
+	                		.getInt(null));
 				
 				/**
 				 * Control that xlet is available for the connected user,
@@ -227,5 +230,17 @@ public class XletsContainerTabActivity extends TabActivity {
 		startActivity(defineIntent);
 		
 	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+
+		if (intent.getAction().equals(Constants.ACTION_XLET_DIAL_CALL)){
+			
+			getTabHost().setCurrentTab(0);
+		}
+	}
+	
+	
 
 }

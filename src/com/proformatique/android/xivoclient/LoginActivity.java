@@ -230,22 +230,6 @@ public class LoginActivity extends Activity {
 					}
 
 					displayElements(false);
-
-					/*
-			    	EditText eLogin = (EditText) LoginActivity.this.findViewById(R.id.login); 
-			    	EditText ePassword = (EditText) LoginActivity.this.findViewById(R.id.password);
-			    	TextView eLoginV = (TextView) LoginActivity.this.findViewById(R.id.login_text); 
-			    	TextView ePasswordV = (TextView) LoginActivity.this.findViewById(R.id.password_text);
-			    	Button eButton = (Button) LoginActivity.this.findViewById(R.id.b_ok);
-			    	TextView eStatus = (TextView) LoginActivity.this.findViewById(R.id.connect_status); 
-			    	
-			    	eLogin.setVisibility(View.INVISIBLE);
-			    	ePassword.setVisibility(View.INVISIBLE);
-			    	eLoginV.setVisibility(View.INVISIBLE);
-			    	ePasswordV.setVisibility(View.INVISIBLE);
-			    	eButton.setVisibility(View.INVISIBLE);
-			    	eStatus.setVisibility(View.VISIBLE);
-*/
 			    	dialog.dismiss();
 			    	
 			    	runOnUiThread(new Runnable() {

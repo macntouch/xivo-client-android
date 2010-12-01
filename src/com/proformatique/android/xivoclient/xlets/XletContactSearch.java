@@ -22,13 +22,14 @@ import android.widget.TextView;
 import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.JsonLoopListener;
 import com.proformatique.android.xivoclient.R;
+import com.proformatique.android.xivoclient.XletsContainerTabActivity;
+import com.proformatique.android.xivoclient.tools.Constants;
 
 public class XletContactSearch extends Activity implements XletInterface{
 	
 	private static final String LOG_TAG = "XLET DIRECTORY";
 	private  List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();
 	AlternativeAdapter usersAdapter = null;
-
 
 	/**
 	 * Adapter subclass based on SimpleAdapter
@@ -90,11 +91,8 @@ public class XletContactSearch extends Activity implements XletInterface{
 	        	Log.d( LOG_TAG , "Received Broadcast ");
 	        	if (usersAdapter != null) usersAdapter.notifyDataSetChanged();
 	        }
-			
 		}
 	}
-
-
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -121,11 +119,26 @@ public class XletContactSearch extends Activity implements XletInterface{
 				this,
 				usersList,
 				R.layout.xlet_search_items,
-				new String[] { "fullname","phonenum","stateid" },
-				new int[] { R.id.fullname, R.id.phonenum, R.id.stateid } );
+				new String[] { "fullname","phonenum","stateid","stateid_longname" },
+				new int[] { R.id.fullname, R.id.phonenum, R.id.stateid, R.id.longname_state } );
 		
 		ListView lv= (ListView)findViewById(R.id.users_list);
 		lv.setAdapter(usersAdapter);
 	}
 
+	/**
+	 * Perform a calls via Dial Activity
+	 * 
+	 * @param v
+	 */
+	public void clickLine(View v){
+		
+		TextView numToCall = (TextView) findViewById(R.id.phonenum);
+    	Intent defineIntent = new Intent(XletContactSearch.this, 
+    			XletsContainerTabActivity.class);
+    	defineIntent.setAction(Constants.ACTION_XLET_DIAL_CALL);
+    	defineIntent.putExtra("numToCall", numToCall.getText());
+		startActivity(defineIntent);
+
+	}
 }

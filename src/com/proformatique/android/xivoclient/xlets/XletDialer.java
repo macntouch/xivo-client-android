@@ -12,6 +12,7 @@ import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -32,9 +33,27 @@ public class XletDialer extends Activity implements XletInterface{
 
 		setContentView(R.layout.xlet_dialer);
 		phoneNumber = (EditText) findViewById(R.id.number);
+		
 	}
 	
-    public void clickOnCall(View v) {
+	/*
+    @Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+
+		if (intent.getAction().equals(Constants.ACTION_XLET_DIAL_CALL)){
+			Bundle extra = intent.getExtras();
+	
+			if (extra != null){
+				phoneNumber.setText(extra.getString("numToCall"));
+				new CallJsonTask().execute();
+			}
+		}
+
+	}
+	*/
+
+	public void clickOnCall(View v) {
     	new CallJsonTask().execute();
     }
     
