@@ -33,6 +33,7 @@ public class XletContactSearch extends Activity implements XletInterface{
 	private  List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();
 	AlternativeAdapter usersAdapter = null;
 	ListView lv;
+	IncomingReceiver receiver;
 
 	/**
 	 * Adapter subclass based on SimpleAdapter
@@ -104,7 +105,7 @@ public class XletContactSearch extends Activity implements XletInterface{
 		setContentView(R.layout.xlet_search);
 		initDirectory();
 		
-		IncomingReceiver receiver = new IncomingReceiver();
+		receiver = new IncomingReceiver();
 
 		/**
 		 *  Register a BroadcastReceiver for Intent action that trigger a change
@@ -156,5 +157,11 @@ public class XletContactSearch extends Activity implements XletInterface{
 		
 	    XletContactSearch.this.sendBroadcast(defineIntent);
 	    
+	}
+
+	@Override
+	protected void onDestroy() {
+		unregisterReceiver(receiver);
+		super.onDestroy();
 	}
 }

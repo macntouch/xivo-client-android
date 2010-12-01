@@ -32,6 +32,7 @@ public class XletDialer extends Activity implements XletInterface{
 
 	private static final String LOG_TAG = "XLET DIALER";
 	EditText phoneNumber;
+	IncomingReceiver receiver;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +41,7 @@ public class XletDialer extends Activity implements XletInterface{
 		setContentView(R.layout.xlet_dialer);
 		phoneNumber = (EditText) findViewById(R.id.number);
 		
-		IncomingReceiver receiver = new IncomingReceiver();
+		receiver = new IncomingReceiver();
 
 		/**
 		 *  Register a BroadcastReceiver for Intent action that trigger a call
@@ -214,4 +215,10 @@ public class XletDialer extends Activity implements XletInterface{
     public void clickOnSharp(View v) {
     	phoneNumber.append("#");
     }
+
+    protected void onDestroy() {
+		unregisterReceiver(receiver);
+		super.onDestroy();
+	}
+
 }

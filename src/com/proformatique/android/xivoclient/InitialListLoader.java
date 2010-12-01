@@ -33,8 +33,10 @@ public class InitialListLoader {
 	public List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();
 	public List<HashMap<String, String>> historyList = new ArrayList<HashMap<String, String>>();
 	public List<HashMap<String, String>> phonesList = new ArrayList<HashMap<String, String>>();
-	public List<String> Xletslist = new ArrayList<String>();
+	public List<String> xletsList = new ArrayList<String>();
 	public String xivoId = new String();
+	public HashMap<String, String> capaPresenceState  = new HashMap<String, String>();	
+	public List<HashMap<String, String>> statusList = new ArrayList<HashMap<String, String>>();
 	
 	public static InitialListLoader initialListLoader;
 	

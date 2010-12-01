@@ -38,7 +38,11 @@ import android.widget.Toast;
 public class XletsContainerTabActivity extends TabActivity {
 
 	private static final String LOG_TAG = "XLETS_LOADING";
-	private static List<String> Xletslist = new ArrayList<String>();
+	
+	/**
+	 * TODO : Move xletsList and xletsList loading to InitialListLoader 
+	 */
+	private static List<String> xletsList = new ArrayList<String>();
 	IncomingReceiver receiver;
 	
 	public void onCreate(Bundle savedInstanceState) {
@@ -119,7 +123,7 @@ public class XletsContainerTabActivity extends TabActivity {
 	
 					    tabHost.addTab(spec);
 					    
-					    Xletslist.add(label);
+					    xletsList.add(label);
 		
 				    } catch (ClassNotFoundException e) {
 						e.printStackTrace();
@@ -132,7 +136,7 @@ public class XletsContainerTabActivity extends TabActivity {
         }
         
 	    tabHost.setCurrentTab(0);
-	    InitialListLoader.initialListLoader.Xletslist = Xletslist;
+	    InitialListLoader.initialListLoader.xletsList = xletsList;
 	    
 	    /**
 	     * Call of the singleton JsonLoopListener

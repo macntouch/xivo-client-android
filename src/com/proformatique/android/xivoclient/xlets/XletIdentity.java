@@ -1,16 +1,16 @@
 package com.proformatique.android.xivoclient.xlets;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import android.app.Activity;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
+import android.widget.TextView;
+
 import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
-import android.app.Activity;
-import android.content.Context;
-import android.view.View;
-import android.widget.TextView;
 
 public class XletIdentity implements XletInterface{
 
@@ -27,9 +27,17 @@ public class XletIdentity implements XletInterface{
 				break;
 			}
 		}
-		
-		
-		
+		String[] statusListArray = new String[InitialListLoader.initialListLoader.statusList.size()];
+		int i=0;
+		for (HashMap<String, String> map : InitialListLoader.initialListLoader.statusList) {
+			statusListArray[i]=map.get("longname");
+			i++;
+		}
+/*
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(activity, R.id.statusList, statusListArray);
+		Spinner s = (Spinner) activity.findViewById(R.id.statusList);
+		s.setAdapter(adapter);
+*/
 	}
 
 }

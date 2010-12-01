@@ -9,6 +9,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import android.app.Activity;
@@ -160,6 +162,21 @@ public class Connection {
 								Log.d( LOG_TAG, "jCapa length : " + jCapa.length());
 								InitialListLoader.initialListLoader.xivoId = jCapa.getString("xivo_userid");
 								
+								JSONObject jCapaPresence = jCapa.getJSONObject("capapresence");
+								JSONObject jCapaPresenceState = jCapaPresence.getJSONObject("state");
+								JSONObject jCapaPresenceStateNames = jCapaPresence.getJSONObject("names");
+								JSONObject jCapaPresenceStateAllowed = jCapaPresence.getJSONObject("allowed");
+								
+								InitialListLoader.initialListLoader.capaPresenceState.put("color", jCapaPresenceState.getString("color"));
+								InitialListLoader.initialListLoader.capaPresenceState.put("stateid", jCapaPresenceState.getString("stateid"));
+								InitialListLoader.initialListLoader.capaPresenceState.put("longname", jCapaPresenceState.getString("longname"));
+								
+								feedStatusList("available", jCapaPresenceStateNames, jCapaPresenceStateAllowed);
+								feedStatusList("berightback", jCapaPresenceStateNames, jCapaPresenceStateAllowed);
+								feedStatusList("away", jCapaPresenceStateNames, jCapaPresenceStateAllowed);
+								feedStatusList("donotdisturb", jCapaPresenceStateNames, jCapaPresenceStateAllowed);
+								feedStatusList("outtolunch", jCapaPresenceStateNames, jCapaPresenceStateAllowed);
+								
 								connected=true;
 								return Constants.CONNECTION_OK;
 							}
@@ -178,6 +195,24 @@ public class Connection {
 		}
 		return Constants.LOGIN_KO;
 	}
+	
+    private void feedStatusList(String status, JSONObject jNames, JSONObject jAllowed) throws JSONException{
+		
+    	if (jAllowed.getBoolean(status)){
+        	HashMap<String, String> map = new HashMap<String, String>();
+
+    		JSONObject jCapaPresenceStatus = jNames.getJSONObject(status);
+    		map.put("stateid", jCapaPresenceStatus.getString("stateid"));
+    		map.put("color", jCapaPresenceStatus.getString("color"));
+    		map.put("longname", jCapaPresenceStatus.getString("longname"));
+    		
+    		InitialListLoader.initialListLoader.statusList.add(map);
+    		
+    		Log.d( LOG_TAG, "StatusList : " + jCapaPresenceStatus.getString("stateid")+" "+ 
+    				jCapaPresenceStatus.getString("longname"));
+    	}
+    	
+    }
 
 	/**
 	 * Perform a read action on the stream from CTI server
