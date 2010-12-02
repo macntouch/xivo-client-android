@@ -14,9 +14,11 @@ public final class Constants {
 	public static final int LOGIN_KO = 0;
 	
 	/**
-	 * ActivityForResult requestCodes
+	 * ActivityForResult requestCodes et codeResults
 	 */
 	public static final int CODE_IDENTITY_STATE_LIST = 1;
+	public static final int CODE_LAUNCH = 100;
+	public static final int CODE_EXIT = 666; // Kill kill !!
 	
 	/**
 	 * Application constants

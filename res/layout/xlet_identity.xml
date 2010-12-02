@@ -25,23 +25,33 @@
     android:text="@string/user_identity" >
 </TextView>
 
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="65dp"
+    android:layout_height="55dp"
+    android:id="@+id/identityClickZone"
+    android:clickable="true"
+    android:layout_gravity="right" 
+    android:layout_marginRight="0dp"
+    android:background="@drawable/bg_default_view">
+    
 <ImageView android:id="@+id/identity_current_state_image"
      android:layout_width="50dp" 
      android:layout_height="50dp"
-     android:layout_marginRight="5dp"
      android:layout_gravity="right" 
-     android:src="@drawable/sym_presence_offline"/>
+     android:layout_marginRight="5dp"
+     android:src="@drawable/sym_presence_offline"
+     />
 
+</FrameLayout>
 <TextView
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_marginRight="12dp"
-    android:layout_marginTop="34dp"
-    android:layout_gravity="right"
     android:text="offline"
     android:id="@+id/identity_current_state_longname"
     android:textSize="10sp"
+    android:layout_marginRight="12dp"
+    android:layout_marginTop="34dp"
+    android:layout_gravity="right"
     android:visibility="visible"
-    />
-
+     />
 </FrameLayout>

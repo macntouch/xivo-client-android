@@ -381,19 +381,16 @@ public class Connection {
 	    	EditText ePassword = (EditText) callingActivity.findViewById(R.id.password);
 	    	TextView eLoginV = (TextView) callingActivity.findViewById(R.id.login_text); 
 	    	TextView ePasswordV = (TextView) callingActivity.findViewById(R.id.password_text);
-	    	//Button eButton = (Button) callingActivity.findViewById(R.id.b_ok);
 	    	TextView eStatus = (TextView) callingActivity.findViewById(R.id.connect_status); 
 	    	
 	    	eLogin.setVisibility(View.VISIBLE);
 	    	ePassword.setVisibility(View.VISIBLE);
 	    	eLoginV.setVisibility(View.VISIBLE);
 	    	ePasswordV.setVisibility(View.VISIBLE);
-	    	//eButton.setVisibility(View.VISIBLE);
 	    	eStatus.setVisibility(View.INVISIBLE);
 			
 			
 		} catch (IOException e) {
-			e.printStackTrace();
 			return Constants.NO_NETWORK_AVAILABLE;
 		}
 		return Constants.OK;

@@ -84,7 +84,8 @@ public class LoginActivity extends Activity {
             menuAbout();
             return true;
         case R.id.menu_disconnect:
-        	Connection.getInstance().disconnect();
+        	if (Connection.getInstance().connected)
+        		Connection.getInstance().disconnect();
         	displayElements(true);
             return true;
         default:
@@ -94,29 +95,25 @@ public class LoginActivity extends Activity {
 
 	private void menuAbout() {
 		Intent defineIntent = new Intent(this, AboutActivity.class);
-		startActivity(defineIntent);
+		startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
 	}
 
 	private void menuExit() {
+    	if (Connection.getInstance().connected)
+    		Connection.getInstance().disconnect();
 		finish();
 	}
 
 	private void menuSettings() {
 		Intent defineIntent = new Intent(this, SettingsActivity.class);
-		startActivity(defineIntent);
+		startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
 		
 	}
 	
-    public void clickOnButtonBack(View v) {
-    	Intent defineIntent = new Intent(LoginActivity.this, 
-    			XletsContainerTabActivity.class);
-		startActivity(defineIntent);
-    }
-
     public void clickOnButtonOk(View v) {
     	if (Connection.getInstance().connected) {
     		Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
-			startActivity(defineIntent);
+    		startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
     	}
     	else new ConnectTask().execute();
     }
@@ -232,20 +229,25 @@ public class LoginActivity extends Activity {
 
 					displayElements(false);
 			    	dialog.dismiss();
-			    	
-			    	runOnUiThread(new Runnable() {
-			    	    public void run() {
-							/**
-							 * Parsing and Displaying xlets content
-							 */
-							Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
-							startActivity(defineIntent);
-			    	    }
-			    	});
-
+	    	
+					/**
+					 * Parsing and Displaying xlets content
+					 */
+					Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
+					LoginActivity.this.startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
 				}
 	         
 			}
 	 }
 
+	 @Override
+	 protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		 super.onActivityResult(requestCode, resultCode, data);
+		 
+		 if ( (requestCode == Constants.CODE_LAUNCH) &&
+				 (resultCode == Constants.CODE_EXIT)) {
+		     this.finish();
+		 }
+
+	 }
 }

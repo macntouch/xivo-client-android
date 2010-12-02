@@ -36,7 +36,7 @@
         <activity android:name=".XletsContainerTabActivity"
                   android:label="@string/app_name" 
                   android:screenOrientation="portrait"
-                  android:launchMode="singleTask">
+                  android:launchMode="standard">
         </activity>
 
         <activity android:name=".xlets.XletIdentityStateList"

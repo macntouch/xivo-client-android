@@ -40,11 +40,12 @@ public class XletIdentity implements XletInterface{
 		 * Define Onclick listener
 		 */
 		fIdentity = (FrameLayout)activity.findViewById(R.id.includeIdentity);
-		fIdentity.setOnClickListener(new OnClickListener() {
+		FrameLayout clickZone = (FrameLayout)fIdentity.findViewById(R.id.identityClickZone);
+		clickZone.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				clickIdentity(v);
-			}
+			} 
 		});
 		
 		changeCurrentState();

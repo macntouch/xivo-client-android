@@ -233,6 +233,8 @@ public class XletsContainerTabActivity extends TabActivity {
 	}
 
 	private void menuExit() {
+		Connection.getInstance().disconnect();
+		setResult(Constants.CODE_EXIT);
 		finish();
 	}
 
@@ -266,5 +268,16 @@ public class XletsContainerTabActivity extends TabActivity {
             
         }
 	}
+	
+	@Override
+	protected void onDestroy() {
+		try {
+			unregisterReceiver(receiver);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		super.onDestroy();
+	}
+
 
 }
