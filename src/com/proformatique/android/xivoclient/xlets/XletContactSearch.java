@@ -103,7 +103,7 @@ public class XletContactSearch extends Activity implements XletInterface{
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.xlet_search);
-		initDirectory();
+		initList();
 		
 		receiver = new IncomingReceiver();
 
@@ -116,7 +116,7 @@ public class XletContactSearch extends Activity implements XletInterface{
         registerReceiver(receiver, new IntentFilter(filter));
 	}
 
-	private void initDirectory() {
+	private void initList() {
 		usersList = InitialListLoader.initialListLoader.usersList;
 
 		usersAdapter = new AlternativeAdapter(

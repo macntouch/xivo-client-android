@@ -84,7 +84,7 @@ public class XletDialer extends Activity implements XletInterface{
 	    			phoneNumber.getText().toString());
 			try {
 				Log.d( LOG_TAG, "jCalling: " + jCalling.toString());
-				PrintStream output = new PrintStream(Connection.connection.networkConnection.getOutputStream());
+				PrintStream output = new PrintStream(Connection.getInstance().networkConnection.getOutputStream());
 				output.println(jCalling.toString());
 
 				return Constants.OK; 

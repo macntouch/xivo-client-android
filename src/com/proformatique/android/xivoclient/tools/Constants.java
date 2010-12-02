@@ -12,7 +12,11 @@ public final class Constants {
 	public static final int OK = 1;
 	public static final int CONNECTION_OK = 2;
 	public static final int LOGIN_KO = 0;
-
+	
+	/**
+	 * ActivityForResult requestCodes
+	 */
+	public static final int CODE_IDENTITY_STATE_LIST = 1;
 	
 	/**
 	 * Application constants

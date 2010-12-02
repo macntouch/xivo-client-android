@@ -1,7 +1,5 @@
 package com.proformatique.android.xivoclient;
 
-import com.proformatique.android.xivoclient.tools.Constants;
-
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -13,16 +11,17 @@ import java.util.HashMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.proformatique.android.xivoclient.tools.Constants;
 
 /**
  * Class of Connection and authentication on Xivo CTI server
@@ -44,11 +43,35 @@ public class Connection {
 	String responseLine;
 	String sessionId;
 	JSONObject jCapa;
-	public static Connection connection;
+//	public static Connection connection;
 	public Socket networkConnection;
 	boolean connected = false;
+	private static Connection instance;
+
 	
-	public Connection(String login, String password,
+	public static Connection getInstance(){
+        if (null == instance) {
+            instance = new Connection();
+        }
+		return instance;
+	}
+
+	public static Connection getInstance(String login, String password,
+			Activity callingActivity) {
+        if (null == instance) {
+            instance = new Connection(login, password, callingActivity);
+        } else if (!instance.connected){
+        	instance = new Connection(login, password, callingActivity);
+        }
+        return instance;
+	}
+
+	
+	private Connection() {
+		super();
+	}
+
+	private Connection(String login, String password,
 			Activity callingActivity) {
 		super();
 		this.login = login;
@@ -58,9 +81,6 @@ public class Connection {
 		this.serverAdress = this.settings.getString("server_adress", "");
 		this.serverPort = Integer.parseInt(this.settings.getString("server_port", "5003"));
 		this.saveLogin = this.settings.getBoolean("save_login", true);
-		
-		connection = this;
-
 	}
 
 	/**
@@ -361,14 +381,14 @@ public class Connection {
 	    	EditText ePassword = (EditText) callingActivity.findViewById(R.id.password);
 	    	TextView eLoginV = (TextView) callingActivity.findViewById(R.id.login_text); 
 	    	TextView ePasswordV = (TextView) callingActivity.findViewById(R.id.password_text);
-	    	Button eButton = (Button) callingActivity.findViewById(R.id.b_ok);
+	    	//Button eButton = (Button) callingActivity.findViewById(R.id.b_ok);
 	    	TextView eStatus = (TextView) callingActivity.findViewById(R.id.connect_status); 
 	    	
 	    	eLogin.setVisibility(View.VISIBLE);
 	    	ePassword.setVisibility(View.VISIBLE);
 	    	eLoginV.setVisibility(View.VISIBLE);
 	    	ePasswordV.setVisibility(View.VISIBLE);
-	    	eButton.setVisibility(View.VISIBLE);
+	    	//eButton.setVisibility(View.VISIBLE);
 	    	eStatus.setVisibility(View.INVISIBLE);
 			
 			
@@ -379,5 +399,30 @@ public class Connection {
 		return Constants.OK;
 		
 	}
+
+	public void sendJsonString(JSONObject jObj) {
+		new sendJsonTask().execute(jObj);		
+	}
+	
+	 private class sendJsonTask extends AsyncTask<JSONObject, Integer, Integer> {
+
+			@Override
+			protected Integer doInBackground(JSONObject... params) {
+
+				JSONObject jObj = params[0];
+				try {
+					Log.d( LOG_TAG, "Sending jObj: " + jObj.toString());
+					PrintStream output = new PrintStream(Connection.getInstance().networkConnection.getOutputStream());
+					output.println(jObj.toString());
+
+					return Constants.OK; 
+					
+				} catch (IOException e) {
+					return Constants.NO_NETWORK_AVAILABLE;
+				}
+		    	
+			}
+
+		 }
 	
 }

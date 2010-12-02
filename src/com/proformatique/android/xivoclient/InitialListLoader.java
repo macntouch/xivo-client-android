@@ -35,7 +35,7 @@ public class InitialListLoader {
 	public List<HashMap<String, String>> phonesList = new ArrayList<HashMap<String, String>>();
 	public List<String> xletsList = new ArrayList<String>();
 	public String xivoId = new String();
-	public HashMap<String, String> capaPresenceState  = new HashMap<String, String>();	
+	public HashMap<String, String> capaPresenceState  = new HashMap<String, String>();
 	public List<HashMap<String, String>> statusList = new ArrayList<HashMap<String, String>>();
 	
 	public static InitialListLoader initialListLoader;
@@ -60,13 +60,13 @@ public class InitialListLoader {
 		if (jObj!=null){
 			try {
 				Log.d( LOG_TAG, "Jobj: " + jObj.toString());
-				PrintStream output = new PrintStream(Connection.connection.networkConnection.getOutputStream());
+				PrintStream output = new PrintStream(Connection.getInstance().networkConnection.getOutputStream());
 				output.println(jObj.toString());
 			} catch (IOException e) {
 				return Constants.NO_NETWORK_AVAILABLE;
 			}
 			
-			JSONObject ReadLineObject = Connection.connection.readJsonObjectCTI(inputClass);
+			JSONObject ReadLineObject = Connection.getInstance().readJsonObjectCTI(inputClass);
 			if (ReadLineObject!=null){
 
 				try {
@@ -117,13 +117,13 @@ public class InitialListLoader {
 		if (jObj!=null){
 			try {
 				Log.d( LOG_TAG, "Jobj: " + jObj.toString());
-				PrintStream output = new PrintStream(Connection.connection.networkConnection.getOutputStream());
+				PrintStream output = new PrintStream(Connection.getInstance().networkConnection.getOutputStream());
 				output.println(jObj.toString());
 			} catch (IOException e) {
 				return Constants.NO_NETWORK_AVAILABLE;
 			}
 			
-			JSONObject jObjCurrent = Connection.connection.readJsonObjectCTI("presence");
+			JSONObject jObjCurrent = Connection.getInstance().readJsonObjectCTI("presence");
 			if (jObjCurrent!=null){
 
 				try {

@@ -1,6 +1,7 @@
 package com.proformatique.android.xivoclient;
 
 import java.io.IOException;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +45,7 @@ public class XletsContainerTabActivity extends TabActivity {
 	 */
 	private static List<String> xletsList = new ArrayList<String>();
 	IncomingReceiver receiver;
+	XletIdentity xletIdentity;
 	
 	public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
@@ -70,7 +72,7 @@ public class XletsContainerTabActivity extends TabActivity {
 	     * Get the list of xlets available for connected user
 	     * and delete the suffix starting to "-"
 	     */
-	    ArrayList<String> xletsTmp = decodeJsonObject(Connection.connection.jCapa, "capaxlets");
+	    ArrayList<String> xletsTmp = decodeJsonObject(Connection.getInstance().jCapa, "capaxlets");
 	    
 	    ArrayList<String> xlets = new ArrayList<String>(xletsTmp.size());
 	    for (String x : xletsTmp){
@@ -146,7 +148,7 @@ public class XletsContainerTabActivity extends TabActivity {
 		/**
 		 * Displaying xlet Identity content
 		 */
-		XletIdentity xletId = new XletIdentity(XletsContainerTabActivity.this);
+	    xletIdentity = new XletIdentity(XletsContainerTabActivity.this);
         
 	}
 	
@@ -183,7 +185,7 @@ public class XletsContainerTabActivity extends TabActivity {
 	        if (intent.getAction().equals(Constants.ACTION_DISCONNECT)) {
 	        	Log.d( LOG_TAG , "Received Broadcast ");
 
-	    		Connection.connection.disconnect();
+	    		Connection.getInstance().disconnect();
 	    		XletsContainerTabActivity.this.finish();
 	        	
 	        }
@@ -225,7 +227,7 @@ public class XletsContainerTabActivity extends TabActivity {
 	}
 
 	private void menuDisconnect() {
-		Connection.connection.disconnect();
+		Connection.getInstance().disconnect();
 		unregisterReceiver(receiver);
 		XletsContainerTabActivity.this.finish();
 	}
@@ -242,4 +244,27 @@ public class XletsContainerTabActivity extends TabActivity {
 	public void switchTab(int tab){
 		getTabHost().setCurrentTab(tab);
     }
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+        switch(requestCode){
+        case Constants.CODE_IDENTITY_STATE_LIST:
+            switch (resultCode){
+            case Constants.OK:
+            	Bundle extraData = data.getExtras();
+            	InitialListLoader.initialListLoader.capaPresenceState.remove("stateid");
+            	InitialListLoader.initialListLoader.capaPresenceState.remove("longname");
+            	InitialListLoader.initialListLoader.capaPresenceState.remove("color");
+            	
+            	InitialListLoader.initialListLoader.capaPresenceState.put("stateid", extraData.getString("stateid"));
+            	InitialListLoader.initialListLoader.capaPresenceState.put("longname", extraData.getString("longname"));
+            	InitialListLoader.initialListLoader.capaPresenceState.put("color", extraData.getString("color"));
+            	
+            	xletIdentity.changeCurrentState();
+            }
+            
+        }
+	}
+
 }

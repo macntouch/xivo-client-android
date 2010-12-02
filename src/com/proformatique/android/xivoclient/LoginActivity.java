@@ -30,7 +30,7 @@ public class LoginActivity extends Activity {
 	private SharedPreferences settings;
     private SharedPreferences loginSettings;
 	
-    public void onCreate(Bundle savedInstanceState) {
+	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
         
@@ -53,7 +53,7 @@ public class LoginActivity extends Activity {
         	ePassword.setText(password);
         }
         
-        if (Connection.connection != null) {
+        if (Connection.getInstance().connected) {
         	displayElements(false);
         	Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
 			startActivity(defineIntent);
@@ -66,10 +66,7 @@ public class LoginActivity extends Activity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_settings, menu);
     	MenuItem mi = menu.findItem(R.id.menu_disconnect);
-        if (Connection.connection != null) 
-        	if (Connection.connection.connected) mi.setVisible(true);
-        	else mi.setVisible(false);
-        else mi.setVisible(false);
+        mi.setVisible(true);
 
         return true;
     }
@@ -87,7 +84,7 @@ public class LoginActivity extends Activity {
             menuAbout();
             return true;
         case R.id.menu_disconnect:
-        	Connection.connection.disconnect();
+        	Connection.getInstance().disconnect();
         	displayElements(true);
             return true;
         default:
@@ -117,7 +114,11 @@ public class LoginActivity extends Activity {
     }
 
     public void clickOnButtonOk(View v) {
-    	new ConnectTask().execute();
+    	if (Connection.getInstance().connected) {
+    		Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
+			startActivity(defineIntent);
+    	}
+    	else new ConnectTask().execute();
     }
 
 	private void saveLoginPassword() {
@@ -147,7 +148,7 @@ public class LoginActivity extends Activity {
     	EditText ePassword = (EditText) LoginActivity.this.findViewById(R.id.password);
     	TextView eLoginV = (TextView) LoginActivity.this.findViewById(R.id.login_text); 
     	TextView ePasswordV = (TextView) LoginActivity.this.findViewById(R.id.password_text);
-    	Button eButton = (Button) LoginActivity.this.findViewById(R.id.b_ok);
+    	//Button eButton = (Button) LoginActivity.this.findViewById(R.id.b_ok);
     	TextView eStatus = (TextView) LoginActivity.this.findViewById(R.id.connect_status); 
     	
 		if (display){
@@ -155,7 +156,7 @@ public class LoginActivity extends Activity {
 	    	ePassword.setVisibility(View.VISIBLE);
 	    	eLoginV.setVisibility(View.VISIBLE);
 	    	ePasswordV.setVisibility(View.VISIBLE);
-	    	eButton.setVisibility(View.VISIBLE);
+	    	//eButton.setVisibility(View.VISIBLE);
 	    	eStatus.setVisibility(View.INVISIBLE);
 		}
 		else {
@@ -163,7 +164,7 @@ public class LoginActivity extends Activity {
 	    	ePassword.setVisibility(View.INVISIBLE);
 	    	eLoginV.setVisibility(View.INVISIBLE);
 	    	ePasswordV.setVisibility(View.INVISIBLE);
-	    	eButton.setVisibility(View.INVISIBLE);
+	    	//eButton.setVisibility(View.INVISIBLE);
 	    	eStatus.setVisibility(View.VISIBLE);
 		}
 	}
@@ -196,7 +197,7 @@ public class LoginActivity extends Activity {
 
 		        if (netInfo.getState().compareTo(State.CONNECTED)==0) {
 		    	
-			    	Connection connection = new Connection(eLogin.getText().toString(),
+			    	Connection connection = Connection.getInstance(eLogin.getText().toString(),
 							ePassword.getText().toString(), LoginActivity.this);
 					
 			    	InitialListLoader initList = new InitialListLoader();
@@ -225,7 +226,7 @@ public class LoginActivity extends Activity {
 				}
 				else{
 					
-					if (Connection.connection.saveLogin){
+					if (Connection.getInstance().saveLogin){
 						saveLoginPassword();
 					}
 

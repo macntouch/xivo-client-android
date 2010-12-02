@@ -1,20 +1,28 @@
 package com.proformatique.android.xivoclient.xlets;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import android.app.Activity;
-import android.widget.ArrayAdapter;
-import android.widget.Spinner;
+import android.content.Intent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
+import com.proformatique.android.xivoclient.tools.Constants;
+import com.proformatique.android.xivoclient.tools.GraphicsManager;
 
 public class XletIdentity implements XletInterface{
+	Activity activity = null;
+	FrameLayout fIdentity = null;
 
 	public XletIdentity(Activity activity) {
+		
+		this.activity = activity;
 		
 		TextView userName = (TextView) activity.findViewById(R.id.user_identity);
 		
@@ -27,17 +35,36 @@ public class XletIdentity implements XletInterface{
 				break;
 			}
 		}
-		String[] statusListArray = new String[InitialListLoader.initialListLoader.statusList.size()];
-		int i=0;
-		for (HashMap<String, String> map : InitialListLoader.initialListLoader.statusList) {
-			statusListArray[i]=map.get("longname");
-			i++;
-		}
-/*
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(activity, R.id.statusList, statusListArray);
-		Spinner s = (Spinner) activity.findViewById(R.id.statusList);
-		s.setAdapter(adapter);
-*/
+		
+		/**
+		 * Define Onclick listener
+		 */
+		fIdentity = (FrameLayout)activity.findViewById(R.id.includeIdentity);
+		fIdentity.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				clickIdentity(v);
+			}
+		});
+		
+		changeCurrentState();
+		
 	}
+
+	public void changeCurrentState() {
+		String currentState = InitialListLoader.initialListLoader.capaPresenceState.get("stateid");
+		String currentStateName = InitialListLoader.initialListLoader.capaPresenceState.get("longname");
+		ImageView iconState = (ImageView)fIdentity.findViewById(R.id.identity_current_state_image);
+		TextView textState = (TextView)fIdentity.findViewById(R.id.identity_current_state_longname);
+		
+		iconState.setBackgroundResource(GraphicsManager.getStateIcon(currentState));
+		textState.setText(currentStateName);
+	}
+	
+	protected void clickIdentity(View v) {
+		Intent defineIntent = new Intent(activity, XletIdentityStateList.class);
+		activity.startActivityForResult(defineIntent, Constants.CODE_IDENTITY_STATE_LIST);
+	}
+	
 
 }

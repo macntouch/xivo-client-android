@@ -51,15 +51,6 @@
      android:layout_gravity="right" 
      android:src="@drawable/sym_presence_offline"/>
 
-<!-- 
-<ImageButton android:id="@+id/callingButton" 
-     android:layout_width="50dp" 
-     android:layout_height="50dp"
-     android:layout_marginRight="3dp"
-     android:layout_marginTop="5dp"
-     android:layout_gravity="right"
-     android:src="@drawable/sym_call" android:layout_marginBottom="5dp"/>
-      -->
 <TextView
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"

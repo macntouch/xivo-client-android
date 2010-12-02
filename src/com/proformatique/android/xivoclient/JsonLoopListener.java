@@ -82,7 +82,7 @@ public class JsonLoopListener {
 						
 						try {
 							
-							JSONObject jObjCurrent = Connection.connection.readData();
+							JSONObject jObjCurrent = Connection.getInstance().readData();
 							String classRec = "";
 							String functionRec = "";
 							

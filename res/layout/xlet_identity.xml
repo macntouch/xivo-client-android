@@ -2,7 +2,9 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    android:id="@+id/identityFrame"
+    android:orientation="horizontal"
+    android:clickable="true">
 
 <ImageView android:id="@+id/statusContact"
     android:layout_width="50dp" 
@@ -22,12 +24,24 @@
     android:layout_marginLeft="55dp" 
     android:text="@string/user_identity" >
 </TextView>
-<Spinner android:id="@+id/statusList"
+
+<ImageView android:id="@+id/identity_current_state_image"
+     android:layout_width="50dp" 
+     android:layout_height="50dp"
+     android:layout_marginRight="5dp"
+     android:layout_gravity="right" 
+     android:src="@drawable/sym_presence_offline"/>
+
+<TextView
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:layout_marginRight="12dp"
+    android:layout_marginTop="34dp"
     android:layout_gravity="right"
-    android:layout_marginLeft="5dp" 
-    >
-    </Spinner>
+    android:text="offline"
+    android:id="@+id/identity_current_state_longname"
+    android:textSize="10sp"
+    android:visibility="visible"
+    />
 
 </FrameLayout>

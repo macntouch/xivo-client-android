@@ -39,6 +39,10 @@
                   android:launchMode="singleTask">
         </activity>
 
+        <activity android:name=".xlets.XletIdentityStateList"
+                  android:label="@string/app_name">
+        </activity>
+
         <activity android:name=".xlets.XletDialer"
                   android:label="@string/xlet_dial_label"
                   android:description="@string/xlet_dial_desc"
