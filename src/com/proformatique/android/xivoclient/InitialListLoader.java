@@ -3,6 +3,8 @@ package com.proformatique.android.xivoclient;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -93,6 +95,13 @@ public class InitialListLoader {
 						
 						Log.d( LOG_TAG, "map : " + map.toString());
 					}
+					
+					/**
+					 * Sorting lists
+					 */
+					if (usersList.size()!=0){
+						Collections.sort(usersList, new fullNameComparator());
+					}
 				
 				} catch (JSONException e) {
 					e.printStackTrace();
@@ -103,6 +112,18 @@ public class InitialListLoader {
 
 		return Constants.OK;
 	}
+	
+	class fullNameComparator implements Comparator
+	{
+	    @SuppressWarnings("unchecked")
+		public int compare(Object obj1, Object obj2)
+	    {
+	        HashMap<String, String> update1 = (HashMap<String, String>)obj1;
+	        HashMap<String, String> update2 = (HashMap<String, String>)obj2;
+	        return update1.get("fullname").compareTo(update2.get("fullname"));
+	    }
+	}
+
 
 	/**
 	 * Send a presence status and check it has been enabled by server
