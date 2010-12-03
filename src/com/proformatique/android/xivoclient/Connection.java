@@ -134,7 +134,7 @@ public class Connection {
 		JSONObject jLogin = new JSONObject();
 		try {
 			jLogin.accumulate("class","login_id");
-			jLogin.accumulate("company", Constants.XIVO_CONTEXT);
+			jLogin.accumulate("company", settings.getString("context", Constants.XIVO_CONTEXT));
 			jLogin.accumulate("ident","undef@X11-LE");
 //			jLogin.accumulate("ident","android-"+releaseOS);
 			jLogin.accumulate("userid",login);
@@ -173,14 +173,14 @@ public class Connection {
 					ReadLineObject = readJsonObjectCTI();
 					if (ReadLineObject.getString("class").equals(Constants.XIVO_PASSWORD_OK))
 					{
-						int codeCapas = capasCTI();
+						int codeCapas = sendCapasCTI();
 						if (codeCapas > 0) {
 							ReadLineObject = readJsonObjectCTI();
 							
 							if (ReadLineObject.getString("class").equals(Constants.XIVO_LOGIN_CAPAS_OK)){
 								jCapa = ReadLineObject;
-								Log.d( LOG_TAG, "jCapa length : " + jCapa.length());
 								InitialListLoader.initialListLoader.xivoId = jCapa.getString("xivo_userid");
+								InitialListLoader.initialListLoader.astId = jCapa.getString("astid");
 								
 								JSONObject jCapaPresence = jCapa.getJSONObject("capapresence");
 								JSONObject jCapaPresenceState = jCapaPresence.getJSONObject("state");
@@ -290,7 +290,7 @@ public class Connection {
 		return Constants.CONNECTION_OK;
 	}
 
-	private int capasCTI() throws JSONException {
+	private int sendCapasCTI() throws JSONException {
 		JSONObject jsonCapas = new JSONObject();
 		
 		jsonCapas.accumulate("class", "login_capas");

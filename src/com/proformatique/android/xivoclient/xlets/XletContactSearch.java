@@ -10,6 +10,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -26,6 +31,7 @@ import com.proformatique.android.xivoclient.JsonLoopListener;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XletsContainerTabActivity;
 import com.proformatique.android.xivoclient.tools.Constants;
+import com.proformatique.android.xivoclient.tools.GraphicsManager;
 
 public class XletContactSearch extends Activity implements XletInterface{
 	
@@ -54,27 +60,18 @@ public class XletContactSearch extends Activity implements XletInterface{
 
 		  View view = super.getView(position, convertView, parent);
 		  
-	      TextView text = (TextView) view.findViewById(R.id.stateid);
-	      ImageView icon = (ImageView) view.findViewById(R.id.statusContact);
+		  HashMap<String, String> line = (HashMap<String, String>) lv.getItemAtPosition(position);
+		  String stateId = line.get("stateid");
 		  
-		  if (text.getText().equals("available")){
-			  icon.setBackgroundResource(R.drawable.sym_presence_available);
-		  }
-		  else if (text.getText().equals("berightback")){
-			  icon.setBackgroundResource(R.drawable.sym_presence_idle);
-		  }
-		  else if (text.getText().equals("away")){
-			  icon.setBackgroundResource(R.drawable.sym_presence_idle);
-		  }
-		  else if (text.getText().equals("donotdisturb")){
-			  icon.setBackgroundResource(R.drawable.sym_presence_away);
-		  }
-		  else if (text.getText().equals("outtolunch")){
-			  icon.setBackgroundResource(R.drawable.sym_presence_idle);
-		  }
-		  else {
-			  icon.setBackgroundResource(R.drawable.sym_presence_offline);
-		  }
+	      ImageView icon = (ImageView) view.findViewById(R.id.statusContact);
+	      icon.setBackgroundResource(GraphicsManager.getStateIcon(stateId));
+		  
+	      ImageView iconPhone = (ImageView) view.findViewById(R.id.phoneStatusContact);
+	      String colorString = line.get("hintstatus_color");
+		  if (!colorString.equals(""))
+		      iconPhone.setColorFilter(Color.parseColor(colorString));
+		  else
+		      iconPhone.setColorFilter(Color.DKGRAY);
 
 		  return view;
 		
@@ -123,8 +120,10 @@ public class XletContactSearch extends Activity implements XletInterface{
 				this,
 				usersList,
 				R.layout.xlet_search_items,
-				new String[] { "fullname","phonenum","stateid","stateid_longname" },
-				new int[] { R.id.fullname, R.id.phonenum, R.id.stateid, R.id.longname_state } );
+				new String[] { "fullname","phonenum","stateid","stateid_longname", 
+						"hintstatus_code", "hintstatus_longname", "hintstatus_color" },
+				new int[] { R.id.fullname, R.id.phonenum, R.id.stateid, R.id.longname_state,
+						R.id.phoneStateCode, R.id.phone_longname_state, R.id.phoneStateColor} );
 		
 		lv= (ListView)findViewById(R.id.users_list);
 		lv.setAdapter(usersAdapter);

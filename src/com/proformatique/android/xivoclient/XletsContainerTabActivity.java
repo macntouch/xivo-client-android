@@ -51,12 +51,12 @@ public class XletsContainerTabActivity extends TabActivity {
 	    super.onCreate(savedInstanceState);
 	    setContentView(R.layout.xlets_container);
 
-	    final TabHost tabHost = getTabHost();  // The activity TabHost
+	    final TabHost tabHost = getTabHost();
 	    final TabWidget tabWidget = tabHost.getTabWidget();
 
-	    Resources res = getResources(); // Resource object to get Drawables
-	    TabHost.TabSpec spec;  // Reusable TabSpec for each tab
-	    Intent intent;  // Reusable Intent for each tab
+	    Resources res = getResources();
+	    TabHost.TabSpec spec;
+	    Intent intent;
 	    
 		receiver = new IncomingReceiver();
 
@@ -66,6 +66,8 @@ public class XletsContainerTabActivity extends TabActivity {
 		 */
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.ACTION_DISCONNECT);
+        filter.addAction(Constants.ACTION_LOAD_PHONE_STATUS);
+        
         registerReceiver(receiver, new IntentFilter(filter));
 
 	    /**
@@ -182,20 +184,17 @@ public class XletsContainerTabActivity extends TabActivity {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
+        	Log.d( LOG_TAG , "Received Broadcast ");
 	        if (intent.getAction().equals(Constants.ACTION_DISCONNECT)) {
-	        	Log.d( LOG_TAG , "Received Broadcast ");
-
 	    		Connection.getInstance().disconnect();
 	    		XletsContainerTabActivity.this.finish();
 	        	
-	        }
-			
+	        } else if (intent.getAction().equals(Constants.ACTION_LOAD_PHONE_STATUS))
+	        	xletIdentity.changeCurrentPhone();
 		}
 	}
 
-	
-	
-    public boolean onCreateOptionsMenu(Menu menu) {
+	public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_settings_connected, menu);
         return true;
@@ -255,10 +254,6 @@ public class XletsContainerTabActivity extends TabActivity {
             switch (resultCode){
             case Constants.OK:
             	Bundle extraData = data.getExtras();
-            	InitialListLoader.initialListLoader.capaPresenceState.remove("stateid");
-            	InitialListLoader.initialListLoader.capaPresenceState.remove("longname");
-            	InitialListLoader.initialListLoader.capaPresenceState.remove("color");
-            	
             	InitialListLoader.initialListLoader.capaPresenceState.put("stateid", extraData.getString("stateid"));
             	InitialListLoader.initialListLoader.capaPresenceState.put("longname", extraData.getString("longname"));
             	InitialListLoader.initialListLoader.capaPresenceState.put("color", extraData.getString("color"));

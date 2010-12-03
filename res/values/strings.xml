@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Xivo Client for Android</string>
+    <string name="app_name">Xivo Client</string>
     <string name="login">Login</string>
     <string name="password">Password</string>
     <string name="connected">User connected</string>
@@ -23,6 +23,7 @@
     <string name="mobile_number_used">Use mobile number for calls</string>
     <string name="connection">Connection</string>
     <string name="calling_settings">Calling</string>
+    <string name="context">Context</string>
 
     <!-- Messages strings -->
     <string name="connection_failed">Connection failed !</string>

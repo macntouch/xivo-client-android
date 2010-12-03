@@ -5,6 +5,7 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.FrameLayout;
@@ -49,7 +50,20 @@ public class XletIdentity implements XletInterface{
 		});
 		
 		changeCurrentState();
+		changeCurrentPhone();
 		
+	}
+	
+	public void changeCurrentPhone() {
+		ImageView iconPhone = (ImageView)fIdentity.findViewById(R.id.identityPhoneStatus);
+		TextView textPhone = (TextView)fIdentity.findViewById(R.id.identityPhoneLongnameState);
+		
+		String colorString = InitialListLoader.initialListLoader.capaPresenceState.get("hintstatus_color");
+		if (!colorString.equals(""))
+		      iconPhone.setColorFilter(Color.parseColor(colorString));
+		  else
+		      iconPhone.setColorFilter(Color.DKGRAY);
+		textPhone.setText(InitialListLoader.initialListLoader.capaPresenceState.get("hintstatus_longname"));
 	}
 
 	public void changeCurrentState() {

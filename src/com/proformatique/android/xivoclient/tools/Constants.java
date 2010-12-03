@@ -40,5 +40,6 @@ public final class Constants {
 	public static final String ACTION_XLET_DIAL_CALL = "xivo.intent.action.CALL_XLET_DIAL";
     public static final String ACTION_LOAD_USER_LIST = "xivo.intent.action.LOAD_USER_LIST";
     public static final String ACTION_DISCONNECT = "xivo.intent.action.ACTION_DISCONNECT";
+	public static final String ACTION_LOAD_PHONE_STATUS = "xivo.intent.action.LOAD_PHONE_STATUS";;
 	
 }

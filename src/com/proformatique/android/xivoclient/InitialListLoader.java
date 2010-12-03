@@ -29,14 +29,17 @@ public class InitialListLoader {
 	
 	/**
 	 * Reference available lists
+	 * WARNING : Let the users list before the others. 
+	 * 			 Phones list need users list to be loaded
 	 */
-	String[] lists = new String[] { "users"};//,"history", "phones"};
+	String[] lists = new String[] { "users", "phones"}; //, "history"
 
 	public List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();
 	public List<HashMap<String, String>> historyList = new ArrayList<HashMap<String, String>>();
 	public List<HashMap<String, String>> phonesList = new ArrayList<HashMap<String, String>>();
 	public List<String> xletsList = new ArrayList<String>();
-	public String xivoId = new String();
+	public String xivoId = null;
+	public String astId = null;
 	public HashMap<String, String> capaPresenceState  = new HashMap<String, String>();
 	public List<HashMap<String, String>> statusList = new ArrayList<HashMap<String, String>>();
 	
@@ -72,35 +75,68 @@ public class InitialListLoader {
 			if (ReadLineObject!=null){
 
 				try {
-					JSONArray jArr = ReadLineObject.getJSONArray("payload");
-					int len = jArr.length();
+					
+					if (inputClass.equals("users")){
+						JSONArray jArr = ReadLineObject.getJSONArray("payload");
+						int len = jArr.length();
 
-					for(int i = 0; i < len; i++){
-						HashMap<String, String> map = new HashMap<String, String>();
-						JSONObject jObjCurrent = jArr.getJSONObject(i);
+						for(int i = 0; i < len; i++){
+							HashMap<String, String> map = new HashMap<String, String>();
+							JSONObject jObjCurrent = jArr.getJSONObject(i);
 						
-						/**
-						 * Put here the condition for a new list managed by this class
-						 * And select the useful fields to store in the list
-						 */
-						if (inputClass.equals("users")){
-							
+							/**
+							 * Feed the useful fields to store in the list
+							 */
 							map.put("xivo_userid", jObjCurrent.getString("xivo_userid"));
 							map.put("fullname", jObjCurrent.getString("fullname"));
 							map.put("phonenum", jObjCurrent.getString("phonenum"));
 							map.put("stateid", jObjCurrent.getJSONObject("statedetails").getString("stateid"));
 							map.put("stateid_longname", jObjCurrent.getJSONObject("statedetails").getString("longname"));
+							map.put("techlist", jObjCurrent.getJSONArray("techlist").getString(0));
 							usersList.add(map);
+
+							Log.d( LOG_TAG, "map : " + map.toString());
 						}
-						
-						Log.d( LOG_TAG, "map : " + map.toString());
+						/**
+						 * Sorting list
+						 */
+						if (usersList.size()!=0){
+							Collections.sort(usersList, new fullNameComparator());
+						}
 					}
 					
-					/**
-					 * Sorting lists
-					 */
-					if (usersList.size()!=0){
-						Collections.sort(usersList, new fullNameComparator());
+					if (inputClass.equals("phones")){
+						JSONObject jAllPhones = ReadLineObject.getJSONObject("payload").getJSONObject(astId);
+						/**
+						 * Use users field "techlist" to search objects in phones list
+						 */
+						int i=0;
+						for (HashMap<String, String> mapUser : usersList) {
+							JSONObject jPhone = jAllPhones.getJSONObject(mapUser.get("techlist"));
+							/**
+							 * "Real" phone number is retrieved from phones list
+							 */
+							mapUser.put("phonenum", jPhone.getString("number"));
+							try {
+								JSONObject jPhoneStatus = jPhone.getJSONObject("hintstatus");
+								mapUser.put("hintstatus_color", jPhoneStatus.getString("color"));
+								mapUser.put("hintstatus_code", jPhoneStatus.getString("code"));
+								mapUser.put("hintstatus_longname", jPhoneStatus.getString("longname"));
+							} catch (JSONException e) {
+								Log.d( LOG_TAG, "No Phones status : "+ jPhone.toString());
+								mapUser.put("hintstatus_color", "");
+								mapUser.put("hintstatus_code", "");
+								mapUser.put("hintstatus_longname", "");
+							}
+							if (mapUser.get("xivo_userid").equals(xivoId)){
+								capaPresenceState.put("phonenum", mapUser.get("phonenum"));
+								capaPresenceState.put("hintstatus_color", mapUser.get("hintstatus_color"));
+								capaPresenceState.put("hintstatus_code", mapUser.get("hintstatus_code"));
+								capaPresenceState.put("hintstatus_longname", mapUser.get("hintstatus_longname"));
+							}
+							usersList.set(i, mapUser);
+							i++;
+						}
 					}
 				
 				} catch (JSONException e) {
