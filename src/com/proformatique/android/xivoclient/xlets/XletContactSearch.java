@@ -107,7 +107,7 @@ public class XletContactSearch extends Activity implements XletInterface{
 
 		/**
 		 *  Register a BroadcastReceiver for Intent action that trigger a change
-		 *  in the users list from our Activity
+		 *  in the users list from the Activity
 		 */
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.ACTION_LOAD_USER_LIST);

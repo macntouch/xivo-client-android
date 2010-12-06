@@ -123,12 +123,12 @@ public class LoginActivity extends Activity {
     	}
     	else {
     		
-			/**
-			 * Timeout Connection : 10 seconds
-			 */
 			connectTask = new ConnectTask();
     		connectTask.execute();
 
+			/**
+			 * Timeout Connection : 10 seconds
+			 */
     		new Thread(new Runnable() {
     		    public void run() {
 

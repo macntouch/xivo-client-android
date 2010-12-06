@@ -2,9 +2,13 @@ package com.proformatique.android.xivoclient;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 
@@ -32,7 +36,7 @@ public class InitialListLoader {
 	 * WARNING : Let the users list before the others. 
 	 * 			 Phones list need users list to be loaded
 	 */
-	String[] lists = new String[] { "users", "phones"};//, "history"};
+	String[] lists = new String[] { "users", "phones"};
 
 	public List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();
 	public List<HashMap<String, String>> historyList = new ArrayList<HashMap<String, String>>();
@@ -76,6 +80,9 @@ public class InitialListLoader {
 
 				try {
 					
+					/**
+					 * Loading Users list
+					 */
 					if (inputClass.equals("users")){
 						JSONArray jArr = ReadLineObject.getJSONArray("payload");
 						int len = jArr.length();
@@ -105,6 +112,9 @@ public class InitialListLoader {
 						}
 					}
 					
+					/**
+					 * Loading Phones list
+					 */
 					else if (inputClass.equals("phones")){
 						JSONObject jAllPhones = ReadLineObject.getJSONObject("payload").getJSONObject(astId);
 						/**
@@ -205,6 +215,7 @@ public class InitialListLoader {
 	
 	private JSONObject createJsonInputObject(String inputClass, String function) {
 		JSONObject jObj = new JSONObject();
+		
 		try {
 			jObj.accumulate("direction", Constants.XIVO_SERVER);
 			jObj.accumulate("class",inputClass);

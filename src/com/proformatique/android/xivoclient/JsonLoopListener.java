@@ -1,12 +1,19 @@
 package com.proformatique.android.xivoclient;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.proformatique.android.xivoclient.InitialListLoader.fullNameComparator;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.content.Context;
@@ -80,15 +87,26 @@ public class JsonLoopListener {
        			        i2.setAction(Constants.ACTION_LOAD_PHONE_STATUS);
        			        context.sendBroadcast(i2);
        			        break;
-       				case Constants.NO_NETWORK_AVAILABLE:
+       				case 3:
+       					/**
+       					 * Send  a broadcast intent to all Broadcast Receiver 
+       					 * that listen this action --> inform Activities that the user's status phone
+       					 * is updated
+       					 */
+       					Log.d( LOG_TAG , "Send Broadcast "+msg.what);
        			    	Intent i3 = new Intent();
-       			    	i3.setAction(Constants.ACTION_DISCONNECT);
+       			        i3.setAction(Constants.ACTION_LOAD_HISTORY_LIST);
        			        context.sendBroadcast(i3);
        			        break;
+       				case Constants.NO_NETWORK_AVAILABLE:
+       			    	Intent iNoNetwork = new Intent();
+       			    	iNoNetwork.setAction(Constants.ACTION_DISCONNECT);
+       			        context.sendBroadcast(iNoNetwork);
+       			        break;
        				case Constants.JSON_POPULATE_ERROR:
-       			    	Intent i4 = new Intent();
-       			    	i4.setAction(Constants.ACTION_DISCONNECT);
-       			        context.sendBroadcast(i4);
+       			    	Intent iJsonError = new Intent();
+       			    	iJsonError.setAction(Constants.ACTION_DISCONNECT);
+       			        context.sendBroadcast(iJsonError);
        			        break;
        			}
        		} 
@@ -145,6 +163,38 @@ public class JsonLoopListener {
 								updateUserList(InitialListLoader.initialListLoader.usersList, map, "phone");
 								handler.sendEmptyMessage(1);
 							}
+							
+							/**
+							 * Loading History of calls list
+							 */
+							if (classRec.equals("history")){
+								JSONArray jArr = jObjCurrent.getJSONArray("payload");
+								int len = jArr.length();
+
+								for(int j = 0; j < len; j++){
+									HashMap<String, String> map = new HashMap<String, String>();
+									JSONObject jObjCurrentList = jArr.getJSONObject(j);
+								
+									/**
+									 * Feed the useful fields in a map to store in the list
+									 */
+									map.put("duration", jObjCurrentList.getString("duration"));
+									map.put("termin", jObjCurrentList.getString("termin"));
+									map.put("direction", jObjCurrentList.getString("direction"));
+									map.put("fullname", jObjCurrentList.getString("fullname"));
+									map.put("ts", jObjCurrentList.getString("ts"));
+									InitialListLoader.initialListLoader.historyList.add(map);
+								}
+								
+								/**
+								 * Sorting list
+								 */
+								if (InitialListLoader.initialListLoader.historyList.size()!=0){
+									Collections.sort(InitialListLoader.initialListLoader.historyList, new DateComparator());
+								}
+
+								handler.sendEmptyMessage(3);
+							}
 
            				} catch (NullPointerException e) {
            					cancel = true;
@@ -193,5 +243,27 @@ public class JsonLoopListener {
 	    }
 
 	}
+	
+	class DateComparator implements Comparator
+	{
+	    @SuppressWarnings("unchecked")
+		public int compare(Object obj1, Object obj2)
+	    {
+	    	SimpleDateFormat sd1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	        HashMap<String, String> update1 = (HashMap<String, String>)obj1;
+	        HashMap<String, String> update2 = (HashMap<String, String>)obj2;
+	        Date d1 = null, d2 = null;
+	        try {
+				d1 = sd1.parse(update1.get("ts"));
+				d2 = sd1.parse(update2.get("ts"));
+			} catch (ParseException e) {
+				e.printStackTrace();
+				return 0;
+			}
+	        
+	        return (((d2.getTime()-d1.getTime())>0)?1:-1);
+	    }
+	}
+
 
 }

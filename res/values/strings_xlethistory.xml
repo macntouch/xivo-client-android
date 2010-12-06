@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Xlet History strings -->
+    <string name="history_presentation">List of calls</string>
+</resources>
