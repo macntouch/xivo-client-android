@@ -1,5 +1,9 @@
 package com.proformatique.android.xivoclient;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.app.Activity;
@@ -29,6 +33,8 @@ public class LoginActivity extends Activity {
      */
 	private SharedPreferences settings;
     private SharedPreferences loginSettings;
+    ConnectTask connectTask;
+    ProgressDialog dialog;
 	
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -115,7 +121,30 @@ public class LoginActivity extends Activity {
     		Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
     		startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
     	}
-    	else new ConnectTask().execute();
+    	else {
+    		
+			/**
+			 * Timeout Connection : 10 seconds
+			 */
+			connectTask = new ConnectTask();
+    		connectTask.execute();
+
+    		new Thread(new Runnable() {
+    		    public void run() {
+
+		    		try {
+						connectTask.get(10, TimeUnit.SECONDS);
+					} catch (InterruptedException e) {
+						Connection.getInstance().disconnect();
+					} catch (ExecutionException e) {
+						Connection.getInstance().disconnect();
+					} catch (TimeoutException e) {
+						Connection.getInstance().disconnect();
+					}
+    		    };
+    		}).start();
+
+    	}
     }
 
 	private void saveLoginPassword() {
@@ -171,14 +200,14 @@ public class LoginActivity extends Activity {
 	 * @author cquaquin
 	 */
 	 private class ConnectTask extends AsyncTask<Void, Integer, Integer> {
-		 ProgressDialog dialog;
+		 
 		    @Override
 		    protected void onPreExecute() {
-		        dialog = new ProgressDialog(LoginActivity.this);
-		        dialog.setMessage(getString(R.string.loading));
-		        dialog.setIndeterminate(true);
-		        dialog.setCancelable(false);
-		        dialog.show();
+				dialog = new ProgressDialog(LoginActivity.this);
+	    		dialog.setMessage(getString(R.string.loading));
+	    		dialog.setIndeterminate(true);
+	    		dialog.setCancelable(false);
+			    dialog.show();
 		    }
 
 		    @Override
@@ -194,12 +223,12 @@ public class LoginActivity extends Activity {
 
 		        if (netInfo.getState().compareTo(State.CONNECTED)==0) {
 		    	
-			    	Connection connection = Connection.getInstance(eLogin.getText().toString(),
+		        	Connection connection = Connection.getInstance(eLogin.getText().toString(),
 							ePassword.getText().toString(), LoginActivity.this);
 					
-			    	InitialListLoader initList = new InitialListLoader();
+					InitialListLoader initList = new InitialListLoader();
 					int connectionCode = connection.initialize();
-					
+
 					if (connectionCode >= 1){
 						return initList.startLoading();
 					}
@@ -221,7 +250,7 @@ public class LoginActivity extends Activity {
 					Toast.makeText(LoginActivity.this, R.string.connection_failed
 							, Toast.LENGTH_LONG).show();
 				}
-				else{
+				else if(result > 0){
 					
 					if (Connection.getInstance().saveLogin){
 						saveLoginPassword();

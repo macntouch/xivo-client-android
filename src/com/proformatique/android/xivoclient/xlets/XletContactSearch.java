@@ -15,6 +15,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -69,9 +70,9 @@ public class XletContactSearch extends Activity implements XletInterface{
 	      ImageView iconPhone = (ImageView) view.findViewById(R.id.phoneStatusContact);
 	      String colorString = line.get("hintstatus_color");
 		  if (!colorString.equals(""))
-		      iconPhone.setColorFilter(Color.parseColor(colorString));
+		      iconPhone.setColorFilter(Color.parseColor(colorString), PorterDuff.Mode.SRC_ATOP);
 		  else
-		      iconPhone.setColorFilter(Color.DKGRAY);
+		      iconPhone.setColorFilter(Color.DKGRAY, PorterDuff.Mode.SRC_ATOP);
 
 		  return view;
 		

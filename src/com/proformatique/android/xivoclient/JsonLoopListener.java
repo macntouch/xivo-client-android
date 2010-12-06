@@ -15,6 +15,14 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+/**
+ * This class implements an infinite loop that receives Json events from CTI server.
+ * When an event occurs, it is detected and lists of users, phones, etc are updated,
+ * then a broadcast intent is sent to inform Activities that an update is available
+ *  
+ * @author cquaquin
+ *
+ */
 public class JsonLoopListener {
 	
     
@@ -64,7 +72,8 @@ public class JsonLoopListener {
        				case 2:
        					/**
        					 * Send  a broadcast intent to all Broadcast Receiver 
-       					 * that listen this action --> inform Activities that a list is updated
+       					 * that listen this action --> inform Activities that the user's status phone
+       					 * is updated
        					 */
        					Log.d( LOG_TAG , "Send Broadcast "+msg.what);
        			    	Intent i2 = new Intent();

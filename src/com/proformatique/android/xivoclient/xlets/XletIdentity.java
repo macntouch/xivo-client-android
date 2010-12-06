@@ -16,6 +16,7 @@ import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
+import android.graphics.PorterDuff;
 
 public class XletIdentity implements XletInterface{
 	Activity activity = null;
@@ -60,9 +61,9 @@ public class XletIdentity implements XletInterface{
 		
 		String colorString = InitialListLoader.initialListLoader.capaPresenceState.get("hintstatus_color");
 		if (!colorString.equals(""))
-		      iconPhone.setColorFilter(Color.parseColor(colorString));
+		      iconPhone.setColorFilter(Color.parseColor(colorString), PorterDuff.Mode.SRC_ATOP);
 		  else
-		      iconPhone.setColorFilter(Color.DKGRAY);
+		      iconPhone.setColorFilter(Color.DKGRAY, PorterDuff.Mode.SRC_ATOP);
 		textPhone.setText(InitialListLoader.initialListLoader.capaPresenceState.get("hintstatus_longname"));
 	}
 

@@ -1,19 +1,11 @@
 package com.proformatique.android.xivoclient;
 
-import java.io.IOException;
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.proformatique.android.xivoclient.tools.Constants;
-import com.proformatique.android.xivoclient.xlets.XletContactSearch;
-import com.proformatique.android.xivoclient.xlets.XletDialer;
-import com.proformatique.android.xivoclient.xlets.XletIdentity;
-import com.proformatique.android.xivoclient.xlets.XletContactSearch.IncomingReceiver;
 
 import android.app.TabActivity;
 import android.content.BroadcastReceiver;
@@ -25,16 +17,15 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TabHost;
 import android.widget.TabWidget;
-import android.widget.TextView;
-import android.widget.Toast;
+
+import com.proformatique.android.xivoclient.tools.Constants;
+import com.proformatique.android.xivoclient.xlets.XletIdentity;
 
 public class XletsContainerTabActivity extends TabActivity {
 

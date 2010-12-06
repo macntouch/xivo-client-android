@@ -18,7 +18,7 @@ import com.proformatique.android.xivoclient.tools.Constants;
 
 /**
  * This class is a useful lists provider for all class in the app
- * The lists are all loaded just after connection to CTI server
+ * The lists are all initially loaded just after connection to CTI server
  * 
  * @author cquaquin
  *
@@ -32,7 +32,7 @@ public class InitialListLoader {
 	 * WARNING : Let the users list before the others. 
 	 * 			 Phones list need users list to be loaded
 	 */
-	String[] lists = new String[] { "users", "phones"}; //, "history"
+	String[] lists = new String[] { "users", "phones"};//, "history"};
 
 	public List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();
 	public List<HashMap<String, String>> historyList = new ArrayList<HashMap<String, String>>();
@@ -105,7 +105,7 @@ public class InitialListLoader {
 						}
 					}
 					
-					if (inputClass.equals("phones")){
+					else if (inputClass.equals("phones")){
 						JSONObject jAllPhones = ReadLineObject.getJSONObject("payload").getJSONObject(astId);
 						/**
 						 * Use users field "techlist" to search objects in phones list
