@@ -6,7 +6,7 @@
     android:orientation="horizontal">
 
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="150dp"
+    android:layout_width="120dp"
     android:layout_height="wrap_content"
     android:id="@+id/history_fullname"
     android:padding="1dp"
@@ -16,11 +16,15 @@
     android:singleLine="true"
     android:text="number">
 </TextView>
+<ImageView android:id="@+id/callStatus"
+    android:layout_width="30dp"
+    android:layout_height="30dp"
+    android:layout_gravity="center_vertical" />
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="120dp"
+    android:layout_width="100dp"
     android:layout_height="wrap_content"
     android:id="@+id/history_date"
-    android:padding="3dp"
+    android:padding="1dp"
     android:textSize="14sp"
     android:maxLines="2"
     android:ellipsize="end"
@@ -30,7 +34,7 @@
     android:layout_width="50dp"
     android:layout_height="wrap_content"
     android:id="@+id/history_duration"
-    android:padding="3dp"
+    android:padding="1dp"
     android:textSize="14sp"
     android:maxLines="1"
     android:ellipsize="end"

@@ -31,4 +31,17 @@ public class GraphicsManager {
 		return iconId;
 	}
 
+	public static int getCallIcon(String direction) {
+		int iconId = 0;
+		
+		if (direction.equals("IN")) {
+			iconId = R.drawable.call_received;
+		}
+		else if (direction.equals("OUT")) {
+			iconId = R.drawable.call_sent;
+		}
+		
+		return iconId;
+	}
+
 }

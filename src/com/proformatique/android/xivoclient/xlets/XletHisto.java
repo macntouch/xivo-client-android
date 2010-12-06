@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,8 +19,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
@@ -27,11 +33,12 @@ import com.proformatique.android.xivoclient.Connection;
 import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.tools.Constants;
+import com.proformatique.android.xivoclient.tools.GraphicsManager;
 
 public class XletHisto extends Activity implements XletInterface{
 	private static final String LOG_TAG = "XLET HISTORY";
 	private  List<HashMap<String, String>> xletList = new ArrayList<HashMap<String, String>>();
-	SimpleAdapter xletAdapter = null;
+	AlternativeAdapter xletAdapter = null;
 	ListView lv;
 	IncomingReceiver receiver;
 
@@ -57,15 +64,19 @@ public class XletHisto extends Activity implements XletInterface{
 	}
 
 	private void sendListRefresh() {
-        sendListRefresh("0","10");
-        sendListRefresh("1","10");
-        sendListRefresh("2","10");
+		new Thread(new Runnable() {
+		    public void run() {
+		        sendListRefresh("0","10");
+		        sendListRefresh("1","10");
+		        sendListRefresh("2","10");
+		      }
+		    }).start();
 	}
 
 	private void initList() {
 		xletList = InitialListLoader.initialListLoader.historyList;
 
-		xletAdapter = new SimpleAdapter(
+		xletAdapter = new AlternativeAdapter(
 				this,
 				xletList,
 				R.layout.xlet_history_items,
@@ -112,21 +123,39 @@ public class XletHisto extends Activity implements XletInterface{
 				jObj.accumulate("mode",mode);
 				jObj.accumulate("morerecentthan",sIso.format(c1.getTime()));
 				
-				new Thread(new Runnable() {
-	    		    public void run() {
-
-						try {
-							PrintStream output = new PrintStream(
-									Connection.getInstance().networkConnection.getOutputStream());
-							output.println(jObj.toString());
-							Log.d( LOG_TAG , "Client : "+jObj.toString());
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-	    		    }
-				}).start();
+				PrintStream output = new PrintStream(
+						Connection.getInstance().networkConnection.getOutputStream());
+				output.println(jObj.toString());
+				Log.d( LOG_TAG , "Client : "+jObj.toString());
 			} catch (JSONException e) {
 				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
+	}
+	
+	private class AlternativeAdapter extends SimpleAdapter {
+
+		public AlternativeAdapter(Context context,
+				List<? extends Map<String, ?>> data, int resource, String[] from,
+				int[] to) {
+			super(context, data, resource, from, to);
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+
+		  View view = super.getView(position, convertView, parent);
+		  
+		  HashMap<String, String> line = (HashMap<String, String>) lv.getItemAtPosition(position);
+		  String direction = line.get("direction");
+		  
+	      ImageView icon = (ImageView) view.findViewById(R.id.callStatus);
+	      icon.setBackgroundResource(GraphicsManager.getCallIcon(direction));
+		  
+		  return view;
+		
+		}
 	}
 }
