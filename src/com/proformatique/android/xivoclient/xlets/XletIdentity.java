@@ -59,7 +59,7 @@ public class XletIdentity implements XletInterface{
 		ImageView iconPhone = (ImageView)fIdentity.findViewById(R.id.identityPhoneStatus);
 		TextView textPhone = (TextView)fIdentity.findViewById(R.id.identityPhoneLongnameState);
 		String colorString = InitialListLoader.initialListLoader.capaPresenceState.get("hintstatus_color");
-		GraphicsManager.setIconPhoneDisplay(iconPhone, colorString);
+		GraphicsManager.setIconPhoneDisplay(activity, iconPhone, colorString);
 		textPhone.setText(InitialListLoader.initialListLoader.capaPresenceState.get("hintstatus_longname"));
 	}
 
@@ -69,7 +69,7 @@ public class XletIdentity implements XletInterface{
 		ImageView iconState = (ImageView)fIdentity.findViewById(R.id.identity_current_state_image);
 		TextView textState = (TextView)fIdentity.findViewById(R.id.identity_current_state_longname);
 		
-		GraphicsManager.setIconStateDisplay(iconState, stateIdColor);		
+		GraphicsManager.setIconStateDisplay(activity, iconState, stateIdColor);		
 		textState.setText(currentStateName);
 	}
 	

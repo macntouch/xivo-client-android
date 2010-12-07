@@ -58,7 +58,7 @@ public class XletIdentityStateList extends Activity {
 	      ImageView icon = (ImageView) view.findViewById(R.id.identity_state_image);
 		  String stateIdColor = line.get("color");
 
-		  GraphicsManager.setIconStateDisplay(icon, stateIdColor);
+		  GraphicsManager.setIconStateDisplay(XletIdentityStateList.this, icon, stateIdColor);
 		  return view;
 		
 		}

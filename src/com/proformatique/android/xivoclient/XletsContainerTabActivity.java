@@ -98,11 +98,6 @@ public class XletsContainerTabActivity extends TabActivity {
 			try {
 				label = getString(aInfo.labelRes);
 
-	            int currentapiVersion = android.os.Build.VERSION.SDK_INT;
-
-	            if (currentapiVersion >= android.os.Build.VERSION_CODES.FROYO) 
-	                desc = getString(aInfo.descriptionRes);
-	            else
 	                desc = getString(R.string.class.getField("xlet_"+label+"_desc")
 	                		.getInt(null));
 				

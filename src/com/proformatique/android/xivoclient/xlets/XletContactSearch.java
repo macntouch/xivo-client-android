@@ -1,21 +1,29 @@
 package com.proformatique.android.xivoclient.xlets;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.xmlpull.v1.XmlPullParserException;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.Paint;
+import android.graphics.Picture;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -62,14 +70,15 @@ public class XletContactSearch extends Activity implements XletInterface{
 		  View view = super.getView(position, convertView, parent);
 		  
 		  HashMap<String, String> line = (HashMap<String, String>) lv.getItemAtPosition(position);
+
 		  String stateIdColor = line.get("stateid_color");
+		  ImageView iconState = (ImageView) view.findViewById(R.id.statusContact);
 		  
-	      ImageView iconState = (ImageView) view.findViewById(R.id.statusContact);
-		  GraphicsManager.setIconStateDisplay(iconState, stateIdColor);
+		  GraphicsManager.setIconStateDisplay(XletContactSearch.this, iconState, stateIdColor);
 		  
-	      ImageView iconPhone = (ImageView) view.findViewById(R.id.phoneStatusContact);
 	      String colorString = line.get("hintstatus_color");
-	      GraphicsManager.setIconPhoneDisplay(iconPhone, colorString);
+	      ImageView iconPhone = (ImageView) view.findViewById(R.id.phoneStatusContact);
+	      GraphicsManager.setIconPhoneDisplay(XletContactSearch.this, iconPhone, colorString);
 	      
 		  return view;
 		
