@@ -100,7 +100,14 @@ public class XletHisto extends Activity implements XletInterface{
 		public void onReceive(Context context, Intent intent) {
 	        if (intent.getAction().equals(Constants.ACTION_LOAD_HISTORY_LIST)) {
 	        	Log.d( LOG_TAG , "Received Broadcast "+Constants.ACTION_LOAD_HISTORY_LIST);
-	        	if (xletAdapter != null) xletAdapter.notifyDataSetChanged();
+	        	if (xletAdapter != null) 
+	        		runOnUiThread(new Runnable() {
+						
+						@Override
+						public void run() {
+							xletAdapter.notifyDataSetChanged();
+						}
+					});
 	        }
 		}
 	}
