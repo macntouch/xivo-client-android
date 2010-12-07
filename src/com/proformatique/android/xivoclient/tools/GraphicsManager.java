@@ -34,7 +34,6 @@ public class GraphicsManager {
 			  iconId = R.drawable.sym_presence_offline;
 		  }
 
-		
 		return iconId;
 	}
 
