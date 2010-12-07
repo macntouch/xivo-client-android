@@ -21,7 +21,7 @@
      android:layout_height="50dp"
      android:layout_marginRight="5dp"
      android:layout_gravity="right" 
-     android:src="@drawable/sym_presence_offline"/>
+     android:src="@drawable/sym_presence_wht"/>
 
 <TextView
     android:layout_width="wrap_content"

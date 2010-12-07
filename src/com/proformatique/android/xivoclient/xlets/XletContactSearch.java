@@ -62,18 +62,15 @@ public class XletContactSearch extends Activity implements XletInterface{
 		  View view = super.getView(position, convertView, parent);
 		  
 		  HashMap<String, String> line = (HashMap<String, String>) lv.getItemAtPosition(position);
-		  String stateId = line.get("stateid");
+		  String stateIdColor = line.get("stateid_color");
 		  
-	      ImageView icon = (ImageView) view.findViewById(R.id.statusContact);
-	      icon.setBackgroundResource(GraphicsManager.getStateIcon(stateId));
+	      ImageView iconState = (ImageView) view.findViewById(R.id.statusContact);
+		  GraphicsManager.setIconStateDisplay(iconState, stateIdColor);
 		  
 	      ImageView iconPhone = (ImageView) view.findViewById(R.id.phoneStatusContact);
 	      String colorString = line.get("hintstatus_color");
-		  if (!colorString.equals(""))
-		      iconPhone.setColorFilter(Color.parseColor(colorString), PorterDuff.Mode.SRC_ATOP);
-		  else
-		      iconPhone.setColorFilter(Color.DKGRAY, PorterDuff.Mode.SRC_ATOP);
-
+	      GraphicsManager.setIconPhoneDisplay(iconPhone, colorString);
+	      
 		  return view;
 		
 		}
@@ -121,9 +118,9 @@ public class XletContactSearch extends Activity implements XletInterface{
 				this,
 				usersList,
 				R.layout.xlet_search_items,
-				new String[] { "fullname","phonenum","stateid","stateid_longname", 
+				new String[] { "fullname","phonenum","stateid","stateid_longname", "stateid_color",
 						"hintstatus_code", "hintstatus_longname", "hintstatus_color" },
-				new int[] { R.id.fullname, R.id.phonenum, R.id.stateid, R.id.longname_state,
+				new int[] { R.id.fullname, R.id.phonenum, R.id.stateid, R.id.longname_state, 0,
 						R.id.phoneStateCode, R.id.phone_longname_state, R.id.phoneStateColor} );
 		
 		lv= (ListView)findViewById(R.id.users_list);

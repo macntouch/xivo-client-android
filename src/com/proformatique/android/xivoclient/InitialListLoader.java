@@ -90,6 +90,7 @@ public class InitialListLoader {
 						for(int i = 0; i < len; i++){
 							HashMap<String, String> map = new HashMap<String, String>();
 							JSONObject jObjCurrent = jArr.getJSONObject(i);
+							JSONObject jObjCurrentState = jObjCurrent.getJSONObject("statedetails");
 						
 							/**
 							 * Feed the useful fields to store in the list
@@ -97,8 +98,9 @@ public class InitialListLoader {
 							map.put("xivo_userid", jObjCurrent.getString("xivo_userid"));
 							map.put("fullname", jObjCurrent.getString("fullname"));
 							map.put("phonenum", jObjCurrent.getString("phonenum"));
-							map.put("stateid", jObjCurrent.getJSONObject("statedetails").getString("stateid"));
-							map.put("stateid_longname", jObjCurrent.getJSONObject("statedetails").getString("longname"));
+							map.put("stateid", jObjCurrentState.getString("stateid"));
+							map.put("stateid_longname", jObjCurrentState.getString("longname"));
+							map.put("stateid_color", jObjCurrentState.getString("color"));
 							map.put("techlist", jObjCurrent.getJSONArray("techlist").getString(0));
 							usersList.add(map);
 

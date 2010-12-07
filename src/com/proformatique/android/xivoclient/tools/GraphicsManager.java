@@ -1,5 +1,9 @@
 package com.proformatique.android.xivoclient.tools;
 
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.widget.ImageView;
+
 import com.proformatique.android.xivoclient.R;
 
 public class GraphicsManager {
@@ -42,6 +46,23 @@ public class GraphicsManager {
 		}
 		
 		return iconId;
+	}
+
+	public static void setIconStateDisplay(ImageView icon, String color) {
+		  if (!color.equals(""))
+			  icon.setColorFilter(Color.parseColor(color), PorterDuff.Mode.SRC_ATOP);
+		  else
+			  icon.setColorFilter(Color.TRANSPARENT, PorterDuff.Mode.SRC_ATOP);
+		
+	}
+
+	public static void setIconPhoneDisplay(ImageView icon,
+			String color) {
+		if (!color.equals(""))
+			icon.setColorFilter(Color.parseColor(color), PorterDuff.Mode.SRC_ATOP);
+		  else
+			  icon.setColorFilter(Color.DKGRAY, PorterDuff.Mode.SRC_ATOP);
+		
 	}
 
 }

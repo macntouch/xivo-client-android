@@ -133,11 +133,12 @@ public class JsonLoopListener {
 
 							if (classRec.equals("presence")) {
 								HashMap<String, String> map = new HashMap<String, String>();
+								JSONObject jObjCurrentState = jObjCurrent.getJSONObject("capapresence").getJSONObject("state");
 
 								map.put("xivo_userid", jObjCurrent.getString("xivo_userid"));
-								map.put("stateid", jObjCurrent.getJSONObject("capapresence").getJSONObject("state").getString("stateid"));
-								map.put("stateid_longname", jObjCurrent.getJSONObject("capapresence").
-										getJSONObject("state").getString("longname"));
+								map.put("stateid", jObjCurrentState.getString("stateid"));
+								map.put("stateid_longname", jObjCurrentState.getString("longname"));
+								map.put("stateid_color", jObjCurrentState.getString("color"));
 								
 								updateUserList(InitialListLoader.initialListLoader.usersList, map, "presence");
 
@@ -221,6 +222,8 @@ public class JsonLoopListener {
 	    		if (typeMaj.equals("presence")){
 		    		usersMap.put("stateid", map.get("stateid"));
 		    		usersMap.put("stateid_longname", map.get("stateid_longname"));
+		    		usersMap.put("stateid_color", map.get("stateid_color"));
+		    		
 		    		usersList.set(i, usersMap);
 		    		break;
 	    		}

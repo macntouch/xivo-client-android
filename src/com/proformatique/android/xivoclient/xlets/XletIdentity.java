@@ -58,22 +58,18 @@ public class XletIdentity implements XletInterface{
 	public void changeCurrentPhone() {
 		ImageView iconPhone = (ImageView)fIdentity.findViewById(R.id.identityPhoneStatus);
 		TextView textPhone = (TextView)fIdentity.findViewById(R.id.identityPhoneLongnameState);
-		
 		String colorString = InitialListLoader.initialListLoader.capaPresenceState.get("hintstatus_color");
-		if (!colorString.equals(""))
-		      iconPhone.setColorFilter(Color.parseColor(colorString), PorterDuff.Mode.SRC_ATOP);
-		  else
-		      iconPhone.setColorFilter(Color.DKGRAY, PorterDuff.Mode.SRC_ATOP);
+		GraphicsManager.setIconPhoneDisplay(iconPhone, colorString);
 		textPhone.setText(InitialListLoader.initialListLoader.capaPresenceState.get("hintstatus_longname"));
 	}
 
 	public void changeCurrentState() {
-		String currentState = InitialListLoader.initialListLoader.capaPresenceState.get("stateid");
 		String currentStateName = InitialListLoader.initialListLoader.capaPresenceState.get("longname");
+		String stateIdColor = InitialListLoader.initialListLoader.capaPresenceState.get("color");
 		ImageView iconState = (ImageView)fIdentity.findViewById(R.id.identity_current_state_image);
 		TextView textState = (TextView)fIdentity.findViewById(R.id.identity_current_state_longname);
 		
-		iconState.setBackgroundResource(GraphicsManager.getStateIcon(currentState));
+		GraphicsManager.setIconStateDisplay(iconState, stateIdColor);		
 		textState.setText(currentStateName);
 	}
 	
