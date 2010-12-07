@@ -43,12 +43,10 @@ public class Connection {
 	String responseLine;
 	String sessionId;
 	JSONObject jCapa;
-//	public static Connection connection;
 	public Socket networkConnection;
 	boolean connected = false;
 	private static Connection instance;
 
-	
 	public static Connection getInstance(){
         if (null == instance) {
             instance = new Connection();

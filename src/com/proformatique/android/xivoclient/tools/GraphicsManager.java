@@ -2,11 +2,14 @@ package com.proformatique.android.xivoclient.tools;
 
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.proformatique.android.xivoclient.R;
 
 public class GraphicsManager {
+	
+	private static final String LOG_TAG = "GRAPHICS_MANAGER";
 	
 	public static int getStateIcon(String stateId){
 
@@ -49,6 +52,7 @@ public class GraphicsManager {
 	}
 
 	public static void setIconStateDisplay(ImageView icon, String color) {
+		  Log.d( LOG_TAG, "Color State Presence : "+ color);
 		  if (!color.equals(""))
 			  icon.setColorFilter(Color.parseColor(color), PorterDuff.Mode.SRC_ATOP);
 		  else
@@ -58,6 +62,7 @@ public class GraphicsManager {
 
 	public static void setIconPhoneDisplay(ImageView icon,
 			String color) {
+		Log.d( LOG_TAG, "Color Phone Presence : "+ color);
 		if (!color.equals(""))
 			icon.setColorFilter(Color.parseColor(color), PorterDuff.Mode.SRC_ATOP);
 		  else
