@@ -51,7 +51,11 @@ public class GraphicsManager {
 	}
 
 	public static void setIconStateDisplay(ImageView icon, String color) {
-		  Log.d( LOG_TAG, "Color State Presence : "+ color);
+		Log.d( LOG_TAG, "Color State Presence : "+ color);
+		  /**
+		   * Conversion of bad color strings
+		   */
+		  color = color.replaceFirst("grey", "gray");
 		  if (!color.equals(""))
 			  icon.setColorFilter(Color.parseColor(color), PorterDuff.Mode.SRC_ATOP);
 		  else
@@ -59,13 +63,16 @@ public class GraphicsManager {
 		
 	}
 
-	public static void setIconPhoneDisplay(ImageView icon,
-			String color) {
-		Log.d( LOG_TAG, "Color Phone Presence : "+ color);
+	public static void setIconPhoneDisplay(ImageView icon, String color) {
+		Log.d( LOG_TAG, "Color Phone : "+ color);
+		  /**
+		   * Conversion of bad color strings
+		   */
+		color = color.replaceFirst("grey", "gray");
 		if (!color.equals(""))
 			icon.setColorFilter(Color.parseColor(color), PorterDuff.Mode.SRC_ATOP);
 		  else
-			  icon.setColorFilter(Color.DKGRAY, PorterDuff.Mode.SRC_ATOP);
+			  icon.setColorFilter(Color.TRANSPARENT, PorterDuff.Mode.SRC_ATOP);
 		
 	}
 
