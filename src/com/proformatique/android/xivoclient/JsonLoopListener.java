@@ -2,11 +2,8 @@ package com.proformatique.android.xivoclient;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -16,13 +13,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.proformatique.android.xivoclient.tools.Constants;
-
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+
+import com.proformatique.android.xivoclient.tools.Constants;
 
 /**
  * This class implements an infinite loop that receives Json events from CTI server.
@@ -184,8 +181,7 @@ public class JsonLoopListener {
        	};
 
         thread = new Thread() {
-        	@SuppressWarnings("unchecked")
-			public void run() {
+        	public void run() {
            		int i = 0;
 					while(i < 1) {
 						
