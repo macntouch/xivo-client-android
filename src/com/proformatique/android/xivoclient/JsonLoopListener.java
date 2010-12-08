@@ -1,11 +1,14 @@
 package com.proformatique.android.xivoclient;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 
@@ -54,6 +57,67 @@ public class JsonLoopListener {
 	private JsonLoopListener(Context context) {
 		this.context = context;
 		startJsonListener();
+		sendListRefresh();
+	}
+	
+	private void sendListRefresh() {
+		new Thread(new Runnable() {
+		    public void run() {
+		    	sendFeaturesListRefresh();
+		        sendListHistoRefresh("0","10");
+		        sendListHistoRefresh("1","10");
+		        sendListHistoRefresh("2","10");
+		      }
+		    }).start();
+	}
+	
+	private void sendFeaturesListRefresh(){
+		JSONObject jObj = new JSONObject();
+		
+		try {
+			jObj.accumulate("direction", Constants.XIVO_SERVER);
+			jObj.accumulate("class","featuresget");
+			jObj.accumulate("userid", InitialListLoader.initialListLoader.astId+"/"+
+					InitialListLoader.initialListLoader.xivoId);
+			
+			PrintStream output = new PrintStream(
+					Connection.getInstance().networkConnection.getOutputStream());
+			output.println(jObj.toString());
+			Log.d( LOG_TAG , "Client : "+jObj.toString());
+		} catch (JSONException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void sendListHistoRefresh(String mode, String elementsNumber){
+		JSONObject jObj = new JSONObject();
+		
+		try {
+			SimpleDateFormat sIso = new SimpleDateFormat("yyyy-MM-dd");
+			Date dDay = new Date();
+			Calendar c1 = new GregorianCalendar();
+			c1.setTime(dDay);
+			c1.add(Calendar.DAY_OF_MONTH, -30);
+			
+			jObj.accumulate("direction", Constants.XIVO_SERVER);
+			jObj.accumulate("class","history");
+			jObj.accumulate("peer", InitialListLoader.initialListLoader.astId+"/"+
+					InitialListLoader.initialListLoader.xivoId);
+			jObj.accumulate("size",elementsNumber);
+			jObj.accumulate("mode",mode);
+			jObj.accumulate("morerecentthan",sIso.format(c1.getTime()));
+			
+			PrintStream output = new PrintStream(
+					Connection.getInstance().networkConnection.getOutputStream());
+			output.println(jObj.toString());
+			Log.d( LOG_TAG , "Client : "+jObj.toString());
+		} catch (JSONException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**

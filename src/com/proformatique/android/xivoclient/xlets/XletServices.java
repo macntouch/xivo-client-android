@@ -32,6 +32,7 @@ public class XletServices extends Activity implements XletInterface{
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.xlet_services);
+		refreshFeatures();
 
 		receiver = new IncomingReceiver();
 
@@ -42,9 +43,6 @@ public class XletServices extends Activity implements XletInterface{
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.ACTION_LOAD_FEATURES);
         registerReceiver(receiver, new IntentFilter(filter));
-
-		
-		sendListRefresh();
 	}
 	
 	public void clickOnCallrecord(View v){
@@ -171,27 +169,6 @@ public class XletServices extends Activity implements XletInterface{
 
 	 }
 	 
-		private void sendListRefresh(){
-			JSONObject jObj = new JSONObject();
-			
-			try {
-				jObj.accumulate("direction", Constants.XIVO_SERVER);
-				jObj.accumulate("class","featuresget");
-				jObj.accumulate("userid", InitialListLoader.initialListLoader.astId+"/"+
-						InitialListLoader.initialListLoader.xivoId);
-				
-				PrintStream output = new PrintStream(
-						Connection.getInstance().networkConnection.getOutputStream());
-				output.println(jObj.toString());
-				Log.d( LOG_TAG , "Client : "+jObj.toString());
-			} catch (JSONException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-
 		/**
 		 * BroadcastReceiver, intercept Intents with action ACTION_LOAD_HISTORY_LIST
 		 * to perform an reload of the displayed list

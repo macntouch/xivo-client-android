@@ -58,20 +58,8 @@ public class XletHisto extends Activity implements XletInterface{
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.ACTION_LOAD_HISTORY_LIST);
         registerReceiver(receiver, new IntentFilter(filter));
-        
-        sendListRefresh();
-
 	}
 
-	private void sendListRefresh() {
-		new Thread(new Runnable() {
-		    public void run() {
-		        sendListRefresh("0","10");
-		        sendListRefresh("1","10");
-		        sendListRefresh("2","10");
-		      }
-		    }).start();
-	}
 
 	private void initList() {
 		xletList = InitialListLoader.initialListLoader.historyList;
@@ -109,35 +97,6 @@ public class XletHisto extends Activity implements XletInterface{
 						}
 					});
 	        }
-		}
-	}
-	
-	private void sendListRefresh(String mode, String elementsNumber){
-		JSONObject jObj = new JSONObject();
-		
-		try {
-			SimpleDateFormat sIso = new SimpleDateFormat("yyyy-MM-dd");
-			Date dDay = new Date();
-			Calendar c1 = new GregorianCalendar();
-			c1.setTime(dDay);
-			c1.add(Calendar.DAY_OF_MONTH, -30);
-			
-			jObj.accumulate("direction", Constants.XIVO_SERVER);
-			jObj.accumulate("class","history");
-			jObj.accumulate("peer", InitialListLoader.initialListLoader.astId+"/"+
-					InitialListLoader.initialListLoader.xivoId);
-			jObj.accumulate("size",elementsNumber);
-			jObj.accumulate("mode",mode);
-			jObj.accumulate("morerecentthan",sIso.format(c1.getTime()));
-			
-			PrintStream output = new PrintStream(
-					Connection.getInstance().networkConnection.getOutputStream());
-			output.println(jObj.toString());
-			Log.d( LOG_TAG , "Client : "+jObj.toString());
-		} catch (JSONException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 	}
 	
