@@ -2,20 +2,10 @@ package com.proformatique.android.xivoclient.xlets;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.proformatique.android.xivoclient.Connection;
-import com.proformatique.android.xivoclient.InitialListLoader;
-import com.proformatique.android.xivoclient.R;
-import com.proformatique.android.xivoclient.SettingsActivity;
-import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -23,10 +13,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
+
+import com.proformatique.android.xivoclient.Connection;
+import com.proformatique.android.xivoclient.InitialListLoader;
+import com.proformatique.android.xivoclient.R;
+import com.proformatique.android.xivoclient.tools.Constants;
 
 public class XletServices extends Activity implements XletInterface{
 
@@ -53,6 +47,36 @@ public class XletServices extends Activity implements XletInterface{
 		sendListRefresh();
 	}
 	
+	public void clickOnCallrecord(View v){
+		CheckBox checkbox = (CheckBox)v;
+		if (checkbox.isChecked()){
+			sendFeaturePut("callrecord", "1", null);
+		}
+		else {
+			sendFeaturePut("callrecord", "0", null);
+		}
+	}
+	
+	public void clickOnIncallfilter(View v){
+		CheckBox checkbox = (CheckBox)v;
+		if (checkbox.isChecked()){
+			sendFeaturePut("incallfilter", "1", null);
+		}
+		else {
+			sendFeaturePut("incallfilter", "0", null);
+		}
+	}
+
+	public void clickOnEnablednd(View v){
+		CheckBox checkbox = (CheckBox)v;
+		if (checkbox.isChecked()){
+			sendFeaturePut("enablednd", "1", null);
+		}
+		else {
+			sendFeaturePut("enablednd", "0", null);
+		}
+	}
+
 	public void clickOnFwdrna(View v){
 		CheckBox checkbox = (CheckBox)v;
 		if (checkbox.isChecked()){
@@ -63,6 +87,8 @@ public class XletServices extends Activity implements XletInterface{
 		}
 		else {
 			checkbox.setText(R.string.servicesFwdrna);
+			sendFeaturePut("enablerna", "0", 
+					InitialListLoader.initialListLoader.featuresRna.get("number"));
 		}
 	}
 	
@@ -76,6 +102,9 @@ public class XletServices extends Activity implements XletInterface{
 		}
 		else {
 			checkbox.setText(R.string.servicesFwdbusy);
+			sendFeaturePut("enablebusy", "0", 
+					InitialListLoader.initialListLoader.featuresBusy.get("number"));
+
 		}
 		
 	}
@@ -90,6 +119,8 @@ public class XletServices extends Activity implements XletInterface{
 		}
 		else {
 			checkbox.setText(R.string.servicesFwdunc);
+			sendFeaturePut("enableunc", "0", 
+					InitialListLoader.initialListLoader.featuresUnc.get("number"));
 		}
 	}
 	
@@ -104,19 +135,25 @@ public class XletServices extends Activity implements XletInterface{
 		 if (requestCode == Constants.CODE_SERVICE_ASK1) {
 			 checkbox = (CheckBox) findViewById(R.id.fwdrna);
 			 textDisplay = getString(R.string.servicesFwdrna);
-			 setCheckboxDisplay(requestCode, checkbox, phoneNumber, textDisplay);
+			 setCheckboxDisplay(resultCode, checkbox, phoneNumber, textDisplay);
+			 if (resultCode  == Constants.OK)
+				 sendFeaturePut("enablerna", "1", phoneNumber);
 		 }
 
 		 else if (requestCode == Constants.CODE_SERVICE_ASK2) {
 			 checkbox = (CheckBox) findViewById(R.id.fwdbusy);
 			 textDisplay = getString(R.string.servicesFwdbusy);
-			 setCheckboxDisplay(requestCode, checkbox, phoneNumber, textDisplay);
+			 setCheckboxDisplay(resultCode, checkbox, phoneNumber, textDisplay);
+			 if (resultCode  == Constants.OK)
+				 sendFeaturePut("enablebusy", "1", phoneNumber);
 		 }
 
 		 if (requestCode == Constants.CODE_SERVICE_ASK3) {
 			 checkbox = (CheckBox) findViewById(R.id.fwdunc);
 			 textDisplay = getString(R.string.servicesFwdunc);
-			 setCheckboxDisplay(requestCode, checkbox, phoneNumber, textDisplay);
+			 setCheckboxDisplay(resultCode, checkbox, phoneNumber, textDisplay);
+			 if (resultCode  == Constants.OK)
+				 sendFeaturePut("enableunc", "1", phoneNumber);
 		 }
 
 	 }
@@ -225,7 +262,30 @@ public class XletServices extends Activity implements XletInterface{
 				if (featureMap.get("enabled").equals("true")) checkbox.setChecked(true);
 				else checkbox.setChecked(false);
 			}
-}
+		}
+
+		private JSONObject createJsonFeaturePut(String feature, String value, String phone) {
+			JSONObject jObj = new JSONObject();
+			try {
+				jObj.accumulate("direction", Constants.XIVO_SERVER);
+				jObj.accumulate("class", "featuresput");
+				jObj.accumulate("userid", InitialListLoader.initialListLoader.astId+"/"+
+						InitialListLoader.initialListLoader.xivoId);
+				jObj.accumulate("function", feature);
+				jObj.accumulate("value", value);
+				if (phone != null) jObj.accumulate("destination", phone);
+				
+				return jObj;
+			} catch (JSONException e) {
+				return null;
+			}
+			
+		}
+
+		private void sendFeaturePut(String feature, String value, String phone){
+			JSONObject jObj = createJsonFeaturePut(feature, value, phone);
+			Connection.getInstance().sendJsonString(jObj);
+		}
 
 
 }

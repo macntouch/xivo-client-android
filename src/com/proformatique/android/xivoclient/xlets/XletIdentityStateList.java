@@ -100,7 +100,7 @@ public class XletIdentityStateList extends Activity {
 	}
 
 	/**
-	 * Perform a call via Dial Activity
+	 * Perform a state change
 	 * 
 	 * @param v
 	 */

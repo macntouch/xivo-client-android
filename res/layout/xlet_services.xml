@@ -18,6 +18,7 @@
   android:layout_width="wrap_content"
   android:layout_height="wrap_content"
   android:paddingLeft="50dp"
+  android:onClick="clickOnCallrecord"
   />
   <CheckBox android:id="@+id/incallfilter"
   android:checked="false"
@@ -25,13 +26,16 @@
   android:layout_width="wrap_content"
   android:layout_height="wrap_content" 
   android:paddingLeft="50dp"
+  android:onClick="clickOnIncallfilter"
   />
   <CheckBox android:id="@+id/enablednd"
   android:checked="false"
   android:text="@string/servicesEnabledndText"
   android:layout_width="wrap_content"
   android:layout_height="wrap_content"
-  android:paddingLeft="50dp"/>
+  android:paddingLeft="50dp"
+  android:onClick="clickOnEnablednd"
+  />
   
 
   <!-- List Divider -->

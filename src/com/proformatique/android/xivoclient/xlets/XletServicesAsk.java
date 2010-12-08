@@ -1,5 +1,6 @@
 package com.proformatique.android.xivoclient.xlets;
 
+import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.tools.Constants;
 
@@ -12,6 +13,7 @@ import android.widget.EditText;
 public class XletServicesAsk extends Activity implements XletInterface{
 
 	private String serviceType;
+	private EditText phoneView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -21,6 +23,17 @@ public class XletServicesAsk extends Activity implements XletInterface{
 		Intent intent = getIntent();
 		serviceType = intent.getExtras().getString("serviceType");
 		setTitle(R.string.ServicesFwdTitle);
+		
+		phoneView = (EditText)findViewById(R.id.servicesAskPhone);
+		String phone = "";
+		if (serviceType.equals("fwdrna")) 
+			phone = InitialListLoader.initialListLoader.featuresRna.get("number");
+		else if (serviceType.equals("fwdbusy")) 
+			phone = InitialListLoader.initialListLoader.featuresBusy.get("number");
+		if (serviceType.equals("fwdunc")) 
+			phone = InitialListLoader.initialListLoader.featuresUnc.get("number");
+
+		phoneView.setText(phone);
 	}
 	
 	public void clickOnCancel(View v){
@@ -32,7 +45,6 @@ public class XletServicesAsk extends Activity implements XletInterface{
 	}
 
 	public void clickOnOk(View v){
-		EditText phoneView = (EditText)findViewById(R.id.servicesAskPhone);
 		
 		Intent intentOk = new Intent();
 		intentOk.putExtra("phoneNumber", phoneView.getText().toString());

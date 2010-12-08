@@ -213,7 +213,7 @@ public class JsonLoopListener {
 							 */
 							if (classRec.equals("features")){
 								JSONObject jObj = jObjCurrent.getJSONObject("payload");
-								JSONObject jObjFeature;
+								JSONObject jObjFeature = null;
 								String feature = "";
 								
 								feature = "enablednd";
@@ -223,26 +223,6 @@ public class JsonLoopListener {
 									map.put("enabled", jObjFeature.getString("enabled"));
 									
 									InitialListLoader.initialListLoader.featuresEnablednd = map;
-								}
-								
-								feature = "busy";
-								if (jObj.has(feature)){
-									HashMap<String, String> map = new HashMap<String, String>(); 
-									jObjFeature = jObj.getJSONObject(feature);
-									map.put("enabled", jObjFeature.getString("enabled"));
-									map.put("number", jObjFeature.getString("number"));
-									
-									InitialListLoader.initialListLoader.featuresBusy = map;
-								}
-
-								feature = "rna";
-								if (jObj.has(feature)){
-									HashMap<String, String> map = new HashMap<String, String>(); 
-									jObjFeature = jObj.getJSONObject(feature);
-									map.put("enabled", jObjFeature.getString("enabled"));
-									map.put("number", jObjFeature.getString("number"));
-									
-									InitialListLoader.initialListLoader.featuresRna = map;
 								}
 
 								feature = "callrecord";
@@ -263,16 +243,6 @@ public class JsonLoopListener {
 									InitialListLoader.initialListLoader.featuresIncallfilter = map;
 								}
 
-								feature = "unc";
-								if (jObj.has(feature)){
-									HashMap<String, String> map = new HashMap<String, String>(); 
-									jObjFeature = jObj.getJSONObject(feature);
-									map.put("enabled", jObjFeature.getString("enabled"));
-									map.put("number", jObjFeature.getString("number"));
-									
-									InitialListLoader.initialListLoader.featuresUnc = map;
-								}
-
 								feature = "enablevoicemail";
 								if (jObj.has(feature)){
 									HashMap<String, String> map = new HashMap<String, String>(); 
@@ -280,6 +250,40 @@ public class JsonLoopListener {
 									map.put("enabled", jObjFeature.getString("enabled"));
 									
 									InitialListLoader.initialListLoader.featuresEnablevoicemail = map;
+								}
+
+								feature = "busy";
+								if (jObj.has(feature)||jObj.has("enable"+feature)){
+									HashMap<String, String> map = new HashMap<String, String>(); 
+									if (jObj.has(feature)) jObjFeature = jObj.getJSONObject(feature);
+									else if (jObj.has("enable"+feature)) jObjFeature = jObj.getJSONObject("enable"+feature);
+									map.put("enabled", jObjFeature.getString("enabled"));
+									map.put("number", jObjFeature.getString("number"));
+									
+									InitialListLoader.initialListLoader.featuresBusy = map;
+								}
+
+								feature = "rna";
+								if (jObj.has(feature)||jObj.has("enable"+feature)){
+									HashMap<String, String> map = new HashMap<String, String>(); 
+									if (jObj.has(feature)) jObjFeature = jObj.getJSONObject(feature);
+									else if (jObj.has("enable"+feature)) jObjFeature = jObj.getJSONObject("enable"+feature);
+									map.put("enabled", jObjFeature.getString("enabled"));
+									map.put("number", jObjFeature.getString("number"));
+									
+									InitialListLoader.initialListLoader.featuresRna.clear();
+									InitialListLoader.initialListLoader.featuresRna = map;
+								}
+
+								feature = "unc";
+								if (jObj.has(feature)||jObj.has("enable"+feature)){
+									HashMap<String, String> map = new HashMap<String, String>(); 
+									if (jObj.has(feature)) jObjFeature = jObj.getJSONObject(feature);
+									else if (jObj.has("enable"+feature)) jObjFeature = jObj.getJSONObject("enable"+feature);
+									map.put("enabled", jObjFeature.getString("enabled"));
+									map.put("number", jObjFeature.getString("number"));
+									
+									InitialListLoader.initialListLoader.featuresUnc = map;
 								}
 
 								handler.sendEmptyMessage(4);
