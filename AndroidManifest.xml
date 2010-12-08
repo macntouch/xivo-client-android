@@ -78,6 +78,8 @@
                 <action android:name="xivo.intent.action.LOAD_XLET_TAB" />
             </intent-filter>
         </activity>
+        
+        <activity android:name=".xlets.XletServicesAsk" android:theme="@android:style/Theme.Dialog"/>
 
     </application>
     <uses-sdk android:minSdkVersion="6" />

@@ -9,16 +9,20 @@ public final class Constants {
 	public static final int BAD_HOST = -1;
 	public static final int NOT_CTI_SERVER = -3;
 	public static final int JSON_POPULATE_ERROR = -4;	
+	public static final int LOGIN_KO = 0;
 	public static final int OK = 1;
 	public static final int CONNECTION_OK = 2;
-	public static final int LOGIN_KO = 0;
+	public static final int CANCEL = 3;
 	
 	/**
-	 * ActivityForResult requestCodes et codeResults
+	 * ActivityForResult requestCodes and codeResults
 	 */
 	public static final int CODE_IDENTITY_STATE_LIST = 1;
 	public static final int CODE_LAUNCH = 100;
 	public static final int CODE_EXIT = 666; // Kill kill !!
+	public static final int CODE_SERVICE_ASK1 = 101;
+	public static final int CODE_SERVICE_ASK2 = 102;
+	public static final int CODE_SERVICE_ASK3 = 103;
 	
 	/**
 	 * Application constants

@@ -50,18 +50,21 @@
   android:text="@string/servicesFwdrna"
   android:layout_width="wrap_content"
   android:layout_height="wrap_content" 
-  android:paddingLeft="50dp"/>
+  android:paddingLeft="50dp"
+  android:onClick="clickOnFwdrna"/>
   <CheckBox android:id="@+id/fwdbusy"
   android:checked="false"
   android:text="@string/servicesFwdbusy"
   android:layout_width="wrap_content"
   android:layout_height="wrap_content" 
-  android:paddingLeft="50dp"/>
+  android:paddingLeft="50dp"
+  android:onClick="clickOnFwdbusy"/>
   <CheckBox android:id="@+id/fwdunc"
   android:checked="false"
   android:text="@string/servicesFwdunc"
   android:layout_width="wrap_content"
   android:layout_height="wrap_content" 
-  android:paddingLeft="50dp"/>
+  android:paddingLeft="50dp"
+  android:onClick="clickOnFwdunc"/>
 
 </LinearLayout>
