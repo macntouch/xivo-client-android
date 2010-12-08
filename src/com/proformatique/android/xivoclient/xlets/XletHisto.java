@@ -1,26 +1,15 @@
 package com.proformatique.android.xivoclient.xlets;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -29,13 +18,12 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
-import com.proformatique.android.xivoclient.Connection;
 import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
 
-public class XletHisto extends Activity implements XletInterface{
+public class XletHisto extends Activity{
 	private static final String LOG_TAG = "XLET HISTORY";
 	private  List<HashMap<String, String>> xletList = new ArrayList<HashMap<String, String>>();
 	AlternativeAdapter xletAdapter = null;
@@ -62,7 +50,7 @@ public class XletHisto extends Activity implements XletInterface{
 
 
 	private void initList() {
-		xletList = InitialListLoader.initialListLoader.historyList;
+		xletList = InitialListLoader.getInstance().getHistoryList();
 
 		xletAdapter = new AlternativeAdapter(
 				this,
@@ -93,6 +81,7 @@ public class XletHisto extends Activity implements XletInterface{
 						
 						@Override
 						public void run() {
+							xletList = InitialListLoader.getInstance().getHistoryList();
 							xletAdapter.notifyDataSetChanged();
 						}
 					});
@@ -108,6 +97,7 @@ public class XletHisto extends Activity implements XletInterface{
 			super(context, data, resource, from, to);
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 

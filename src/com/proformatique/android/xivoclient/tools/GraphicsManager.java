@@ -12,7 +12,6 @@ import android.util.Log;
 import android.widget.ImageView;
 
 import com.proformatique.android.xivoclient.*;
-import com.proformatique.android.xivoclient.xlets.XletContactSearch;
 
 public class GraphicsManager {
 	

@@ -5,7 +5,6 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Color;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.FrameLayout;
@@ -16,9 +15,8 @@ import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
-import android.graphics.PorterDuff;
 
-public class XletIdentity implements XletInterface{
+public class XletIdentity{
 	Activity activity = null;
 	FrameLayout fIdentity = null;
 
@@ -28,8 +26,8 @@ public class XletIdentity implements XletInterface{
 		
 		TextView userName = (TextView) activity.findViewById(R.id.user_identity);
 		
-		List<HashMap<String, String>> usersList = InitialListLoader.initialListLoader.usersList;
-		String xivoId=InitialListLoader.initialListLoader.xivoId;
+		List<HashMap<String, String>> usersList = InitialListLoader.getInstance().getUsersList();
+		String xivoId=InitialListLoader.getInstance().getXivoId();
 
 		for (HashMap<String, String> hashMap : usersList) {
 			if (hashMap.get("xivo_userid").equals(xivoId)){
@@ -58,14 +56,14 @@ public class XletIdentity implements XletInterface{
 	public void changeCurrentPhone() {
 		ImageView iconPhone = (ImageView)fIdentity.findViewById(R.id.identityPhoneStatus);
 		TextView textPhone = (TextView)fIdentity.findViewById(R.id.identityPhoneLongnameState);
-		String colorString = InitialListLoader.initialListLoader.capaPresenceState.get("hintstatus_color");
+		String colorString = InitialListLoader.getInstance().getCapaPresenceState().get("hintstatus_color");
 		GraphicsManager.setIconPhoneDisplay(activity, iconPhone, colorString);
-		textPhone.setText(InitialListLoader.initialListLoader.capaPresenceState.get("hintstatus_longname"));
+		textPhone.setText(InitialListLoader.getInstance().getCapaPresenceState().get("hintstatus_longname"));
 	}
 
 	public void changeCurrentState() {
-		String currentStateName = InitialListLoader.initialListLoader.capaPresenceState.get("longname");
-		String stateIdColor = InitialListLoader.initialListLoader.capaPresenceState.get("color");
+		String currentStateName = InitialListLoader.getInstance().getCapaPresenceState().get("longname");
+		String stateIdColor = InitialListLoader.getInstance().getCapaPresenceState().get("color");
 		ImageView iconState = (ImageView)fIdentity.findViewById(R.id.identity_current_state_image);
 		TextView textState = (TextView)fIdentity.findViewById(R.id.identity_current_state_longname);
 		

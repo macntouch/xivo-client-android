@@ -2,22 +2,18 @@ package com.proformatique.android.xivoclient;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import android.util.Log;
-
 import com.proformatique.android.xivoclient.tools.Constants;
 
 /**
@@ -38,29 +34,34 @@ public class InitialListLoader {
 	 */
 	String[] lists = new String[] { "users", "phones"};
 
-	public List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();
-	public List<HashMap<String, String>> historyList = new ArrayList<HashMap<String, String>>();
-	public List<HashMap<String, String>> phonesList = new ArrayList<HashMap<String, String>>();
-	public List<String> xletsList = new ArrayList<String>();
-	public String xivoId = null;
-	public String astId = null;
-	public HashMap<String, String> capaPresenceState  = new HashMap<String, String>();
-	public List<HashMap<String, String>> statusList = new ArrayList<HashMap<String, String>>();
-	public HashMap<String, String> featuresEnablednd = new HashMap<String, String>();
-	public HashMap<String, String> featuresBusy = new HashMap<String, String>();
-	public HashMap<String, String> featuresRna = new HashMap<String, String>();
-	public HashMap<String, String> featuresCallrecord = new HashMap<String, String>();
-	public HashMap<String, String> featuresIncallfilter = new HashMap<String, String>();
-	public HashMap<String, String> featuresUnc = new HashMap<String, String>();
-	public HashMap<String, String> featuresEnablevoicemail = new HashMap<String, String>();
+	private List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();
+	private List<HashMap<String, String>> historyList = new ArrayList<HashMap<String, String>>();
+	private List<String> xletsList = new ArrayList<String>();
+	private String xivoId = null;
+	private String astId = null;
+	private HashMap<String, String> capaPresenceState  = new HashMap<String, String>();
+	private List<HashMap<String, String>> statusList = new ArrayList<HashMap<String, String>>();
+	private HashMap<String, String> featuresEnablednd = new HashMap<String, String>();
+	private HashMap<String, String> featuresBusy = new HashMap<String, String>();
+	private HashMap<String, String> featuresRna = new HashMap<String, String>();
+	private HashMap<String, String> featuresCallrecord = new HashMap<String, String>();
+	private HashMap<String, String> featuresIncallfilter = new HashMap<String, String>();
+	private HashMap<String, String> featuresUnc = new HashMap<String, String>();
+	private HashMap<String, String> featuresEnablevoicemail = new HashMap<String, String>();
 
+	private static InitialListLoader instance;
 	
-	public static InitialListLoader initialListLoader;
-	
-	public InitialListLoader(){
-		initialListLoader = this;
+	public static InitialListLoader getInstance(){
+        if (null == instance) {
+            instance = new InitialListLoader();
+        }
+		return instance;
 	}
 	
+	private InitialListLoader(){
+		super();
+	}
+
 	public int startLoading(){
 		int rCode;
 		
@@ -72,12 +73,13 @@ public class InitialListLoader {
 		return Constants.OK;
 	}
 
+	@SuppressWarnings("unchecked")
 	private int initJsonList(String inputClass) {
 		JSONObject jObj = createJsonInputObject(inputClass,"getlist");
 		if (jObj!=null){
 			try {
 				Log.d( LOG_TAG, "Jobj: " + jObj.toString());
-				PrintStream output = new PrintStream(Connection.getInstance().networkConnection.getOutputStream());
+				PrintStream output = new PrintStream(Connection.getInstance().getNetworkConnection().getOutputStream());
 				output.println(jObj.toString());
 			} catch (IOException e) {
 				return Constants.NO_NETWORK_AVAILABLE;
@@ -169,10 +171,10 @@ public class InitialListLoader {
 		return Constants.OK;
 	}
 	
+	@SuppressWarnings("unchecked")
 	class fullNameComparator implements Comparator
 	{
-	    @SuppressWarnings("unchecked")
-		public int compare(Object obj1, Object obj2)
+	    public int compare(Object obj1, Object obj2)
 	    {
 	        HashMap<String, String> update1 = (HashMap<String, String>)obj1;
 	        HashMap<String, String> update2 = (HashMap<String, String>)obj2;
@@ -188,13 +190,14 @@ public class InitialListLoader {
 	 * @param function
 	 * @return
 	 */
+	@SuppressWarnings("unused")
 	private int initJsonString(String inputClass, String function) {
 
 		JSONObject jObj = createJsonInputObject(inputClass,"available");
 		if (jObj!=null){
 			try {
 				Log.d( LOG_TAG, "Jobj: " + jObj.toString());
-				PrintStream output = new PrintStream(Connection.getInstance().networkConnection.getOutputStream());
+				PrintStream output = new PrintStream(Connection.getInstance().getNetworkConnection().getOutputStream());
 				output.println(jObj.toString());
 			} catch (IOException e) {
 				return Constants.NO_NETWORK_AVAILABLE;
@@ -237,6 +240,168 @@ public class InitialListLoader {
 		}
 	}
 	
+	public String getUserId() {
+		return astId+"/"+xivoId;
+	}
 
+	public String getXivoId() {
+		return xivoId;
+	}
+
+	public void setXivoId(String xivoId) {
+		this.xivoId = xivoId;
+	}
+
+	public String getAstId() {
+		return astId;
+	}
+
+	public void setAstId(String astId) {
+		this.astId = astId;
+	}
+
+	public List<HashMap<String, String>> getUsersList() {
+		return usersList;
+	}
+
+	public void setUsersList(List<HashMap<String, String>> usersList) {
+		this.usersList = usersList;
+	}
+
+	public void replaceUsersList(int i, HashMap<String, String> map) {
+		this.usersList.set(i, map);
+	}
 	
+	public List<HashMap<String, String>> getHistoryList() {
+		return historyList;
+	}
+
+	public void setHistoryList(List<HashMap<String, String>> historyList) {
+		this.historyList = historyList;
+	}
+
+	public void addHistoryList(HashMap<String, String> map) {
+		this.historyList.add(map);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void sortHistoryList(){
+		Collections.sort(this.historyList, new DateComparator());
+	}
+
+	public List<String> getXletsList() {
+		return xletsList;
+	}
+	
+	public void setXletsList(List<String> xletsList) {
+		this.xletsList = xletsList;
+	}
+
+	public HashMap<String, String> getCapaPresenceState() {
+		return capaPresenceState;
+	}
+
+	public void setCapaPresenceState(HashMap<String, String> capaPresenceState) {
+		this.capaPresenceState = capaPresenceState;
+	}
+
+	public void putCapaPresenceState(String key, String value) {
+		this.capaPresenceState.put(key, value);
+	}
+	
+	public List<HashMap<String, String>> getStatusList() {
+		return statusList;
+	}
+
+	public void setStatusList(List<HashMap<String, String>> statusList) {
+		this.statusList = statusList;
+	}
+
+	public void addStatusList(HashMap<String, String> map) {
+		this.statusList.add(map);
+	}
+	
+	public HashMap<String, String> getFeaturesEnablednd() {
+		return featuresEnablednd;
+	}
+
+	public void setFeaturesEnablednd(HashMap<String, String> featuresEnablednd) {
+		this.featuresEnablednd = featuresEnablednd;
+	}
+
+	public HashMap<String, String> getFeaturesBusy() {
+		return featuresBusy;
+	}
+
+	public void setFeaturesBusy(HashMap<String, String> featuresBusy) {
+		this.featuresBusy = featuresBusy;
+	}
+
+	public HashMap<String, String> getFeaturesRna() {
+		return featuresRna;
+	}
+
+	public void setFeaturesRna(HashMap<String, String> featuresRna) {
+		this.featuresRna = featuresRna;
+	}
+
+	public HashMap<String, String> getFeaturesCallrecord() {
+		return featuresCallrecord;
+	}
+
+	public void setFeaturesCallrecord(HashMap<String, String> featuresCallrecord) {
+		this.featuresCallrecord = featuresCallrecord;
+	}
+
+	public HashMap<String, String> getFeaturesIncallfilter() {
+		return featuresIncallfilter;
+	}
+
+	public void setFeaturesIncallfilter(HashMap<String, String> featuresIncallfilter) {
+		this.featuresIncallfilter = featuresIncallfilter;
+	}
+
+	public HashMap<String, String> getFeaturesUnc() {
+		return featuresUnc;
+	}
+
+	public void setFeaturesUnc(HashMap<String, String> featuresUnc) {
+		this.featuresUnc = featuresUnc;
+	}
+
+	public HashMap<String, String> getFeaturesEnablevoicemail() {
+		return featuresEnablevoicemail;
+	}
+
+	public void setFeaturesEnablevoicemail(
+			HashMap<String, String> featuresEnablevoicemail) {
+		this.featuresEnablevoicemail = featuresEnablevoicemail;
+	}
+
+
+
+
+
+	@SuppressWarnings("unchecked")
+	private class DateComparator implements Comparator
+	{
+		public int compare(Object obj1, Object obj2)
+	    {
+	    	SimpleDateFormat sd1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	        HashMap<String, String> update1 = (HashMap<String, String>)obj1;
+	        HashMap<String, String> update2 = (HashMap<String, String>)obj2;
+	        Date d1 = null, d2 = null;
+	        try {
+				d1 = sd1.parse(update1.get("ts"));
+				d2 = sd1.parse(update2.get("ts"));
+			} catch (ParseException e) {
+				e.printStackTrace();
+				return 0;
+			}
+	        
+	        return (((d2.getTime()-d1.getTime())>0)?1:-1);
+	    }
+	}
+
+
 }

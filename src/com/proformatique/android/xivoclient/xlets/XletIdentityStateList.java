@@ -11,8 +11,6 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,7 +18,6 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 
 import com.proformatique.android.xivoclient.Connection;
@@ -49,6 +46,7 @@ public class XletIdentityStateList extends Activity {
 			super(context, data, resource, from, to);
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 
@@ -73,7 +71,7 @@ public class XletIdentityStateList extends Activity {
 	}
 	
 	private void initList() {
-		identityStateList = InitialListLoader.initialListLoader.statusList;
+		identityStateList = InitialListLoader.getInstance().getStatusList();
 
 		stateAdapter = new AlternativeAdapter(
 				this,
@@ -87,6 +85,7 @@ public class XletIdentityStateList extends Activity {
 		
         lv.setOnItemClickListener(new OnItemClickListener() {
 
+			@SuppressWarnings("unchecked")
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {

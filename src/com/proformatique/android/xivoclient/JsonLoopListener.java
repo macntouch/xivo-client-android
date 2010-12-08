@@ -16,7 +16,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.proformatique.android.xivoclient.InitialListLoader.fullNameComparator;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.content.Context;
@@ -77,11 +76,10 @@ public class JsonLoopListener {
 		try {
 			jObj.accumulate("direction", Constants.XIVO_SERVER);
 			jObj.accumulate("class","featuresget");
-			jObj.accumulate("userid", InitialListLoader.initialListLoader.astId+"/"+
-					InitialListLoader.initialListLoader.xivoId);
+			jObj.accumulate("userid", InitialListLoader.getInstance().getUserId());
 			
 			PrintStream output = new PrintStream(
-					Connection.getInstance().networkConnection.getOutputStream());
+					Connection.getInstance().getNetworkConnection().getOutputStream());
 			output.println(jObj.toString());
 			Log.d( LOG_TAG , "Client : "+jObj.toString());
 		} catch (JSONException e) {
@@ -103,14 +101,13 @@ public class JsonLoopListener {
 			
 			jObj.accumulate("direction", Constants.XIVO_SERVER);
 			jObj.accumulate("class","history");
-			jObj.accumulate("peer", InitialListLoader.initialListLoader.astId+"/"+
-					InitialListLoader.initialListLoader.xivoId);
+			jObj.accumulate("peer", InitialListLoader.getInstance().getUserId());
 			jObj.accumulate("size",elementsNumber);
 			jObj.accumulate("mode",mode);
 			jObj.accumulate("morerecentthan",sIso.format(c1.getTime()));
 			
 			PrintStream output = new PrintStream(
-					Connection.getInstance().networkConnection.getOutputStream());
+					Connection.getInstance().getNetworkConnection().getOutputStream());
 			output.println(jObj.toString());
 			Log.d( LOG_TAG , "Client : "+jObj.toString());
 		} catch (JSONException e) {
@@ -126,7 +123,6 @@ public class JsonLoopListener {
 	private void startJsonListener(){
 		cancel = false;
     	handler = new Handler() {
-    		private String jSonObj;
 
 			public void handleMessage(Message msg) {
        			switch(msg.what) {
@@ -188,7 +184,8 @@ public class JsonLoopListener {
        	};
 
         thread = new Thread() {
-        	public void run() {
+        	@SuppressWarnings("unchecked")
+			public void run() {
            		int i = 0;
 					while(i < 1) {
 						
@@ -198,6 +195,7 @@ public class JsonLoopListener {
 							
 							JSONObject jObjCurrent = Connection.getInstance().readData();
 							String classRec = "";
+							@SuppressWarnings("unused")
 							String functionRec = "";
 							
 							if (jObjCurrent.has("class"))
@@ -215,7 +213,7 @@ public class JsonLoopListener {
 								map.put("stateid_longname", jObjCurrentState.getString("longname"));
 								map.put("stateid_color", jObjCurrentState.getString("color"));
 								
-								updateUserList(InitialListLoader.initialListLoader.usersList, map, "presence");
+								updateUserList(InitialListLoader.getInstance().getUsersList(), map, "presence");
 
 								handler.sendEmptyMessage(1);
 							}
@@ -236,7 +234,7 @@ public class JsonLoopListener {
 									map.put("hintstatus_code", "");
 									map.put("hintstatus_longname", "");
 								}
-								updateUserList(InitialListLoader.initialListLoader.usersList, map, "phone");
+								updateUserList(InitialListLoader.getInstance().getUsersList(), map, "phone");
 								handler.sendEmptyMessage(1);
 							}
 							
@@ -259,14 +257,14 @@ public class JsonLoopListener {
 									map.put("direction", jObjCurrentList.getString("direction"));
 									map.put("fullname", jObjCurrentList.getString("fullname"));
 									map.put("ts", jObjCurrentList.getString("ts"));
-									InitialListLoader.initialListLoader.historyList.add(map);
+									InitialListLoader.getInstance().addHistoryList(map);
 								}
 								
 								/**
 								 * Sorting list
 								 */
-								if (InitialListLoader.initialListLoader.historyList.size()!=0){
-									Collections.sort(InitialListLoader.initialListLoader.historyList, new DateComparator());
+								if (InitialListLoader.getInstance().getHistoryList().size()!=0){
+									InitialListLoader.getInstance().sortHistoryList();
 								}
 
 								handler.sendEmptyMessage(3);
@@ -286,7 +284,7 @@ public class JsonLoopListener {
 									jObjFeature = jObj.getJSONObject(feature);
 									map.put("enabled", jObjFeature.getString("enabled"));
 									
-									InitialListLoader.initialListLoader.featuresEnablednd = map;
+									InitialListLoader.getInstance().setFeaturesEnablednd(map);
 								}
 
 								feature = "callrecord";
@@ -295,7 +293,7 @@ public class JsonLoopListener {
 									jObjFeature = jObj.getJSONObject(feature);
 									map.put("enabled", jObjFeature.getString("enabled"));
 									
-									InitialListLoader.initialListLoader.featuresCallrecord = map;
+									InitialListLoader.getInstance().setFeaturesCallrecord(map);
 								}
 
 								feature = "incallfilter";
@@ -304,7 +302,7 @@ public class JsonLoopListener {
 									jObjFeature = jObj.getJSONObject(feature);
 									map.put("enabled", jObjFeature.getString("enabled"));
 									
-									InitialListLoader.initialListLoader.featuresIncallfilter = map;
+									InitialListLoader.getInstance().setFeaturesIncallfilter(map);
 								}
 
 								feature = "enablevoicemail";
@@ -313,7 +311,7 @@ public class JsonLoopListener {
 									jObjFeature = jObj.getJSONObject(feature);
 									map.put("enabled", jObjFeature.getString("enabled"));
 									
-									InitialListLoader.initialListLoader.featuresEnablevoicemail = map;
+									InitialListLoader.getInstance().setFeaturesEnablevoicemail(map);
 								}
 
 								feature = "busy";
@@ -324,7 +322,7 @@ public class JsonLoopListener {
 									map.put("enabled", jObjFeature.getString("enabled"));
 									map.put("number", jObjFeature.getString("number"));
 									
-									InitialListLoader.initialListLoader.featuresBusy = map;
+									InitialListLoader.getInstance().setFeaturesBusy(map);
 								}
 
 								feature = "rna";
@@ -335,8 +333,7 @@ public class JsonLoopListener {
 									map.put("enabled", jObjFeature.getString("enabled"));
 									map.put("number", jObjFeature.getString("number"));
 									
-									InitialListLoader.initialListLoader.featuresRna.clear();
-									InitialListLoader.initialListLoader.featuresRna = map;
+									InitialListLoader.getInstance().setFeaturesRna(map);
 								}
 
 								feature = "unc";
@@ -347,7 +344,7 @@ public class JsonLoopListener {
 									map.put("enabled", jObjFeature.getString("enabled"));
 									map.put("number", jObjFeature.getString("number"));
 									
-									InitialListLoader.initialListLoader.featuresUnc = map;
+									InitialListLoader.getInstance().setFeaturesUnc(map);
 								}
 
 								handler.sendEmptyMessage(4);
@@ -379,22 +376,21 @@ public class JsonLoopListener {
 		    		usersMap.put("stateid", map.get("stateid"));
 		    		usersMap.put("stateid_longname", map.get("stateid_longname"));
 		    		usersMap.put("stateid_color", map.get("stateid_color"));
-		    		
-		    		usersList.set(i, usersMap);
+		    		InitialListLoader.getInstance().replaceUsersList(i, usersMap);
 		    		break;
 	    		}
 	    		if (typeMaj.equals("phone")){
-					if (map.get("xivo_userid").equals(InitialListLoader.initialListLoader.xivoId)){
-						InitialListLoader.initialListLoader.capaPresenceState.put("hintstatus_color", map.get("hintstatus_color"));
-						InitialListLoader.initialListLoader.capaPresenceState.put("hintstatus_code", map.get("hintstatus_code"));
-						InitialListLoader.initialListLoader.capaPresenceState.put("hintstatus_longname", map.get("hintstatus_longname"));
+					if (map.get("xivo_userid").equals(InitialListLoader.getInstance().getXivoId())){
+						InitialListLoader.getInstance().putCapaPresenceState("hintstatus_color", map.get("hintstatus_color"));
+						InitialListLoader.getInstance().putCapaPresenceState("hintstatus_code", map.get("hintstatus_code"));
+						InitialListLoader.getInstance().putCapaPresenceState("hintstatus_longname", map.get("hintstatus_longname"));
 						handler.sendEmptyMessage(2);
 					}
 
 		    		usersMap.put("hintstatus_color", map.get("hintstatus_color"));
 		    		usersMap.put("hintstatus_code", map.get("hintstatus_code"));
 		    		usersMap.put("hintstatus_longname", map.get("hintstatus_longname"));
-		    		usersList.set(i, usersMap);
+		    		InitialListLoader.getInstance().replaceUsersList(i, usersMap);
 		    		break;
 	    		}
 	    	}
@@ -403,26 +399,5 @@ public class JsonLoopListener {
 
 	}
 	
-	class DateComparator implements Comparator
-	{
-	    @SuppressWarnings("unchecked")
-		public int compare(Object obj1, Object obj2)
-	    {
-	    	SimpleDateFormat sd1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	        HashMap<String, String> update1 = (HashMap<String, String>)obj1;
-	        HashMap<String, String> update2 = (HashMap<String, String>)obj2;
-	        Date d1 = null, d2 = null;
-	        try {
-				d1 = sd1.parse(update1.get("ts"));
-				d2 = sd1.parse(update2.get("ts"));
-			} catch (ParseException e) {
-				e.printStackTrace();
-				return 0;
-			}
-	        
-	        return (((d2.getTime()-d1.getTime())>0)?1:-1);
-	    }
-	}
-
 
 }

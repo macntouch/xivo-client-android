@@ -38,12 +38,13 @@ public class XletsContainerTabActivity extends TabActivity {
 	IncomingReceiver receiver;
 	XletIdentity xletIdentity;
 	
+    @SuppressWarnings("unused")
 	public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
 	    setContentView(R.layout.xlets_container);
 
 	    final TabHost tabHost = getTabHost();
-	    final TabWidget tabWidget = tabHost.getTabWidget();
+		final TabWidget tabWidget = tabHost.getTabWidget();
 
 	    Resources res = getResources();
 	    TabHost.TabSpec spec;
@@ -65,7 +66,7 @@ public class XletsContainerTabActivity extends TabActivity {
 	     * Get the list of xlets available for connected user
 	     * and delete the suffix starting to "-"
 	     */
-	    ArrayList<String> xletsTmp = decodeJsonObject(Connection.getInstance().jCapa, "capaxlets");
+	    ArrayList<String> xletsTmp = decodeJsonObject(Connection.getInstance().getjCapa(), "capaxlets");
 	    
 	    ArrayList<String> xlets = new ArrayList<String>(xletsTmp.size());
 	    for (String x : xletsTmp){
@@ -126,11 +127,8 @@ public class XletsContainerTabActivity extends TabActivity {
         }
         
 	    tabHost.setCurrentTab(0);
-	    InitialListLoader.initialListLoader.xletsList = xletsList;
+	    InitialListLoader.getInstance().setXletsList(xletsList);
 	    
-	    /**
-	     * Call of the singleton JsonLoopListener
-	     */
 	    JsonLoopListener jsonLoop = JsonLoopListener.getInstance(this);
 	    
 		/**
@@ -240,9 +238,9 @@ public class XletsContainerTabActivity extends TabActivity {
             switch (resultCode){
             case Constants.OK:
             	Bundle extraData = data.getExtras();
-            	InitialListLoader.initialListLoader.capaPresenceState.put("stateid", extraData.getString("stateid"));
-            	InitialListLoader.initialListLoader.capaPresenceState.put("longname", extraData.getString("longname"));
-            	InitialListLoader.initialListLoader.capaPresenceState.put("color", extraData.getString("color"));
+            	InitialListLoader.getInstance().putCapaPresenceState("stateid", extraData.getString("stateid"));
+            	InitialListLoader.getInstance().putCapaPresenceState("longname", extraData.getString("longname"));
+            	InitialListLoader.getInstance().putCapaPresenceState("color", extraData.getString("color"));
             	
             	xletIdentity.changeCurrentState();
             }

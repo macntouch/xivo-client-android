@@ -1,29 +1,15 @@
 package com.proformatique.android.xivoclient.xlets;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.xmlpull.v1.XmlPullParserException;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.ColorMatrix;
-import android.graphics.Paint;
-import android.graphics.Picture;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -32,17 +18,14 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 
 import com.proformatique.android.xivoclient.InitialListLoader;
-import com.proformatique.android.xivoclient.JsonLoopListener;
 import com.proformatique.android.xivoclient.R;
-import com.proformatique.android.xivoclient.XletsContainerTabActivity;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
 
-public class XletContactSearch extends Activity implements XletInterface{
+public class XletContactSearch extends Activity{
 	
 	private static final String LOG_TAG = "XLET DIRECTORY";
 	private  List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();
@@ -64,6 +47,7 @@ public class XletContactSearch extends Activity implements XletInterface{
 			super(context, data, resource, from, to);
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 
@@ -97,7 +81,10 @@ public class XletContactSearch extends Activity implements XletInterface{
 		public void onReceive(Context context, Intent intent) {
 	        if (intent.getAction().equals(Constants.ACTION_LOAD_USER_LIST)) {
 	        	Log.d( LOG_TAG , "Received Broadcast ");
-	        	if (usersAdapter != null) usersAdapter.notifyDataSetChanged();
+	        	if (usersAdapter != null) {
+	        		usersList = InitialListLoader.getInstance().getUsersList();
+	        		usersAdapter.notifyDataSetChanged();
+	        	}
 	        }
 		}
 	}
@@ -121,7 +108,7 @@ public class XletContactSearch extends Activity implements XletInterface{
 	}
 
 	private void initList() {
-		usersList = InitialListLoader.initialListLoader.usersList;
+		usersList = InitialListLoader.getInstance().getUsersList();
 
 		usersAdapter = new AlternativeAdapter(
 				this,
@@ -137,6 +124,7 @@ public class XletContactSearch extends Activity implements XletInterface{
 		
         lv.setOnItemClickListener(new OnItemClickListener() {
 
+			@SuppressWarnings("unchecked")
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {

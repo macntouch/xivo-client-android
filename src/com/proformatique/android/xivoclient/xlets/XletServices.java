@@ -1,7 +1,5 @@
 package com.proformatique.android.xivoclient.xlets;
 
-import java.io.IOException;
-import java.io.PrintStream;
 import java.util.HashMap;
 
 import org.json.JSONException;
@@ -22,7 +20,7 @@ import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.tools.Constants;
 
-public class XletServices extends Activity implements XletInterface{
+public class XletServices extends Activity{
 
 	private static final String LOG_TAG = "XLET SERVICES";
 	private IncomingReceiver receiver;
@@ -86,7 +84,7 @@ public class XletServices extends Activity implements XletInterface{
 		else {
 			checkbox.setText(R.string.servicesFwdrna);
 			sendFeaturePut("enablerna", "0", 
-					InitialListLoader.initialListLoader.featuresRna.get("number"));
+					InitialListLoader.getInstance().getFeaturesRna().get("number"));
 		}
 	}
 	
@@ -101,7 +99,7 @@ public class XletServices extends Activity implements XletInterface{
 		else {
 			checkbox.setText(R.string.servicesFwdbusy);
 			sendFeaturePut("enablebusy", "0", 
-					InitialListLoader.initialListLoader.featuresBusy.get("number"));
+					InitialListLoader.getInstance().getFeaturesBusy().get("number"));
 
 		}
 		
@@ -118,7 +116,7 @@ public class XletServices extends Activity implements XletInterface{
 		else {
 			checkbox.setText(R.string.servicesFwdunc);
 			sendFeaturePut("enableunc", "0", 
-					InitialListLoader.initialListLoader.featuresUnc.get("number"));
+					InitialListLoader.getInstance().getFeaturesUnc().get("number"));
 		}
 	}
 	
@@ -192,7 +190,7 @@ public class XletServices extends Activity implements XletInterface{
 			CheckBox checkbox;
 			int code=0;
 			
-			featureMap = InitialListLoader.initialListLoader.featuresBusy;
+			featureMap = InitialListLoader.getInstance().getFeaturesBusy();
 			if (featureMap.containsKey("enabled")){
 				checkbox = (CheckBox) findViewById(R.id.fwdbusy);
 				if (featureMap.get("enabled").equals("true")) code = Constants.OK;
@@ -201,7 +199,7 @@ public class XletServices extends Activity implements XletInterface{
 						getString(R.string.servicesFwdbusy));
 			}
 			
-			featureMap = InitialListLoader.initialListLoader.featuresRna;
+			featureMap = InitialListLoader.getInstance().getFeaturesRna();
 			if (featureMap.containsKey("enabled")){
 				checkbox = (CheckBox) findViewById(R.id.fwdrna);
 				if (featureMap.get("enabled").equals("true")) code = Constants.OK;
@@ -210,7 +208,7 @@ public class XletServices extends Activity implements XletInterface{
 						getString(R.string.servicesFwdrna));
 			}
 			
-			featureMap = InitialListLoader.initialListLoader.featuresUnc;
+			featureMap = InitialListLoader.getInstance().getFeaturesUnc();
 			if (featureMap.containsKey("enabled")){
 				checkbox = (CheckBox) findViewById(R.id.fwdunc);
 				if (featureMap.get("enabled").equals("true")) code = Constants.OK;
@@ -219,21 +217,21 @@ public class XletServices extends Activity implements XletInterface{
 						getString(R.string.servicesFwdunc));
 			}
 
-			featureMap = InitialListLoader.initialListLoader.featuresEnablednd;
+			featureMap = InitialListLoader.getInstance().getFeaturesEnablednd();
 			if (featureMap.containsKey("enabled")){
 				checkbox = (CheckBox) findViewById(R.id.enablednd);
 				if (featureMap.get("enabled").equals("true")) checkbox.setChecked(true);
 				else checkbox.setChecked(false);
 			}
 
-			featureMap = InitialListLoader.initialListLoader.featuresCallrecord;
+			featureMap = InitialListLoader.getInstance().getFeaturesCallrecord();
 			if (featureMap.containsKey("enabled")){
 				checkbox = (CheckBox) findViewById(R.id.callrecord);
 				if (featureMap.get("enabled").equals("true")) checkbox.setChecked(true);
 				else checkbox.setChecked(false);
 			}
 
-			featureMap = InitialListLoader.initialListLoader.featuresIncallfilter;
+			featureMap = InitialListLoader.getInstance().getFeaturesIncallfilter();
 			if (featureMap.containsKey("enabled")){
 				checkbox = (CheckBox) findViewById(R.id.incallfilter);
 				if (featureMap.get("enabled").equals("true")) checkbox.setChecked(true);
@@ -246,8 +244,7 @@ public class XletServices extends Activity implements XletInterface{
 			try {
 				jObj.accumulate("direction", Constants.XIVO_SERVER);
 				jObj.accumulate("class", "featuresput");
-				jObj.accumulate("userid", InitialListLoader.initialListLoader.astId+"/"+
-						InitialListLoader.initialListLoader.xivoId);
+				jObj.accumulate("userid", InitialListLoader.getInstance().getUserId());
 				jObj.accumulate("function", feature);
 				jObj.accumulate("value", value);
 				if (phone != null) jObj.accumulate("destination", phone);
@@ -256,7 +253,7 @@ public class XletServices extends Activity implements XletInterface{
 			} catch (JSONException e) {
 				return null;
 			}
-			
+
 		}
 
 		private void sendFeaturePut(String feature, String value, String phone){

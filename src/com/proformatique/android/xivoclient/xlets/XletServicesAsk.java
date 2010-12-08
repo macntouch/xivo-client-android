@@ -10,7 +10,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 
-public class XletServicesAsk extends Activity implements XletInterface{
+public class XletServicesAsk extends Activity{
 
 	private String serviceType;
 	private EditText phoneView;
@@ -27,11 +27,11 @@ public class XletServicesAsk extends Activity implements XletInterface{
 		phoneView = (EditText)findViewById(R.id.servicesAskPhone);
 		String phone = "";
 		if (serviceType.equals("fwdrna")) 
-			phone = InitialListLoader.initialListLoader.featuresRna.get("number");
+			phone = InitialListLoader.getInstance().getFeaturesRna().get("number");
 		else if (serviceType.equals("fwdbusy")) 
-			phone = InitialListLoader.initialListLoader.featuresBusy.get("number");
+			phone = InitialListLoader.getInstance().getFeaturesBusy().get("number");
 		if (serviceType.equals("fwdunc")) 
-			phone = InitialListLoader.initialListLoader.featuresUnc.get("number");
+			phone = InitialListLoader.getInstance().getFeaturesUnc().get("number");
 
 		phoneView.setText(phone);
 	}

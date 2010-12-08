@@ -4,16 +4,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
-import android.preference.EditTextPreference;
-import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceManager;
-import android.preference.PreferenceScreen;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 
 public class SettingsActivity extends PreferenceActivity{
 
+	@SuppressWarnings("unused")
 	private static final String LOG_TAG = "SETTINGS";
 
 	SharedPreferences settingsPrefs;
@@ -71,18 +67,6 @@ public class SettingsActivity extends PreferenceActivity{
 						
 					}
 				}
-/*				
-				if (key.equals("use_mobile_number")){
-					Boolean useMobile = sharedPreferences.getBoolean(key, true);
-					
-					if (!useMobile){
-						Preference eMobile = getPreferenceScreen().findPreference("mobile_number");
-						eMobile.set
-						
-					}
-				}
-*/
-				
 			}
 		});
 	}

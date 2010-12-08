@@ -6,14 +6,6 @@ import java.io.PrintStream;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.proformatique.android.xivoclient.Connection;
-import com.proformatique.android.xivoclient.JsonLoopListener;
-import com.proformatique.android.xivoclient.LoginActivity;
-import com.proformatique.android.xivoclient.R;
-import com.proformatique.android.xivoclient.XletsContainerTabActivity;
-import com.proformatique.android.xivoclient.tools.Constants;
-import com.proformatique.android.xivoclient.xlets.XletContactSearch.IncomingReceiver;
-
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -28,7 +20,12 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class XletDialer extends Activity implements XletInterface{
+import com.proformatique.android.xivoclient.Connection;
+import com.proformatique.android.xivoclient.R;
+import com.proformatique.android.xivoclient.XletsContainerTabActivity;
+import com.proformatique.android.xivoclient.tools.Constants;
+
+public class XletDialer extends Activity{
 
 	private static final String LOG_TAG = "XLET DIALER";
 	EditText phoneNumber;
@@ -84,7 +81,7 @@ public class XletDialer extends Activity implements XletInterface{
 	    			phoneNumber.getText().toString());
 			try {
 				Log.d( LOG_TAG, "jCalling: " + jCalling.toString());
-				PrintStream output = new PrintStream(Connection.getInstance().networkConnection.getOutputStream());
+				PrintStream output = new PrintStream(Connection.getInstance().getNetworkConnection().getOutputStream());
 				output.println(jCalling.toString());
 
 				return Constants.OK; 

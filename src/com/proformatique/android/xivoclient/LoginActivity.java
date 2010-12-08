@@ -4,8 +4,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.proformatique.android.xivoclient.tools.Constants;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -20,10 +18,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.proformatique.android.xivoclient.tools.Constants;
 
 public class LoginActivity extends Activity {
 	
@@ -59,7 +58,7 @@ public class LoginActivity extends Activity {
         	ePassword.setText(password);
         }
         
-        if (Connection.getInstance().connected) {
+        if (Connection.getInstance().isConnected()) {
         	displayElements(false);
         	Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
 			startActivity(defineIntent);
@@ -90,7 +89,7 @@ public class LoginActivity extends Activity {
             menuAbout();
             return true;
         case R.id.menu_disconnect:
-        	if (Connection.getInstance().connected)
+        	if (Connection.getInstance().isConnected())
         		Connection.getInstance().disconnect();
         	displayElements(true);
             return true;
@@ -105,7 +104,7 @@ public class LoginActivity extends Activity {
 	}
 
 	private void menuExit() {
-    	if (Connection.getInstance().connected)
+    	if (Connection.getInstance().isConnected())
     		Connection.getInstance().disconnect();
 		finish();
 	}
@@ -117,7 +116,7 @@ public class LoginActivity extends Activity {
 	}
 	
     public void clickOnButtonOk(View v) {
-    	if (Connection.getInstance().connected) {
+    	if (Connection.getInstance().isConnected()) {
     		Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
     		startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
     	}
@@ -226,7 +225,7 @@ public class LoginActivity extends Activity {
 		        	Connection connection = Connection.getInstance(eLogin.getText().toString(),
 							ePassword.getText().toString(), LoginActivity.this);
 					
-					InitialListLoader initList = new InitialListLoader();
+					InitialListLoader initList = InitialListLoader.getInstance();
 					int connectionCode = connection.initialize();
 
 					if (connectionCode >= 1){
@@ -252,7 +251,7 @@ public class LoginActivity extends Activity {
 				}
 				else if(result > 0){
 					
-					if (Connection.getInstance().saveLogin){
+					if (Connection.getInstance().getSaveLogin()){
 						saveLoginPassword();
 					}
 

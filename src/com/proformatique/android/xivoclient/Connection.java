@@ -32,19 +32,20 @@ import com.proformatique.android.xivoclient.tools.Constants;
 public class Connection {
 
 	private static final String LOG_TAG = "CONNECTION";
-	String serverAdress;
-	int serverPort;
-	String login;
-	String password;
-	Boolean saveLogin;
-	Activity callingActivity;
-	SharedPreferences settings;
-	DataInputStream input;
-	String responseLine;
-	String sessionId;
-	JSONObject jCapa;
-	public Socket networkConnection;
-	boolean connected = false;
+	private String serverAdress;
+	private int serverPort;
+	private String login;
+	private String password;
+	private Boolean saveLogin;
+	private Activity callingActivity;
+	private SharedPreferences settings;
+	private DataInputStream input;
+	private String responseLine;
+	private String sessionId;
+	private JSONObject jCapa;
+	private Socket networkConnection;
+	private boolean connected = false;
+	
 	private static Connection instance;
 
 	public static Connection getInstance(){
@@ -177,17 +178,17 @@ public class Connection {
 							
 							if (ReadLineObject.getString("class").equals(Constants.XIVO_LOGIN_CAPAS_OK)){
 								jCapa = ReadLineObject;
-								InitialListLoader.initialListLoader.xivoId = jCapa.getString("xivo_userid");
-								InitialListLoader.initialListLoader.astId = jCapa.getString("astid");
+								InitialListLoader.getInstance().setXivoId(jCapa.getString("xivo_userid"));
+								InitialListLoader.getInstance().setAstId(jCapa.getString("astid"));
 								
 								JSONObject jCapaPresence = jCapa.getJSONObject("capapresence");
 								JSONObject jCapaPresenceState = jCapaPresence.getJSONObject("state");
 								JSONObject jCapaPresenceStateNames = jCapaPresence.getJSONObject("names");
 								JSONObject jCapaPresenceStateAllowed = jCapaPresence.getJSONObject("allowed");
 								
-								InitialListLoader.initialListLoader.capaPresenceState.put("color", jCapaPresenceState.getString("color"));
-								InitialListLoader.initialListLoader.capaPresenceState.put("stateid", jCapaPresenceState.getString("stateid"));
-								InitialListLoader.initialListLoader.capaPresenceState.put("longname", jCapaPresenceState.getString("longname"));
+								InitialListLoader.getInstance().putCapaPresenceState("color", jCapaPresenceState.getString("color"));
+								InitialListLoader.getInstance().putCapaPresenceState("stateid", jCapaPresenceState.getString("stateid"));
+								InitialListLoader.getInstance().putCapaPresenceState("longname", jCapaPresenceState.getString("longname"));
 								
 								feedStatusList("available", jCapaPresenceStateNames, jCapaPresenceStateAllowed);
 								feedStatusList("berightback", jCapaPresenceStateNames, jCapaPresenceStateAllowed);
@@ -224,7 +225,7 @@ public class Connection {
     		map.put("color", jCapaPresenceStatus.getString("color"));
     		map.put("longname", jCapaPresenceStatus.getString("longname"));
     		
-    		InitialListLoader.initialListLoader.statusList.add(map);
+    		InitialListLoader.getInstance().addStatusList(map);
     		
     		Log.d( LOG_TAG, "StatusList : " + jCapaPresenceStatus.getString("stateid")+" "+ 
     				jCapaPresenceStatus.getString("longname"));
@@ -419,5 +420,21 @@ public class Connection {
 			}
 
 		 }
-	
+	 
+		public Boolean getSaveLogin() {
+			return saveLogin;
+		}
+
+		public JSONObject getjCapa() {
+			return jCapa;
+		}
+
+		public Socket getNetworkConnection() {
+			return networkConnection;
+		}
+
+		public boolean isConnected() {
+			return connected;
+		}
+
 }
