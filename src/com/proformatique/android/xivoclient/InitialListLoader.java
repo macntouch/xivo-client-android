@@ -46,6 +46,14 @@ public class InitialListLoader {
 	public String astId = null;
 	public HashMap<String, String> capaPresenceState  = new HashMap<String, String>();
 	public List<HashMap<String, String>> statusList = new ArrayList<HashMap<String, String>>();
+	public HashMap<String, String> featuresEnablednd = new HashMap<String, String>();
+	public HashMap<String, String> featuresBusy = new HashMap<String, String>();
+	public HashMap<String, String> featuresRna = new HashMap<String, String>();
+	public HashMap<String, String> featuresCallrecord = new HashMap<String, String>();
+	public HashMap<String, String> featuresIncallfilter = new HashMap<String, String>();
+	public HashMap<String, String> featuresUnc = new HashMap<String, String>();
+	public HashMap<String, String> featuresEnablevoicemail = new HashMap<String, String>();
+
 	
 	public static InitialListLoader initialListLoader;
 	

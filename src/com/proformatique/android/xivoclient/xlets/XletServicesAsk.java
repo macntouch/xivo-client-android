@@ -24,7 +24,10 @@ public class XletServicesAsk extends Activity implements XletInterface{
 	}
 	
 	public void clickOnCancel(View v){
-		setResult(Constants.CANCEL);
+		Intent intentCancel = new Intent();
+		intentCancel.putExtra("phoneNumber", "");
+		
+		setResult(Constants.CANCEL, intentCancel);
 		finish();
 	}
 

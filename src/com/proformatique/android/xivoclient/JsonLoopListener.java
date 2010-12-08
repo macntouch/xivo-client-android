@@ -90,13 +90,24 @@ public class JsonLoopListener {
        				case 3:
        					/**
        					 * Send  a broadcast intent to all Broadcast Receiver 
-       					 * that listen this action --> inform Activities that the user's status phone
+       					 * that listen this action --> inform Activities that the call history
        					 * is updated
        					 */
        					Log.d( LOG_TAG , "Send Broadcast "+msg.what);
        			    	Intent i3 = new Intent();
        			        i3.setAction(Constants.ACTION_LOAD_HISTORY_LIST);
        			        context.sendBroadcast(i3);
+       			        break;
+       				case 4:
+       					/**
+       					 * Send  a broadcast intent to all Broadcast Receiver 
+       					 * that listen this action --> inform Activities that the features list
+       					 * is updated
+       					 */
+       					Log.d( LOG_TAG , "Send Broadcast "+msg.what);
+       			    	Intent i4 = new Intent();
+       			        i4.setAction(Constants.ACTION_LOAD_FEATURES);
+       			        context.sendBroadcast(i4);
        			        break;
        				case Constants.NO_NETWORK_AVAILABLE:
        			    	Intent iNoNetwork = new Intent();
@@ -195,6 +206,83 @@ public class JsonLoopListener {
 								}
 
 								handler.sendEmptyMessage(3);
+							}
+							
+							/**
+							 * Loading Features list
+							 */
+							if (classRec.equals("features")){
+								JSONObject jObj = jObjCurrent.getJSONObject("payload");
+								JSONObject jObjFeature;
+								String feature = "";
+								
+								feature = "enablednd";
+								if (jObj.has(feature)){
+									HashMap<String, String> map = new HashMap<String, String>(); 
+									jObjFeature = jObj.getJSONObject(feature);
+									map.put("enabled", jObjFeature.getString("enabled"));
+									
+									InitialListLoader.initialListLoader.featuresEnablednd = map;
+								}
+								
+								feature = "busy";
+								if (jObj.has(feature)){
+									HashMap<String, String> map = new HashMap<String, String>(); 
+									jObjFeature = jObj.getJSONObject(feature);
+									map.put("enabled", jObjFeature.getString("enabled"));
+									map.put("number", jObjFeature.getString("number"));
+									
+									InitialListLoader.initialListLoader.featuresBusy = map;
+								}
+
+								feature = "rna";
+								if (jObj.has(feature)){
+									HashMap<String, String> map = new HashMap<String, String>(); 
+									jObjFeature = jObj.getJSONObject(feature);
+									map.put("enabled", jObjFeature.getString("enabled"));
+									map.put("number", jObjFeature.getString("number"));
+									
+									InitialListLoader.initialListLoader.featuresRna = map;
+								}
+
+								feature = "callrecord";
+								if (jObj.has(feature)){
+									HashMap<String, String> map = new HashMap<String, String>(); 
+									jObjFeature = jObj.getJSONObject(feature);
+									map.put("enabled", jObjFeature.getString("enabled"));
+									
+									InitialListLoader.initialListLoader.featuresCallrecord = map;
+								}
+
+								feature = "incallfilter";
+								if (jObj.has(feature)){
+									HashMap<String, String> map = new HashMap<String, String>(); 
+									jObjFeature = jObj.getJSONObject(feature);
+									map.put("enabled", jObjFeature.getString("enabled"));
+									
+									InitialListLoader.initialListLoader.featuresIncallfilter = map;
+								}
+
+								feature = "unc";
+								if (jObj.has(feature)){
+									HashMap<String, String> map = new HashMap<String, String>(); 
+									jObjFeature = jObj.getJSONObject(feature);
+									map.put("enabled", jObjFeature.getString("enabled"));
+									map.put("number", jObjFeature.getString("number"));
+									
+									InitialListLoader.initialListLoader.featuresUnc = map;
+								}
+
+								feature = "enablevoicemail";
+								if (jObj.has(feature)){
+									HashMap<String, String> map = new HashMap<String, String>(); 
+									jObjFeature = jObj.getJSONObject(feature);
+									map.put("enabled", jObjFeature.getString("enabled"));
+									
+									InitialListLoader.initialListLoader.featuresEnablevoicemail = map;
+								}
+
+								handler.sendEmptyMessage(4);
 							}
 
            				} catch (NullPointerException e) {

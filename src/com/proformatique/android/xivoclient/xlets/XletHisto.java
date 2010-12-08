@@ -113,33 +113,32 @@ public class XletHisto extends Activity implements XletInterface{
 	}
 	
 	private void sendListRefresh(String mode, String elementsNumber){
-		final JSONObject jObj = new JSONObject();
+		JSONObject jObj = new JSONObject();
 		
-			try {
-				SimpleDateFormat sIso = new SimpleDateFormat("yyyy-MM-dd");
-				Date dDay = new Date();
-				Calendar c1 = new GregorianCalendar();
-				c1.setTime(dDay);
-				c1.add(Calendar.DAY_OF_MONTH, -30);
-				
-				jObj.accumulate("direction", Constants.XIVO_SERVER);
-				jObj.accumulate("class","history");
-				jObj.accumulate("peer", InitialListLoader.initialListLoader.astId+"/"+
-						InitialListLoader.initialListLoader.xivoId);
-				jObj.accumulate("size",elementsNumber);
-				jObj.accumulate("mode",mode);
-				jObj.accumulate("morerecentthan",sIso.format(c1.getTime()));
-				
-				PrintStream output = new PrintStream(
-						Connection.getInstance().networkConnection.getOutputStream());
-				output.println(jObj.toString());
-				Log.d( LOG_TAG , "Client : "+jObj.toString());
-			} catch (JSONException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		try {
+			SimpleDateFormat sIso = new SimpleDateFormat("yyyy-MM-dd");
+			Date dDay = new Date();
+			Calendar c1 = new GregorianCalendar();
+			c1.setTime(dDay);
+			c1.add(Calendar.DAY_OF_MONTH, -30);
+			
+			jObj.accumulate("direction", Constants.XIVO_SERVER);
+			jObj.accumulate("class","history");
+			jObj.accumulate("peer", InitialListLoader.initialListLoader.astId+"/"+
+					InitialListLoader.initialListLoader.xivoId);
+			jObj.accumulate("size",elementsNumber);
+			jObj.accumulate("mode",mode);
+			jObj.accumulate("morerecentthan",sIso.format(c1.getTime()));
+			
+			PrintStream output = new PrintStream(
+					Connection.getInstance().networkConnection.getOutputStream());
+			output.println(jObj.toString());
+			Log.d( LOG_TAG , "Client : "+jObj.toString());
+		} catch (JSONException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private class AlternativeAdapter extends SimpleAdapter {
