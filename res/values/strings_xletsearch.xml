@@ -3,6 +3,4 @@
     <!-- Xlet Directory strings -->
     <string name="presentation">Select a contact</string>
     <string name="com_phonenum">Phone : </string>
-    <string name="contact_action">Action</string>
-    <string name="contact_action_call">"Call %s (%s)</string>
 </resources>
