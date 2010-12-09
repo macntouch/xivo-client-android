@@ -35,6 +35,7 @@
     <string name="login_ok">Utilisateur connecté</string>
     <string name="loading">Veuillez patienter pendant le chargement ...</string>
     <string name="call_ok">"L\'appel a été transmis"</string>
+    <string name="call_no_phone_number">Appel impossible : pas de numéro disponible</string>
    
 
     <!-- Xlets descriptions
