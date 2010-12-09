@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -12,8 +14,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -46,6 +52,53 @@ public class XletHisto extends Activity{
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.ACTION_LOAD_HISTORY_LIST);
         registerReceiver(receiver, new IntentFilter(filter));
+        registerForContextMenu(lv);
+	}
+
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		switch (v.getId()){
+		case R.id.history_list:
+			{
+				AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)menuInfo;
+				menu.setHeaderTitle(getString(R.string.context_action));
+				String callAction = getString(R.string.context_action_call_short, 
+						xletList.get(info.position).get("fullname"));
+				menu.add(0, 1, 0, callAction);
+			}
+		}
+		super.onCreateContextMenu(menu, v, menuInfo);
+	}
+	
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		  AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+		  int menuItemIndex = item.getItemId();
+		  String phoneString = xletList.get(info.position).get("fullname");
+		  Pattern p = Pattern.compile(".*?<([^>]+)>",Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+		  Matcher m = p.matcher(phoneString);
+		  if (m.find())
+		  {
+			  String tag1=m.group(1);
+			  System.out.print("("+tag1.toString()+")"+"\n");
+			  clickLine(tag1.toString());
+		  }
+		  return super.onContextItemSelected(item);
+	}
+
+	/**
+	 * Perform a call via Dial Activity
+	 * 
+	 * @param v
+	 */
+	public void clickLine(String numToCall){
+		
+    	Intent defineIntent = new Intent();
+    	defineIntent.setAction(Constants.ACTION_XLET_DIAL_CALL);
+    	defineIntent.putExtra("numToCall", numToCall);
+		
+	    XletHisto.this.sendBroadcast(defineIntent);
 	}
 
 
