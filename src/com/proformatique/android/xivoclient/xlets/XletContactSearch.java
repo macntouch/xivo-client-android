@@ -63,8 +63,8 @@ public class XletContactSearch extends Activity{
 		case R.id.users_list:
 			{
 				AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)menuInfo;
-				menu.setHeaderTitle(getString(R.string.contact_action));
-				String callAction = getString(R.string.contact_action_call, 
+				menu.setHeaderTitle(getString(R.string.context_action));
+				String callAction = getString(R.string.context_action_call, 
 						usersList.get(info.position).get("fullname"), 
 						usersList.get(info.position).get("phonenum"));
 				menu.add(0, 1, 0, callAction);
