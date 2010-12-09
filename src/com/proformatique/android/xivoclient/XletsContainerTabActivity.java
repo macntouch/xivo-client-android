@@ -15,14 +15,12 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TabHost;
-import android.widget.TabWidget;
 
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.xlets.XletIdentity;
@@ -38,8 +36,7 @@ public class XletsContainerTabActivity extends TabActivity {
 	IncomingReceiver receiver;
 	XletIdentity xletIdentity;
 	
-    @SuppressWarnings("unused")
-	public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
 	    setContentView(R.layout.xlets_container);
 	    displayInit();
@@ -151,7 +148,8 @@ public class XletsContainerTabActivity extends TabActivity {
 
         	displayInit();
     	    InitialListLoader.getInstance().setXletsList(xletsList);
-    	    JsonLoopListener jsonLoop = JsonLoopListener.getInstance(this);
+    	    @SuppressWarnings("unused")
+			JsonLoopListener jsonLoop = JsonLoopListener.getInstance(this);
         	Connection.getInstance().setNewConnection(false);
     	}
     }
