@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 
 import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
@@ -122,6 +123,7 @@ public class XletContactSearch extends Activity{
 		lv= (ListView)findViewById(R.id.users_list);
 		lv.setAdapter(usersAdapter);
 		
+		/*
         lv.setOnItemClickListener(new OnItemClickListener() {
 
 			@SuppressWarnings("unchecked")
@@ -135,7 +137,19 @@ public class XletContactSearch extends Activity{
 			}
 
 		});
+		*/
+        
+        lv.setOnItemLongClickListener(new OnItemLongClickListener() {
 
+			@Override
+			public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+					int arg2, long arg3) {
+				
+				HashMap<String, String> line = (HashMap<String, String>) lv.getItemAtPosition(arg2);
+				clickLine(line.get("phonenum"));
+				return false;
+			}
+		});
 	}
 
 	/**

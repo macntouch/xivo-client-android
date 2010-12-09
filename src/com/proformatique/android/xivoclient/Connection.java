@@ -43,7 +43,7 @@ public class Connection {
 	private String responseLine;
 	private String sessionId;
 	private JSONObject jCapa;
-	private Socket networkConnection;
+	private Socket networkConnection = null;
 	private boolean connected = false;
 	private boolean newConnection = true;
 	
@@ -374,8 +374,10 @@ public class Connection {
 		try {
 			JsonLoopListener.setCancel(true);
 			connected = false;
-			networkConnection.shutdownOutput();
-			networkConnection.close();
+			if (!(null == networkConnection)){
+				networkConnection.shutdownOutput();
+				networkConnection.close();
+			}
 			
 	    	EditText eLogin = (EditText) callingActivity.findViewById(R.id.login); 
 	    	EditText ePassword = (EditText) callingActivity.findViewById(R.id.password);
