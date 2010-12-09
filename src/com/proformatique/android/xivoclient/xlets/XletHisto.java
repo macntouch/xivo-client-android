@@ -23,8 +23,10 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 import com.proformatique.android.xivoclient.InitialListLoader;
+import com.proformatique.android.xivoclient.LoginActivity;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
@@ -73,18 +75,27 @@ public class XletHisto extends Activity{
 	
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		  AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-		  int menuItemIndex = item.getItemId();
-		  String phoneString = xletList.get(info.position).get("fullname");
-		  Pattern p = Pattern.compile(".*?<([^>]+)>",Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-		  Matcher m = p.matcher(phoneString);
-		  if (m.find())
-		  {
-			  String tag1=m.group(1);
-			  System.out.print("("+tag1.toString()+")"+"\n");
-			  clickLine(tag1.toString());
-		  }
-		  return super.onContextItemSelected(item);
+		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+		@SuppressWarnings("unused")
+		int menuItemIndex = item.getItemId();
+		String fullname = xletList.get(info.position).get("fullname");
+		String phoneString = "";
+		try {
+			@SuppressWarnings("unused")
+			int phoneInt = Integer.parseInt(fullname);
+			phoneString = fullname;
+		} catch (Exception e) {
+			Pattern p = Pattern.compile(".*?<([^>]+)>",Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+			Matcher m = p.matcher(fullname);
+			if (m.find()) phoneString=m.group(1);
+		}
+
+		if (!phoneString.equals(""))
+			clickLine(phoneString);
+		else	Toast.makeText(XletHisto.this, R.string.call_no_phone_number
+						, Toast.LENGTH_LONG).show();
+
+		return super.onContextItemSelected(item);
 	}
 
 	/**
