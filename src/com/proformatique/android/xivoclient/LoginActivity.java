@@ -220,20 +220,21 @@ public class LoginActivity extends Activity {
 		        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
 		        NetworkInfo netInfo = cm.getActiveNetworkInfo();
 
-		        if (netInfo.getState().compareTo(State.CONNECTED)==0) {
-		    	
-		        	Connection connection = Connection.getInstance(eLogin.getText().toString(),
-							ePassword.getText().toString(), LoginActivity.this);
-					
-					InitialListLoader initList = InitialListLoader.getInstance();
-					int connectionCode = connection.initialize();
-
-					if (connectionCode >= 1){
-						return initList.startLoading();
-					}
-					return connectionCode;
-		        }
-		        else return Constants.NO_NETWORK_AVAILABLE;
+		        if (!(netInfo == null)) {
+			        if (netInfo.getState().compareTo(State.CONNECTED)==0) {
+			    	
+			        	Connection connection = Connection.getInstance(eLogin.getText().toString(),
+								ePassword.getText().toString(), LoginActivity.this);
+						
+						InitialListLoader initList = InitialListLoader.init();
+						int connectionCode = connection.initialize();
+	
+						if (connectionCode >= 1){
+							return initList.startLoading();
+						}
+						return connectionCode;
+			        } else return Constants.NO_NETWORK_AVAILABLE;
+		        } else return Constants.NO_NETWORK_AVAILABLE;
 			}
 
 			protected void onPostExecute(Integer result) {

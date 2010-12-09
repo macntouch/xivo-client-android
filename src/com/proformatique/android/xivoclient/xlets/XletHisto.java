@@ -113,4 +113,11 @@ public class XletHisto extends Activity{
 		
 		}
 	}
+
+	@Override
+	protected void onDestroy() {
+		unregisterReceiver(receiver);
+		super.onDestroy();
+	}
+
 }

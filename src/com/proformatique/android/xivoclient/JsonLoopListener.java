@@ -36,7 +36,7 @@ public class JsonLoopListener {
     Thread thread;
 	Handler handler;
 	protected String LOG_TAG = "JSONLOOP";
-	public static boolean cancel = false;
+	private static boolean cancel = false;
 	private static JsonLoopListener instance;
 
 	public static JsonLoopListener getInstance(Context context) {
@@ -44,6 +44,7 @@ public class JsonLoopListener {
             instance = new JsonLoopListener(context);
         } else if (cancel == true) {
         	instance.startJsonListener();
+        	instance.sendListRefresh();
         }
 
         return instance;
@@ -60,6 +61,7 @@ public class JsonLoopListener {
 		new Thread(new Runnable() {
 		    public void run() {
 		    	sendFeaturesListRefresh();
+		    	InitialListLoader.getInstance().clearHistoryList();
 		        sendListHistoRefresh("0","10");
 		        sendListHistoRefresh("1","10");
 		        sendListHistoRefresh("2","10");
@@ -395,5 +397,14 @@ public class JsonLoopListener {
 
 	}
 	
+	public static boolean isCancel() {
+		return cancel;
+	}
+
+
+	public static void setCancel(boolean cancel) {
+		JsonLoopListener.cancel = cancel;
+	}
+
 
 }

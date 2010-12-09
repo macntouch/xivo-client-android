@@ -42,11 +42,18 @@ public class XletsContainerTabActivity extends TabActivity {
 	public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
 	    setContentView(R.layout.xlets_container);
-
-	    final TabHost tabHost = getTabHost();
-		final TabWidget tabWidget = tabHost.getTabWidget();
+	    displayInit();
+	}
+    
+    private void displayInit() {
+    	
+	    TabHost tabHost = getTabHost();
+	    tabHost.clearAllTabs();
+	    /*
+		TabWidget tabWidget = tabHost.getTabWidget();
 
 	    Resources res = getResources();
+	    */
 	    TabHost.TabSpec spec;
 	    Intent intent;
 	    
@@ -125,18 +132,29 @@ public class XletsContainerTabActivity extends TabActivity {
 			  Log.d( LOG_TAG, "Missing label or description declaration for Xlet Activity : "+ aInfo.name);
 			}
         }
-        
 	    tabHost.setCurrentTab(0);
-	    InitialListLoader.getInstance().setXletsList(xletsList);
-	    
-	    JsonLoopListener jsonLoop = JsonLoopListener.getInstance(this);
-	    
 		/**
 		 * Displaying xlet Identity content
 		 */
 	    xletIdentity = new XletIdentity(XletsContainerTabActivity.this);
-        
 	}
+
+	@Override
+    protected void onResume() {
+    	super.onResume();
+
+    	if (Connection.getInstance().isNewConnection()){
+        	try {
+    			unregisterReceiver(receiver);
+    		} catch (Exception e) {
+    		}
+
+        	displayInit();
+    	    InitialListLoader.getInstance().setXletsList(xletsList);
+    	    JsonLoopListener jsonLoop = JsonLoopListener.getInstance(this);
+        	Connection.getInstance().setNewConnection(false);
+    	}
+    }
 	
 	public static ArrayList<String> decodeJsonObject(JSONObject jSonObj, String parent){
 		Log.d( LOG_TAG, "JSON : "+ jSonObj);
@@ -253,7 +271,6 @@ public class XletsContainerTabActivity extends TabActivity {
 		try {
 			unregisterReceiver(receiver);
 		} catch (Exception e) {
-			// TODO: handle exception
 		}
 		super.onDestroy();
 	}

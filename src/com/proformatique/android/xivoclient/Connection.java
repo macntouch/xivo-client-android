@@ -45,6 +45,7 @@ public class Connection {
 	private JSONObject jCapa;
 	private Socket networkConnection;
 	private boolean connected = false;
+	private boolean newConnection = true;
 	
 	private static Connection instance;
 
@@ -80,6 +81,7 @@ public class Connection {
 		this.serverAdress = this.settings.getString("server_adress", "");
 		this.serverPort = Integer.parseInt(this.settings.getString("server_port", "5003"));
 		this.saveLogin = this.settings.getBoolean("save_login", true);
+		this.newConnection = true;
 	}
 
 	/**
@@ -371,7 +373,7 @@ public class Connection {
 	public int disconnect(){
 		
 		try {
-			JsonLoopListener.cancel = true;
+			JsonLoopListener.setCancel(true);
 			connected = false;
 			networkConnection.shutdownOutput();
 			networkConnection.close();
@@ -387,7 +389,6 @@ public class Connection {
 	    	eLoginV.setVisibility(View.VISIBLE);
 	    	ePasswordV.setVisibility(View.VISIBLE);
 	    	eStatus.setVisibility(View.INVISIBLE);
-			
 			
 		} catch (IOException e) {
 			return Constants.NO_NETWORK_AVAILABLE;
@@ -436,5 +437,15 @@ public class Connection {
 		public boolean isConnected() {
 			return connected;
 		}
+		
+		public boolean isNewConnection() {
+			return newConnection;
+		}
+
+		public void setNewConnection(boolean newConnection) {
+			this.newConnection = newConnection;
+		}
+
+
 
 }

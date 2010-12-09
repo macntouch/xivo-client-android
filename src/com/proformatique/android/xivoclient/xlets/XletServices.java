@@ -261,5 +261,11 @@ public class XletServices extends Activity{
 			Connection.getInstance().sendJsonString(jObj);
 		}
 
+		@Override
+		protected void onDestroy() {
+			unregisterReceiver(receiver);
+			super.onDestroy();
+		}
+
 
 }

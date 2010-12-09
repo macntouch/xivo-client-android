@@ -52,14 +52,16 @@ public class InitialListLoader {
 	private static InitialListLoader instance;
 	
 	public static InitialListLoader getInstance(){
-        if (null == instance) {
-            instance = new InitialListLoader();
-        }
 		return instance;
 	}
 	
 	private InitialListLoader(){
 		super();
+	}
+
+	public static InitialListLoader init(){
+		instance = new InitialListLoader();
+		return instance;
 	}
 
 	public int startLoading(){
@@ -282,6 +284,10 @@ public class InitialListLoader {
 
 	public void addHistoryList(HashMap<String, String> map) {
 		this.historyList.add(map);
+	}
+	
+	public void clearHistoryList() {
+		this.historyList.clear();
 	}
 	
 	@SuppressWarnings("unchecked")
