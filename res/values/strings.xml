@@ -38,7 +38,7 @@
    
     <!-- Others -->
     <string name="context_action">Action</string>
-    <string name="context_action_call">"Call %s (%s)</string>
+    <string name="context_action_call">"Call %s (%s)"</string>
    
 
     <!-- Xlets descriptions

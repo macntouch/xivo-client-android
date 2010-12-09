@@ -34,7 +34,7 @@
     <string name="connection_ok">Connexion ok</string>
     <string name="login_ok">Utilisateur connecté</string>
     <string name="loading">Veuillez patienter pendant le chargement ...</string>
-    <string name="call_ok">"L'appel a été transmis"</string>
+    <string name="call_ok">"L\'appel a été transmis"</string>
    
 
     <!-- Xlets descriptions
