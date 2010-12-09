@@ -12,8 +12,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -33,6 +36,52 @@ public class XletContactSearch extends Activity{
 	AlternativeAdapter usersAdapter = null;
 	ListView lv;
 	IncomingReceiver receiver;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
+		setContentView(R.layout.xlet_search);
+		initList();
+		
+		receiver = new IncomingReceiver();
+
+		/**
+		 *  Register a BroadcastReceiver for Intent action that trigger a change
+		 *  in the users list from the Activity
+		 */
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Constants.ACTION_LOAD_USER_LIST);
+        registerReceiver(receiver, new IntentFilter(filter));
+        registerForContextMenu(lv);
+	}
+
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		switch (v.getId()){
+		case R.id.users_list:
+			{
+				AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)menuInfo;
+				menu.setHeaderTitle(getString(R.string.contact_action));
+				String callAction = getString(R.string.contact_action_call, 
+						usersList.get(info.position).get("fullname"), 
+						usersList.get(info.position).get("phonenum"));
+				menu.add(0, 1, 0, callAction);
+			}
+		}
+		super.onCreateContextMenu(menu, v, menuInfo);
+	}
+	
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		  AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+		  int menuItemIndex = item.getItemId();
+		  String phoneNumber = usersList.get(info.position).get("phonenum");
+		  clickLine(phoneNumber);
+
+		  return super.onContextItemSelected(item);
+	}
 
 	/**
 	 * Adapter subclass based on SimpleAdapter
@@ -90,24 +139,6 @@ public class XletContactSearch extends Activity{
 		}
 	}
 	
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		
-		setContentView(R.layout.xlet_search);
-		initList();
-		
-		receiver = new IncomingReceiver();
-
-		/**
-		 *  Register a BroadcastReceiver for Intent action that trigger a change
-		 *  in the users list from the Activity
-		 */
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Constants.ACTION_LOAD_USER_LIST);
-        registerReceiver(receiver, new IntentFilter(filter));
-	}
-
 	private void initList() {
 		usersList = InitialListLoader.getInstance().getUsersList();
 
@@ -123,35 +154,9 @@ public class XletContactSearch extends Activity{
 		lv= (ListView)findViewById(R.id.users_list);
 		lv.setAdapter(usersAdapter);
 		
-		/*
-        lv.setOnItemClickListener(new OnItemClickListener() {
-
-			@SuppressWarnings("unchecked")
-			@Override
-			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
-					long arg3) {
-				
-				HashMap<String, String> line = (HashMap<String, String>) lv.getItemAtPosition(arg2);
-				clickLine(line.get("phonenum"));
-
-			}
-
-		});
-		*/
-        
-        lv.setOnItemLongClickListener(new OnItemLongClickListener() {
-
-			@Override
-			public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
-					int arg2, long arg3) {
-				
-				HashMap<String, String> line = (HashMap<String, String>) lv.getItemAtPosition(arg2);
-				clickLine(line.get("phonenum"));
-				return false;
-			}
-		});
 	}
 
+		
 	/**
 	 * Perform a call via Dial Activity
 	 * 
@@ -164,7 +169,6 @@ public class XletContactSearch extends Activity{
     	defineIntent.putExtra("numToCall", numToCall);
 		
 	    XletContactSearch.this.sendBroadcast(defineIntent);
-	    
 	}
 
 	@Override
