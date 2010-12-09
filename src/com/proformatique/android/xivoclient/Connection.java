@@ -104,11 +104,10 @@ public class Connection {
 	                   }
 	               }
 				return Constants.NOT_CTI_SERVER;
-				
 			} catch (UnknownHostException e) {
 				return Constants.BAD_HOST;
 			} catch (IOException e) {
-				return Constants.NO_NETWORK_AVAILABLE;
+				return Constants.BAD_HOST;
 			}
 		
 	}

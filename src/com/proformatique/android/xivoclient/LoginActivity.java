@@ -77,7 +77,9 @@ public class LoginActivity extends Activity {
     }
     
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
+        /**
+         *  Handle item selection
+         */
         switch (item.getItemId()) {
         case R.id.menu_settings:
             menuSettings();
@@ -173,7 +175,6 @@ public class LoginActivity extends Activity {
     	EditText ePassword = (EditText) LoginActivity.this.findViewById(R.id.password);
     	TextView eLoginV = (TextView) LoginActivity.this.findViewById(R.id.login_text); 
     	TextView ePasswordV = (TextView) LoginActivity.this.findViewById(R.id.password_text);
-    	//Button eButton = (Button) LoginActivity.this.findViewById(R.id.b_ok);
     	TextView eStatus = (TextView) LoginActivity.this.findViewById(R.id.connect_status); 
     	
 		if (display){
@@ -181,7 +182,6 @@ public class LoginActivity extends Activity {
 	    	ePassword.setVisibility(View.VISIBLE);
 	    	eLoginV.setVisibility(View.VISIBLE);
 	    	ePasswordV.setVisibility(View.VISIBLE);
-	    	//eButton.setVisibility(View.VISIBLE);
 	    	eStatus.setVisibility(View.INVISIBLE);
 		}
 		else {
@@ -189,7 +189,6 @@ public class LoginActivity extends Activity {
 	    	ePassword.setVisibility(View.INVISIBLE);
 	    	eLoginV.setVisibility(View.INVISIBLE);
 	    	ePasswordV.setVisibility(View.INVISIBLE);
-	    	//eButton.setVisibility(View.INVISIBLE);
 	    	eStatus.setVisibility(View.VISIBLE);
 		}
 	}
@@ -244,13 +243,27 @@ public class LoginActivity extends Activity {
 	            	Toast.makeText(LoginActivity.this, R.string.no_web_connection
 							, Toast.LENGTH_LONG).show();
 	            }
+	            else if (result == Constants.BAD_HOST){
+		            dialog.dismiss();
+					Toast.makeText(LoginActivity.this, R.string.bad_host
+							, Toast.LENGTH_LONG).show();
+				}
+	            else if (result == Constants.NOT_CTI_SERVER){
+		            dialog.dismiss();
+					Toast.makeText(LoginActivity.this, R.string.not_cti_server
+							, Toast.LENGTH_LONG).show();
+				}
+	            else if (result == Constants.LOGIN_KO){
+		            dialog.dismiss();
+					Toast.makeText(LoginActivity.this, R.string.bad_login_password
+							, Toast.LENGTH_LONG).show();
+				}
 	            else if (result < 1){
 		            dialog.dismiss();
-
 					Toast.makeText(LoginActivity.this, R.string.connection_failed
 							, Toast.LENGTH_LONG).show();
 				}
-				else if(result > 0){
+				else if(result >= 1){
 					
 					if (Connection.getInstance().getSaveLogin()){
 						saveLoginPassword();
