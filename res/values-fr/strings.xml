@@ -46,11 +46,11 @@
     <string name="xlet_identity_label">identity</string>
     <string name="xlet_identity_desc">Identité</string>
     <string name="xlet_dial_label">dial</string>
-    <string name="xlet_dial_desc">Dialer</string>
+    <string name="xlet_dial_desc">Tel.</string>
     <string name="xlet_features_label">features</string>
     <string name="xlet_features_desc">Services</string>
     <string name="xlet_history_label">history</string>
-    <string name="xlet_history_desc">Historique</string>
+    <string name="xlet_history_desc">Appels</string>
     <string name="xlet_search_label">search</string>
     <string name="xlet_search_desc">Contacts</string>
 
