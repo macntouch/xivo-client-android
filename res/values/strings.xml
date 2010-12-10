@@ -34,6 +34,8 @@
     <string name="connection_ok">Connection ok</string>
     <string name="login_ok">User logged</string>
     <string name="loading">Please wait while loading ...</string>
+    <string name="calling_title">Xivo call</string>
+    <string name="calling">Sending a call to number %s ...</string>
     <string name="call_ok">The call has been transmitted</string>
     <string name="call_no_phone_number">Impossible call : no phone number available</string>
    

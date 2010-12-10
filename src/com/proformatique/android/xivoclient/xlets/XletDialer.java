@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -16,8 +17,10 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.proformatique.android.xivoclient.Connection;
@@ -30,6 +33,7 @@ public class XletDialer extends Activity{
 	private static final String LOG_TAG = "XLET DIALER";
 	EditText phoneNumber;
 	IncomingReceiver receiver;
+	Dialog dialog;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +41,7 @@ public class XletDialer extends Activity{
 
 		setContentView(R.layout.xlet_dialer);
 		phoneNumber = (EditText) findViewById(R.id.number);
-		
+
 		receiver = new IncomingReceiver();
 
 		/**
@@ -50,7 +54,9 @@ public class XletDialer extends Activity{
 	}
 	
 	public void clickOnCall(View v) {
-    	new CallJsonTask().execute();
+		if (!("").equals(phoneNumber.getText().toString())){
+			new CallJsonTask().execute();
+		}
     }
     
 	/**
@@ -60,7 +66,27 @@ public class XletDialer extends Activity{
 	 private class CallJsonTask extends AsyncTask<Void, Integer, Integer> {
 
 		@Override
+		protected void onPreExecute() {
+			
+			phoneNumber.setEnabled(false);
+			Context mContext = getApplicationContext();
+			dialog = new Dialog(XletDialer.this);
+
+			dialog.setContentView(R.layout.xlet_dialer_call);
+			dialog.setTitle(R.string.calling_title);
+
+			TextView text = (TextView) dialog.findViewById(R.id.call_message);
+			text.setText(getString(R.string.calling, phoneNumber.getText().toString()));
+			
+			dialog.show();
+
+			super.onPreExecute();
+		}
+
+		@Override
 		protected Integer doInBackground(Void... params) {
+
+			timer(1000);
 
 	    	/**
 	    	 * If the user enabled "use_mobile_number" setting, the call takes
@@ -83,23 +109,48 @@ public class XletDialer extends Activity{
 				Log.d( LOG_TAG, "jCalling: " + jCalling.toString());
 				PrintStream output = new PrintStream(Connection.getInstance().getNetworkConnection().getOutputStream());
 				output.println(jCalling.toString());
-
+				
+				publishProgress(Constants.OK);
+				timer(3000);
+				
 				return Constants.OK; 
 				
 			} catch (IOException e) {
+				publishProgress(Constants.NO_NETWORK_AVAILABLE);
+				
 				return Constants.NO_NETWORK_AVAILABLE;
 			}
 	    	
 		}
+		
+		private void timer(int milliseconds){
+			try {
+				synchronized(this) {
+					this.wait(milliseconds);
+					} 
+				} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+		}
+		
+		@Override
+		protected void onProgressUpdate(Integer... values) {
+			if (values[0]==Constants.OK) {
+				TextView text = (TextView) dialog.findViewById(R.id.call_message);
+				text.setText(getString(R.string.call_ok));
+			}
+			else {
+				TextView text = (TextView) dialog.findViewById(R.id.call_message);
+				text.setText(getString(R.string.no_web_connection));
+			}
+			super.onProgressUpdate(values);
+		}
 
 		@Override
 		protected void onPostExecute(Integer result) {
-			
-			if (result == Constants.OK)
-				Toast.makeText(XletDialer.this, R.string.call_ok
-						, Toast.LENGTH_LONG).show();
-			else Toast.makeText(XletDialer.this, R.string.no_web_connection
-					, Toast.LENGTH_LONG).show();
+			phoneNumber.setEnabled(true);
+			dialog.dismiss();
 
 		}
 
@@ -213,6 +264,16 @@ public class XletDialer extends Activity{
     	phoneNumber.append("#");
     }
 
+    public void clickOnDelete(View v) {
+    	keyPressed(KeyEvent.KEYCODE_DEL);
+    }
+
+    private void keyPressed(int keyCode) {
+        KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
+        phoneNumber.onKeyDown(keyCode, event);
+    }
+
+    
     protected void onDestroy() {
 		unregisterReceiver(receiver);
 		super.onDestroy();
