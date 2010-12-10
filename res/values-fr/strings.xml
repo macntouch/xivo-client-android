@@ -36,6 +36,7 @@
     <string name="loading">Veuillez patienter pendant le chargement ...</string>
     <string name="call_ok">"L\'appel a été transmis"</string>
     <string name="call_no_phone_number">Appel impossible : pas de numéro disponible</string>
+    <string name="calling">Appel en cours du numéro %s ...</string>
    
 
     <!-- Xlets descriptions

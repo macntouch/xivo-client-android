@@ -67,7 +67,7 @@ public class GraphicsManager {
 		  icon.setColorFilter(null);
 		  
 		  if (currentapiVersion <= android.os.Build.VERSION_CODES.ECLAIR_MR1) { 
-			  Drawable dr = getDrawableCopy(context, R.drawable.sym_presence_wht);
+			  Drawable dr = getDrawableCopy(context, R.drawable.personal_trans);
 			  icon.setImageDrawable(dr);
 		  }
 

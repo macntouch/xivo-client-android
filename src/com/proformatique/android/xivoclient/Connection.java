@@ -46,6 +46,7 @@ public class Connection {
 	private Socket networkConnection = null;
 	private boolean connected = false;
 	private boolean newConnection = true;
+    private XivoNotification xivoNotif;
 	
 	private static Connection instance;
 
@@ -198,6 +199,11 @@ public class Connection {
 								feedStatusList("outtolunch", jCapaPresenceStateNames, jCapaPresenceStateAllowed);
 								
 								connected=true;
+								
+								
+								xivoNotif = new XivoNotification(callingActivity);
+								xivoNotif.createNotification();
+
 								return Constants.CONNECTION_OK;
 							}
 						}
@@ -378,6 +384,7 @@ public class Connection {
 				networkConnection.shutdownOutput();
 				networkConnection.close();
 			}
+			xivoNotif.removeNotif();
 			
 	    	EditText eLogin = (EditText) callingActivity.findViewById(R.id.login); 
 	    	EditText ePassword = (EditText) callingActivity.findViewById(R.id.password);

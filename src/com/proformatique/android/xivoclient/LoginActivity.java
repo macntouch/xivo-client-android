@@ -14,6 +14,7 @@ import android.net.NetworkInfo.State;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -34,6 +35,7 @@ public class LoginActivity extends Activity {
     private SharedPreferences loginSettings;
     ConnectTask connectTask;
     ProgressDialog dialog;
+	private static final String LOG_TAG = "LOGIN_ACTIVITY";
 	
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +63,7 @@ public class LoginActivity extends Activity {
         if (Connection.getInstance().isConnected()) {
         	displayElements(false);
         	Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
-			startActivity(defineIntent);
+        	LoginActivity.this.startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
         }
         else displayElements(true);
 
@@ -108,7 +110,7 @@ public class LoginActivity extends Activity {
 	private void menuExit() {
     	if (Connection.getInstance().isConnected())
     		Connection.getInstance().disconnect();
-		finish();
+    	finish();
 	}
 
 	private void menuSettings() {
@@ -281,15 +283,28 @@ public class LoginActivity extends Activity {
 	         
 			}
 	 }
-
+	 
 	 @Override
 	 protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		 super.onActivityResult(requestCode, resultCode, data);
 		 
-		 if ( (requestCode == Constants.CODE_LAUNCH) &&
-				 (resultCode == Constants.CODE_EXIT)) {
-		     this.finish();
+		 Log.d( LOG_TAG, "onActivityResult");
+		 if (requestCode == Constants.CODE_LAUNCH) {
+			 Log.d( LOG_TAG, "onActivityResult : CODE_LAUNCH");
+			 if (resultCode == Constants.CODE_EXIT) {
+				 Log.d( LOG_TAG, "onActivityResult : CODE_EXIT");
+			     this.finish();
+		 	}
 		 }
 
 	 }
+	 
+	 @Override
+	protected void onDestroy() {
+		 Log.d( LOG_TAG, "DESTROY");
+		 if (Connection.getInstance().isConnected()) {
+			 Connection.getInstance().disconnect();
+		 }
+		super.onDestroy();
+	}
 }

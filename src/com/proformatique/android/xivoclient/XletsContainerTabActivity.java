@@ -270,8 +270,9 @@ public class XletsContainerTabActivity extends TabActivity {
 			unregisterReceiver(receiver);
 		} catch (Exception e) {
 		}
+		Connection.getInstance().disconnect();
+		setResult(Constants.CODE_EXIT);
+
 		super.onDestroy();
 	}
-
-
 }

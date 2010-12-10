@@ -69,11 +69,12 @@
     />
 
 <ImageView android:id="@+id/statusContact"
-     android:layout_width="50dp" 
-     android:layout_height="50dp"
-     android:layout_marginRight="5dp"
+     android:layout_width="26dp" 
+     android:layout_height="26dp"
+     android:layout_marginRight="20dp"
+     android:layout_marginTop="5dp"
      android:layout_gravity="right" 
-     android:src="@drawable/sym_presence_wht"/>
+     android:src="@drawable/personal_trans"/>
 
 <TextView
     android:layout_width="70dp"
