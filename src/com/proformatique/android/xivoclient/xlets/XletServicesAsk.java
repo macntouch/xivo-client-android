@@ -37,11 +37,7 @@ public class XletServicesAsk extends Activity{
 	}
 	
 	public void clickOnCancel(View v){
-		Intent intentCancel = new Intent();
-		intentCancel.putExtra("phoneNumber", "");
-		
-		setResult(Constants.CANCEL, intentCancel);
-		finish();
+		cancel();
 	}
 
 	public void clickOnOk(View v){
@@ -53,6 +49,10 @@ public class XletServicesAsk extends Activity{
 	}
 	
 	public void onBackPressed() {
+		cancel();
+	}
+	
+	private void cancel() {
 		Intent intentCancel = new Intent();
 		intentCancel.putExtra("phoneNumber", "");
 		
