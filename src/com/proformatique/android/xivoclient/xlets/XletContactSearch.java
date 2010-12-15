@@ -21,9 +21,6 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemLongClickListener;
-
 import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.tools.Constants;
@@ -76,7 +73,6 @@ public class XletContactSearch extends Activity{
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		  AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-		  int menuItemIndex = item.getItemId();
 		  String phoneNumber = usersList.get(info.position).get("phonenum");
 		  clickLine(phoneNumber);
 

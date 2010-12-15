@@ -173,7 +173,7 @@ public class InitialListLoader {
 		return Constants.OK;
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	class fullNameComparator implements Comparator
 	{
 	    public int compare(Object obj1, Object obj2)
@@ -388,7 +388,7 @@ public class InitialListLoader {
 
 
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private class DateComparator implements Comparator
 	{
 		public int compare(Object obj1, Object obj2)

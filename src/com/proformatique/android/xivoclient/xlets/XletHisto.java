@@ -26,7 +26,6 @@ import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import com.proformatique.android.xivoclient.InitialListLoader;
-import com.proformatique.android.xivoclient.LoginActivity;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;

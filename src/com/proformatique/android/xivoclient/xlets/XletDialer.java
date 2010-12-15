@@ -21,8 +21,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import com.proformatique.android.xivoclient.Connection;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XletsContainerTabActivity;
@@ -69,7 +67,6 @@ public class XletDialer extends Activity{
 		protected void onPreExecute() {
 			
 			phoneNumber.setEnabled(false);
-			Context mContext = getApplicationContext();
 			dialog = new Dialog(XletDialer.this);
 
 			dialog.setContentView(R.layout.xlet_dialer_call);
