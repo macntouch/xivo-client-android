@@ -23,7 +23,9 @@
     <string name="mobile_number_used">Use mobile number for calls</string>
     <string name="connection">Connection</string>
     <string name="calling_settings">Calling</string>
+    <string name="gui_settings">Look and Feel</string>
     <string name="context">Context</string>
+    <string name="use_fullscreen">Enable fullscreen mode</string>
 
     <!-- Messages strings -->
     <string name="connection_failed">Connection failed</string>

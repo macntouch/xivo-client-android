@@ -33,5 +33,11 @@
             android:defaultValue=""
             android:dependency="use_mobile_number"
             />
-  </PreferenceCategory>         
+  </PreferenceCategory>
+  <PreferenceCategory android:title="@string/gui_settings">
+  	<CheckBoxPreference
+  		android:key="use_fullscreen"
+  		android:title="@string/use_fullscreen"
+  		android:defaultValue="false"/>
+  </PreferenceCategory>
 </PreferenceScreen> 
