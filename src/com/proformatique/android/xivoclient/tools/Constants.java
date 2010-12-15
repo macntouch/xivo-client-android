@@ -8,7 +8,8 @@ public final class Constants {
 	public static final int NO_NETWORK_AVAILABLE = -2;
 	public static final int BAD_HOST = -1;
 	public static final int NOT_CTI_SERVER = -3;
-	public static final int JSON_POPULATE_ERROR = -4;	
+	public static final int JSON_POPULATE_ERROR = -4;
+	public static final int VERSION_MISMATCH = -5;
 	public static final int LOGIN_KO = 0;
 	public static final int OK = 1;
 	public static final int CONNECTION_OK = 2;
@@ -36,6 +37,7 @@ public final class Constants {
 	public static final String XIVO_PASSWORD_OK = "login_pass_ok";
 	public static final String XIVO_LOGIN_KO = "loginko";
 	public static final String XIVO_LOGIN_CAPAS_OK = "login_capas_ok";
+	public static final String XIVO_VERSION_NOT_COMPATIBLE = "xivoversion_client:1.1;1.0";
 	public static final int XIVO_NOTIF = 375942;
 	
 	/**

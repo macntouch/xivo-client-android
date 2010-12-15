@@ -31,6 +31,7 @@
     <string name="not_cti_server">Connection failed : not a Xivo CTI server</string>
     <string name="no_web_connection">Connection failed : network unavailable</string>
     <string name="bad_login_password">Connection failed : bad login or password</string>
+    <string name="version_mismatch">Connection failed : unsupported version</string>
     <string name="connection_ok">Connection ok</string>
     <string name="login_ok">User logged</string>
     <string name="loading">Please wait while loading ...</string>

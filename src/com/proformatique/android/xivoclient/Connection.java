@@ -213,6 +213,14 @@ public class Connection {
 			networkConnection.close();
 		} catch (IOException e) {
 		}
+		
+		try {
+			if (ReadLineObject.getString("errorstring").equals(Constants.XIVO_VERSION_NOT_COMPATIBLE)) {
+				return Constants.VERSION_MISMATCH;
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 		return Constants.LOGIN_KO;
 	}
 	

@@ -31,6 +31,7 @@
     <string name="not_cti_server">Connexion en échec : pas de serveur CTI Xivo</string>
     <string name="no_web_connection">Connexion en échec : pas de réseau</string>
     <string name="bad_login_password">Connexion en échec : login ou mot de passe erroné</string>
+    <string name="version_mismatch">Connexion en échec : version non supporté</string>
     <string name="connection_ok">Connexion ok</string>
     <string name="login_ok">Utilisateur connecté</string>
     <string name="loading">Veuillez patienter pendant le chargement ...</string>
