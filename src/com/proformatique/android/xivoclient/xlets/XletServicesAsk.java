@@ -51,5 +51,13 @@ public class XletServicesAsk extends Activity{
 		setResult(Constants.OK, intentOk);
 		finish();
 	}
+	
+	public void onBackPressed() {
+		Intent intentCancel = new Intent();
+		intentCancel.putExtra("phoneNumber", "");
+		
+		setResult(Constants.CANCEL, intentCancel);
+		finish();
+	}
 
 }
