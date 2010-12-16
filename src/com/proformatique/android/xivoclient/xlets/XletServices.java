@@ -5,7 +5,6 @@ import java.util.HashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -18,9 +17,10 @@ import android.widget.CheckBox;
 import com.proformatique.android.xivoclient.Connection;
 import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
+import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.tools.Constants;
 
-public class XletServices extends Activity{
+public class XletServices extends XivoActivity {
 
 	private static final String LOG_TAG = "XLET SERVICES";
 	private IncomingReceiver receiver;

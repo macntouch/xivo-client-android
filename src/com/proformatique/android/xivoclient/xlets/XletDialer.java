@@ -6,7 +6,6 @@ import java.io.PrintStream;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -23,10 +22,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import com.proformatique.android.xivoclient.Connection;
 import com.proformatique.android.xivoclient.R;
+import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.XletsContainerTabActivity;
 import com.proformatique.android.xivoclient.tools.Constants;
 
-public class XletDialer extends Activity{
+public class XletDialer extends XivoActivity {
 
 	private static final String LOG_TAG = "XLET DIALER";
 	EditText phoneNumber;

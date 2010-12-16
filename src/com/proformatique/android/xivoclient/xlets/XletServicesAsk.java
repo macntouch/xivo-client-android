@@ -2,15 +2,15 @@ package com.proformatique.android.xivoclient.xlets;
 
 import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
+import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.tools.Constants;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 
-public class XletServicesAsk extends Activity{
+public class XletServicesAsk extends XivoActivity {
 
 	private String serviceType;
 	private EditText phoneView;

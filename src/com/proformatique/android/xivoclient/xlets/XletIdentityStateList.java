@@ -8,7 +8,6 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -23,10 +22,11 @@ import android.widget.AdapterView.OnItemClickListener;
 import com.proformatique.android.xivoclient.Connection;
 import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
+import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
 
-public class XletIdentityStateList extends Activity {
+public class XletIdentityStateList extends XivoActivity {
 	
 	List<HashMap<String, String>> identityStateList = new ArrayList<HashMap<String, String>>();
 	AlternativeAdapter stateAdapter = null;

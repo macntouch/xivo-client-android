@@ -4,7 +4,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -25,7 +24,7 @@ import android.widget.Toast;
 
 import com.proformatique.android.xivoclient.tools.Constants;
 
-public class LoginActivity extends Activity {
+public class LoginActivity extends XivoActivity {
 	
     /**
      * Creating distinct preferences to avoid multiple references 

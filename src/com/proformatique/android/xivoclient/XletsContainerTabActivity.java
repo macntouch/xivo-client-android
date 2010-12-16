@@ -12,14 +12,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.TabHost;
 
 import com.proformatique.android.xivoclient.tools.Constants;
@@ -39,6 +42,14 @@ public class XletsContainerTabActivity extends TabActivity {
     public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
 	    setContentView(R.layout.xlets_container);
+	    
+	    SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+	    
+	    if (settings.getBoolean("use_fullscreen", false)) {
+        	this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+        			WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+	    
 	    displayInit();
 	}
     

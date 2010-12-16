@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -23,10 +22,11 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
+import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
 
-public class XletContactSearch extends Activity{
+public class XletContactSearch extends XivoActivity {
 	
 	private static final String LOG_TAG = "XLET DIRECTORY";
 	private  List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();

@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -27,10 +26,11 @@ import android.widget.Toast;
 
 import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
+import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
 
-public class XletHisto extends Activity{
+public class XletHisto extends XivoActivity {
 	private static final String LOG_TAG = "XLET HISTORY";
 	private  List<HashMap<String, String>> xletList = new ArrayList<HashMap<String, String>>();
 	AlternativeAdapter xletAdapter = null;

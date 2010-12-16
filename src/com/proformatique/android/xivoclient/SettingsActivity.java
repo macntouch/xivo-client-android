@@ -6,6 +6,7 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.telephony.TelephonyManager;
+import android.view.WindowManager;
 
 public class SettingsActivity extends PreferenceActivity{
 
@@ -20,6 +21,11 @@ public class SettingsActivity extends PreferenceActivity{
 		super.onCreate(savedInstanceState);
         settingsPrefs = getPreferenceManager().getSharedPreferences();
         addPreferencesFromResource(R.xml.settings);
+        
+        if (settingsPrefs.getBoolean("use_fullscreen", false)) {
+        	this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+        			WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
         
         /**
          * Init value for mobile number
