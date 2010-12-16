@@ -63,5 +63,7 @@
     <string name="xlet_history_desc">Call logs</string>
     <string name="xlet_search_label">search</string>
     <string name="xlet_search_desc">Contacts</string>
+    
+    <string name="search_hint">Search</string>
 
 </resources>
