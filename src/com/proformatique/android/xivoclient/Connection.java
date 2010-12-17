@@ -218,6 +218,9 @@ public class Connection {
 			if (ReadLineObject.getString("errorstring").equals(Constants.XIVO_VERSION_NOT_COMPATIBLE)) {
 				return Constants.VERSION_MISMATCH;
 			}
+			else if (ReadLineObject.getString("errorstring").subSequence(0, Constants.XIVO_CTI_VERSION_NOT_SUPPORTED.length()).equals(Constants.XIVO_CTI_VERSION_NOT_SUPPORTED)) {
+				return Constants.CTI_SERVER_NOT_SUPPORTED;
+			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

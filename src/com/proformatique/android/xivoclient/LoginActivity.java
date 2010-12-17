@@ -264,6 +264,11 @@ public class LoginActivity extends XivoActivity {
 	            	Toast.makeText(LoginActivity.this, R.string.version_mismatch
 	            			, Toast.LENGTH_LONG).show();
 	            }
+	            else if (result == Constants.CTI_SERVER_NOT_SUPPORTED) {
+	            	dialog.dismiss();
+	            	Toast.makeText(LoginActivity.this, R.string.cti_not_supported
+	            			, Toast.LENGTH_LONG).show();
+	            }
 	            else if (result < 1){
 		            dialog.dismiss();
 					Toast.makeText(LoginActivity.this, R.string.connection_failed
