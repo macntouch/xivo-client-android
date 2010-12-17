@@ -60,5 +60,7 @@
     <string name="xlet_history_desc">Appels</string>
     <string name="xlet_search_label">search</string>
     <string name="xlet_search_desc">Contacts</string>
+    
+    <string name="search_hint">Recherche</string>
 
 </resources>
