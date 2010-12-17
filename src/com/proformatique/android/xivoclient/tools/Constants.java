@@ -11,6 +11,7 @@ public final class Constants {
 	public static final int JSON_POPULATE_ERROR = -4;
 	public static final int VERSION_MISMATCH = -5;
 	public static final int CTI_SERVER_NOT_SUPPORTED = -6;
+	public static final int LOGIN_PASSWORD_ERROR = -7;
 	public static final int LOGIN_KO = 0;
 	public static final int OK = 1;
 	public static final int CONNECTION_OK = 2;
@@ -40,6 +41,8 @@ public final class Constants {
 	public static final String XIVO_LOGIN_CAPAS_OK = "login_capas_ok";
 	public static final String XIVO_VERSION_NOT_COMPATIBLE = "xivoversion_client:1.1;1.0";
 	public static final String XIVO_CTI_VERSION_NOT_SUPPORTED = "wrong_client_os_identifier:android-";
+	public static final String XIVO_LOGIN_PASSWORD = "login_password";
+	public static final String XIVO_LOGIN_UNKNOWN_USER = "user_not_found";
 	public static final int XIVO_NOTIF = 375942;
 	
 	/**

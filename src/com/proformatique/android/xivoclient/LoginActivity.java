@@ -244,6 +244,10 @@ public class LoginActivity extends XivoActivity {
 	            	Toast.makeText(LoginActivity.this, R.string.no_web_connection
 							, Toast.LENGTH_LONG).show();
 	            }
+	            else if (result == Constants.LOGIN_PASSWORD_ERROR) {
+	            	dialog.dismiss();
+	            	Toast.makeText(LoginActivity.this, R.string.bad_login_password, Toast.LENGTH_LONG).show();
+	            }
 	            else if (result == Constants.BAD_HOST){
 		            dialog.dismiss();
 					Toast.makeText(LoginActivity.this, R.string.bad_host
@@ -252,11 +256,6 @@ public class LoginActivity extends XivoActivity {
 	            else if (result == Constants.NOT_CTI_SERVER){
 		            dialog.dismiss();
 					Toast.makeText(LoginActivity.this, R.string.not_cti_server
-							, Toast.LENGTH_LONG).show();
-				}
-	            else if (result == Constants.LOGIN_KO){
-		            dialog.dismiss();
-					Toast.makeText(LoginActivity.this, R.string.bad_login_password
 							, Toast.LENGTH_LONG).show();
 				}
 	            else if (result == Constants.VERSION_MISMATCH) {

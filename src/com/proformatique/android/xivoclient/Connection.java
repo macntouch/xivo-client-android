@@ -215,11 +215,17 @@ public class Connection {
 		}
 		
 		try {
-			if (ReadLineObject.getString("errorstring").equals(Constants.XIVO_VERSION_NOT_COMPATIBLE)) {
-				return Constants.VERSION_MISMATCH;
-			}
-			else if (ReadLineObject.getString("errorstring").subSequence(0, Constants.XIVO_CTI_VERSION_NOT_SUPPORTED.length()).equals(Constants.XIVO_CTI_VERSION_NOT_SUPPORTED)) {
+			if (ReadLineObject.getString("errorstring").equals(Constants.XIVO_LOGIN_PASSWORD) ||
+					ReadLineObject.getString("errorstring").equals(Constants.XIVO_LOGIN_UNKNOWN_USER)) {
+				return Constants.LOGIN_PASSWORD_ERROR;
+			}			
+			else if (ReadLineObject.getString("errorstring").length() >= Constants.XIVO_CTI_VERSION_NOT_SUPPORTED.length()
+					&& ReadLineObject.getString("errorstring").subSequence(0, Constants.XIVO_CTI_VERSION_NOT_SUPPORTED.length())
+					.equals(Constants.XIVO_CTI_VERSION_NOT_SUPPORTED)) {
 				return Constants.CTI_SERVER_NOT_SUPPORTED;
+			}
+			else if (ReadLineObject.getString("errorstring").equals(Constants.XIVO_VERSION_NOT_COMPATIBLE)) {
+				return Constants.VERSION_MISMATCH;
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
