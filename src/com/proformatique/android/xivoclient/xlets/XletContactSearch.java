@@ -10,6 +10,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuItem;
@@ -17,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -30,18 +33,25 @@ public class XletContactSearch extends XivoActivity {
 	
 	private static final String LOG_TAG = "XLET DIRECTORY";
 	private  List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();
+	private List <HashMap<String, String>> filteredUsersList = new ArrayList<HashMap<String, String>>();
+	private EditText et;
 	AlternativeAdapter usersAdapter = null;
 	ListView lv;
 	IncomingReceiver receiver;
+	SearchReceiver searchReceiver;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.xlet_search);
+		usersList = InitialListLoader.getInstance().getUsersList();
+		copyList(usersList, filteredUsersList);
+		filllist("");
 		initList();
 		
 		receiver = new IncomingReceiver();
+		searchReceiver = new SearchReceiver();
 
 		/**
 		 *  Register a BroadcastReceiver for Intent action that trigger a change
@@ -50,7 +60,31 @@ public class XletContactSearch extends XivoActivity {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.ACTION_LOAD_USER_LIST);
         registerReceiver(receiver, new IntentFilter(filter));
+        
+        IntentFilter searchFilter = new IntentFilter();
+        searchFilter.addAction(Constants.ACTION_REFRESH_USER_LIST);
+        registerReceiver(searchReceiver, new IntentFilter(searchFilter));
+        
         registerForContextMenu(lv);
+        
+        et = (EditText)findViewById(R.id.SearchEdit);
+        et.addTextChangedListener(
+    		new TextWatcher() {
+    			
+    			public void afterTextChanged(Editable s) {    				
+    			}
+    			
+    			public void beforeTextChanged(CharSequence s, int start, int count, int after) {    				
+    			}
+    			
+    			public void onTextChanged(CharSequence s, int start, int before, int count) {
+    				Intent definedIntent = new Intent();
+    		    	definedIntent.setAction(Constants.ACTION_REFRESH_USER_LIST);        				
+    			    XletContactSearch.this.sendBroadcast(definedIntent);
+    			}
+    		}
+        );
+        
 	}
 
 	@Override
@@ -62,8 +96,8 @@ public class XletContactSearch extends XivoActivity {
 				AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)menuInfo;
 				menu.setHeaderTitle(getString(R.string.context_action));
 				String callAction = getString(R.string.context_action_call, 
-						usersList.get(info.position).get("fullname"), 
-						usersList.get(info.position).get("phonenum"));
+						filteredUsersList.get(info.position).get("fullname"), 
+						filteredUsersList.get(info.position).get("phonenum"));
 				menu.add(0, 1, 0, callAction);
 			}
 		}
@@ -73,7 +107,7 @@ public class XletContactSearch extends XivoActivity {
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		  AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-		  String phoneNumber = usersList.get(info.position).get("phonenum");
+		  String phoneNumber = filteredUsersList.get(info.position).get("phonenum");
 		  clickLine(phoneNumber);
 
 		  return super.onContextItemSelected(item);
@@ -129,18 +163,59 @@ public class XletContactSearch extends XivoActivity {
 	        	Log.d( LOG_TAG , "Received Broadcast ");
 	        	if (usersAdapter != null) {
 	        		usersList = InitialListLoader.getInstance().getUsersList();
+	        		filllist(et.getText().toString());
 	        		usersAdapter.notifyDataSetChanged();
 	        	}
 	        }
 		}
 	}
 	
-	private void initList() {
-		usersList = InitialListLoader.getInstance().getUsersList();
+	/**
+	 * BroadcastReceiver, intercept Intents with action ACTION_REFRESH_USER_LIST
+	 * to perform a reload of the displayer list
+	 * 
+	 */
+	public class SearchReceiver extends BroadcastReceiver {
 
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if (intent.getAction().equals(Constants.ACTION_REFRESH_USER_LIST)) {
+				Log.d(LOG_TAG, "Received search Broadcast");
+				if (usersAdapter != null) {
+					filllist(et.getText().toString());
+					initList();
+					usersAdapter.notifyDataSetChanged();
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Fill the filtered user list to display on the listview
+	 * 
+	 * @param filter -- The search value to look for
+	 */
+	private void filllist(String filter) {
+		if (filter.equals("")) {
+			copyList(usersList, filteredUsersList);
+		} else {
+			filteredUsersList.clear();
+			int len = filter.length();
+			for (HashMap<String, String> user: usersList) {
+				if (len <= user.get("fullname").length() && filter.equalsIgnoreCase((String) user.get("fullname").subSequence(0, len))) {
+					filteredUsersList.add(user);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Initialize the ListView for the searched contacts
+	 */
+	private void initList() {
 		usersAdapter = new AlternativeAdapter(
 				this,
-				usersList,
+				filteredUsersList,
 				R.layout.xlet_search_items,
 				new String[] { "fullname","phonenum","stateid","stateid_longname", "stateid_color",
 						"hintstatus_code", "hintstatus_longname", "hintstatus_color" },
@@ -149,7 +224,6 @@ public class XletContactSearch extends XivoActivity {
 		
 		lv= (ListView)findViewById(R.id.users_list);
 		lv.setAdapter(usersAdapter);
-		
 	}
 
 		
@@ -165,11 +239,26 @@ public class XletContactSearch extends XivoActivity {
     	defineIntent.putExtra("numToCall", numToCall);
 		
 	    XletContactSearch.this.sendBroadcast(defineIntent);
+	    et.setText("");
 	}
 
 	@Override
 	protected void onDestroy() {
 		unregisterReceiver(receiver);
+		unregisterReceiver(searchReceiver);
 		super.onDestroy();
+	}
+	
+	/**
+	 * Copy the first list to the second one
+	 * 
+	 * @param lhs -- The source list
+	 * @param rhs -- The destination list
+	 */
+	private void copyList(List<HashMap<String, String>> lhs, List<HashMap<String, String>> rhs) {
+		rhs.clear();
+		for (HashMap<String, String> item: lhs) {
+			rhs.add(item);
+		}
 	}
 }
