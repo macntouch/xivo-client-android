@@ -101,7 +101,7 @@ public class XletDialer extends XivoActivity {
 	    	 * Creating Call Json object
 	    	 */
 	    	JSONObject jCalling = createJsonCallingObject("originate", mobileNumber, 
-	    			phoneNumber.getText().toString());
+	    			phoneNumber.getText().toString().replaceAll("-", ""));
 			try {
 				Log.d( LOG_TAG, "jCalling: " + jCalling.toString());
 				PrintStream output = new PrintStream(Connection.getInstance().getNetworkConnection().getOutputStream());
