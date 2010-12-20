@@ -12,8 +12,10 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.text.Editable;
@@ -45,6 +47,7 @@ public class XletContactSearch extends XivoActivity {
 	ListView lv;
 	IncomingReceiver receiver;
 	SearchReceiver searchReceiver;
+	private SharedPreferences settings;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -53,7 +56,11 @@ public class XletContactSearch extends XivoActivity {
 		
 		setContentView(R.layout.xlet_search);
 		usersList = InitialListLoader.getInstance().getUsersList();
-		setAndroidContacts();
+		settings = PreferenceManager.getDefaultSharedPreferences(this);
+	        
+        if (settings.getBoolean("include_device_contacts", false)) {
+        	setAndroidContacts();
+        }
 		if (usersList.size() != 0){
 			Collections.sort(usersList, new fullNameComparator());
 		}

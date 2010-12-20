@@ -26,6 +26,7 @@
     <string name="gui_settings">Apparence</string>
     <string name="context">Contexte</string>
     <string name="use_fullscreen">Mode plein écran</string>
+    <string name="include_device_contacts">Include les contacts de l\'appareil</string>
 
     <!-- Messages strings -->
     <string name="connection_failed">Connexion en échec</string>
