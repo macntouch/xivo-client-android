@@ -75,7 +75,6 @@ public class InitialListLoader {
 		return Constants.OK;
 	}
 
-	@SuppressWarnings("unchecked")
 	private int initJsonList(String inputClass) {
 		JSONObject jObj = createJsonInputObject(inputClass,"getlist");
 		if (jObj!=null){
@@ -117,12 +116,6 @@ public class InitialListLoader {
 							usersList.add(map);
 
 							Log.d( LOG_TAG, "map : " + map.toString());
-						}
-						/**
-						 * Sorting list
-						 */
-						if (usersList.size()!=0){
-							Collections.sort(usersList, new fullNameComparator());
 						}
 					}
 					
@@ -173,18 +166,6 @@ public class InitialListLoader {
 		return Constants.OK;
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	class fullNameComparator implements Comparator
-	{
-	    public int compare(Object obj1, Object obj2)
-	    {
-	        HashMap<String, String> update1 = (HashMap<String, String>)obj1;
-	        HashMap<String, String> update2 = (HashMap<String, String>)obj2;
-	        return update1.get("fullname").compareTo(update2.get("fullname"));
-	    }
-	}
-
-
 	/**
 	 * Send a presence status and check it has been enabled by server
 	 * 
@@ -226,7 +207,6 @@ public class InitialListLoader {
 
 		return Constants.OK;
 	}
-	
 	
 	private JSONObject createJsonInputObject(String inputClass, String function) {
 		JSONObject jObj = new JSONObject();
@@ -384,11 +364,7 @@ public class InitialListLoader {
 		this.featuresEnablevoicemail = featuresEnablevoicemail;
 	}
 
-
-
-
-
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings("unchecked")
 	private class DateComparator implements Comparator
 	{
 		public int compare(Object obj1, Object obj2)

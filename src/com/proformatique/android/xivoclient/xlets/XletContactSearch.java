@@ -1,15 +1,21 @@
 package com.proformatique.android.xivoclient.xlets;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -40,12 +46,17 @@ public class XletContactSearch extends XivoActivity {
 	IncomingReceiver receiver;
 	SearchReceiver searchReceiver;
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.xlet_search);
 		usersList = InitialListLoader.getInstance().getUsersList();
+		setAndroidContacts();
+		if (usersList.size() != 0){
+			Collections.sort(usersList, new fullNameComparator());
+		}
 		copyList(usersList, filteredUsersList);
 		filllist("");
 		initList();
@@ -85,6 +96,40 @@ public class XletContactSearch extends XivoActivity {
     		}
         );
         
+	}
+	
+	/**
+	 * Reads Android contacts from the device and adds them to the usersList
+	 */
+	private void setAndroidContacts() {
+		// Get all contacts
+        ContentResolver cr = getContentResolver();
+        Cursor cursor = cr.query(ContactsContract.Contacts.CONTENT_URI, null,
+            null, null, null);
+        
+        while (cursor.moveToNext()) {
+            String contactId =
+                cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
+            String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+            // Read phone numbers
+            Cursor phones = cr.query(Phone.CONTENT_URI, null,
+                Phone.CONTACT_ID + " = " + contactId, null, null);
+            while (phones.moveToNext()) {
+                HashMap<String, String> contact = new HashMap<String, String>();
+                contact.put("fullname", name);
+                contact.put("phonenum", phones.getString(phones.getColumnIndex(Phone.NUMBER)));
+                contact.put("hintstatus_longname",
+                		(String) Phone.getTypeLabel(
+                				this.getResources(), phones.getInt(
+                						phones.getColumnIndex(Phone.TYPE)), "test"));
+                contact.put("stateid_longname", "Android");
+                contact.put("hintstatus_color", "#FFFFFF");
+                contact.put("stateid_color", "grey");
+                usersList.add(contact);
+            }
+            phones.close();
+        }
+        cursor.close();
 	}
 
 	@Override
@@ -135,12 +180,17 @@ public class XletContactSearch extends XivoActivity {
 		  
 		  HashMap<String, String> line = (HashMap<String, String>) lv.getItemAtPosition(position);
 
-		  String stateIdColor = line.get("stateid_color");
+		  String stateIdColor = "#FFFFFF";
+		  if (line.containsKey("stateid_color"))
+		  	stateIdColor = line.get("stateid_color");
+		  
 		  ImageView iconState = (ImageView) view.findViewById(R.id.statusContact);
 		  
 		  GraphicsManager.setIconStateDisplay(XletContactSearch.this, iconState, stateIdColor);
 		  
-	      String colorString = line.get("hintstatus_color");
+		  String colorString = "#FFFFFF";
+		  if (line.containsKey("hintstatus_color"))
+			  colorString = line.get("hintstatus_color");
 	      ImageView iconPhone = (ImageView) view.findViewById(R.id.phoneStatusContact);
 	      GraphicsManager.setIconPhoneDisplay(XletContactSearch.this, iconPhone, colorString);
 	      
@@ -260,5 +310,16 @@ public class XletContactSearch extends XivoActivity {
 		for (HashMap<String, String> item: lhs) {
 			rhs.add(item);
 		}
+	}
+	
+	@SuppressWarnings({"unchecked"})
+	private class fullNameComparator implements Comparator
+	{
+	    public int compare(Object obj1, Object obj2)
+	    {
+	        HashMap<String, String> update1 = (HashMap<String, String>)obj1;
+	        HashMap<String, String> update2 = (HashMap<String, String>)obj2;
+	        return update1.get("fullname").compareTo(update2.get("fullname"));
+	    }
 	}
 }
