@@ -369,7 +369,7 @@ public class JsonLoopListener {
 	    int len = usersList.size();
 		for (int i = 0; i<len; i++){
 			HashMap<String,String> usersMap = usersList.get(i);
-	    	if (usersMap.get("xivo_userid").equals(map.get("xivo_userid"))){
+	    	if (usersMap.containsKey("xivo_userid") && usersMap.get("xivo_userid").equals(map.get("xivo_userid"))){
 	    		if (typeMaj.equals("presence")){
 		    		usersMap.put("stateid", map.get("stateid"));
 		    		usersMap.put("stateid_longname", map.get("stateid_longname"));
