@@ -40,7 +40,8 @@ import com.proformatique.android.xivoclient.tools.GraphicsManager;
 public class XletContactSearch extends XivoActivity {
 	
 	private static final String LOG_TAG = "XLET DIRECTORY";
-	private  List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();
+	private List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();
+	private List<HashMap<String, String>> deviceContacts = null;
 	private List <HashMap<String, String>> filteredUsersList = new ArrayList<HashMap<String, String>>();
 	private EditText et;
 	AlternativeAdapter usersAdapter = null;
@@ -49,24 +50,15 @@ public class XletContactSearch extends XivoActivity {
 	SearchReceiver searchReceiver;
 	private SharedPreferences settings;
 
-	@SuppressWarnings("unchecked")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.xlet_search);
 		usersList = InitialListLoader.getInstance().getUsersList();
-		settings = PreferenceManager.getDefaultSharedPreferences(this);
-	        
-        if (settings.getBoolean("include_device_contacts", false)) {
-        	setAndroidContacts();
-        }
-		if (usersList.size() != 0){
-			Collections.sort(usersList, new fullNameComparator());
-		}
-		copyList(usersList, filteredUsersList);
+		deviceContacts = getAndroidContacts();		
 		filllist("");
-		initList();
+		initListView();
 		
 		receiver = new IncomingReceiver();
 		searchReceiver = new SearchReceiver();
@@ -102,14 +94,29 @@ public class XletContactSearch extends XivoActivity {
     			}
     		}
         );
-        
+	}
+	
+	protected void onResume() {
+		super.onResume();
+		refreshFilteredList();
+		filllist("");
+		initListView();
 	}
 	
 	/**
-	 * Reads Android contacts from the device and adds them to the usersList
+	 * Returns the list of contacts on this device
 	 */
-	private void setAndroidContacts() {
+	private List<HashMap<String, String>> getAndroidContacts() {
+		settings = PreferenceManager.getDefaultSharedPreferences(this);
+        
+        if (settings.getBoolean("include_device_contacts", false) == false) {
+        	deviceContacts = null;
+        	return null;
+        }
+        
+		if (deviceContacts != null) return deviceContacts;
 		// Get all contacts
+		deviceContacts = new ArrayList<HashMap<String, String>>();
         ContentResolver cr = getContentResolver();
         Cursor cursor = cr.query(ContactsContract.Contacts.CONTENT_URI, null,
             null, null, null);
@@ -132,11 +139,12 @@ public class XletContactSearch extends XivoActivity {
                 contact.put("stateid_longname", "Android");
                 contact.put("hintstatus_color", "#FFFFFF");
                 contact.put("stateid_color", "grey");
-                usersList.add(contact);
+                deviceContacts.add(contact);
             }
             phones.close();
         }
         cursor.close();
+        return deviceContacts;
 	}
 
 	@Override
@@ -187,17 +195,14 @@ public class XletContactSearch extends XivoActivity {
 		  
 		  HashMap<String, String> line = (HashMap<String, String>) lv.getItemAtPosition(position);
 
-		  String stateIdColor = "#FFFFFF";
-		  if (line.containsKey("stateid_color"))
-		  	stateIdColor = line.get("stateid_color");
+		  String stateIdColor = line.get("stateid_color");
 		  
 		  ImageView iconState = (ImageView) view.findViewById(R.id.statusContact);
 		  
 		  GraphicsManager.setIconStateDisplay(XletContactSearch.this, iconState, stateIdColor);
 		  
-		  String colorString = "#FFFFFF";
-		  if (line.containsKey("hintstatus_color"))
-			  colorString = line.get("hintstatus_color");
+		  String colorString = line.get("hintstatus_color");
+			  
 	      ImageView iconPhone = (ImageView) view.findViewById(R.id.phoneStatusContact);
 	      GraphicsManager.setIconPhoneDisplay(XletContactSearch.this, iconPhone, colorString);
 	      
@@ -240,10 +245,23 @@ public class XletContactSearch extends XivoActivity {
 				Log.d(LOG_TAG, "Received search Broadcast");
 				if (usersAdapter != null) {
 					filllist(et.getText().toString());
-					initList();
+					initListView();
 					usersAdapter.notifyDataSetChanged();
 				}
 			}
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void refreshFilteredList() {
+		filteredUsersList.clear();
+		if (usersList != null)
+			filteredUsersList.addAll(usersList);
+		deviceContacts = getAndroidContacts();
+		if (deviceContacts != null)
+			filteredUsersList.addAll(deviceContacts);
+		if (filteredUsersList.size() != 0){
+			Collections.sort(filteredUsersList, new fullNameComparator());
 		}
 	}
 	
@@ -253,10 +271,8 @@ public class XletContactSearch extends XivoActivity {
 	 * @param filter -- The search value to look for
 	 */
 	private void filllist(String filter) {
-		if (filter.equals("")) {
-			copyList(usersList, filteredUsersList);
-		} else {
-			filteredUsersList.clear();
+		refreshFilteredList();
+		if (filter.equals("") == false) {
 			int len = filter.length();
 			for (HashMap<String, String> user: usersList) {
 				if (len <= user.get("fullname").length() && filter.equalsIgnoreCase((String) user.get("fullname").subSequence(0, len))) {
@@ -269,7 +285,7 @@ public class XletContactSearch extends XivoActivity {
 	/**
 	 * Initialize the ListView for the searched contacts
 	 */
-	private void initList() {
+	private void initListView() {
 		usersAdapter = new AlternativeAdapter(
 				this,
 				filteredUsersList,
@@ -304,19 +320,6 @@ public class XletContactSearch extends XivoActivity {
 		unregisterReceiver(receiver);
 		unregisterReceiver(searchReceiver);
 		super.onDestroy();
-	}
-	
-	/**
-	 * Copy the first list to the second one
-	 * 
-	 * @param lhs -- The source list
-	 * @param rhs -- The destination list
-	 */
-	private void copyList(List<HashMap<String, String>> lhs, List<HashMap<String, String>> rhs) {
-		rhs.clear();
-		for (HashMap<String, String> item: lhs) {
-			rhs.add(item);
-		}
 	}
 	
 	@SuppressWarnings({"unchecked"})
