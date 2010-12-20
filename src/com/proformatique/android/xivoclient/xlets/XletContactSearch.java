@@ -273,8 +273,10 @@ public class XletContactSearch extends XivoActivity {
 	private void filllist(String filter) {
 		refreshFilteredList();
 		if (filter.equals("") == false) {
+			List<HashMap<String, String>> tmp = filteredUsersList;
+			filteredUsersList = new ArrayList<HashMap<String, String>>();
 			int len = filter.length();
-			for (HashMap<String, String> user: usersList) {
+			for (HashMap<String, String> user: tmp) {
 				if (len <= user.get("fullname").length() && filter.equalsIgnoreCase((String) user.get("fullname").subSequence(0, len))) {
 					filteredUsersList.add(user);
 				}
