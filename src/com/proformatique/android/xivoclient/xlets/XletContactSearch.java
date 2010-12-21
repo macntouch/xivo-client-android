@@ -39,7 +39,7 @@ public class XletContactSearch extends XivoActivity {
 	IncomingReceiver receiver;
 	SearchReceiver searchReceiver;
 	private List<HashMap<String, String>> contacts = null;
-
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -51,38 +51,33 @@ public class XletContactSearch extends XivoActivity {
 		
 		receiver = new IncomingReceiver();
 		searchReceiver = new SearchReceiver();
-
+		
 		/**
 		 *  Register a BroadcastReceiver for Intent action that trigger a change
 		 *  in the users list from the Activity
 		 */
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Constants.ACTION_LOAD_USER_LIST);
-        registerReceiver(receiver, new IntentFilter(filter));
-        
-        IntentFilter searchFilter = new IntentFilter();
-        searchFilter.addAction(Constants.ACTION_REFRESH_USER_LIST);
-        registerReceiver(searchReceiver, new IntentFilter(searchFilter));
-        
-        registerForContextMenu(lv);
-        
-        et = (EditText)findViewById(R.id.SearchEdit);
-        et.addTextChangedListener(
-    		new TextWatcher() {
-    			
-    			public void afterTextChanged(Editable s) {    				
-    			}
-    			
-    			public void beforeTextChanged(CharSequence s, int start, int count, int after) {    				
-    			}
-    			
-    			public void onTextChanged(CharSequence s, int start, int before, int count) {
-    				Intent definedIntent = new Intent();
-    		    	definedIntent.setAction(Constants.ACTION_REFRESH_USER_LIST);        				
-    			    XletContactSearch.this.sendBroadcast(definedIntent);
-    			}
-    		}
-        );
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(Constants.ACTION_LOAD_USER_LIST);
+		registerReceiver(receiver, new IntentFilter(filter));
+		
+		IntentFilter searchFilter = new IntentFilter();
+		searchFilter.addAction(Constants.ACTION_REFRESH_USER_LIST);
+		registerReceiver(searchReceiver, new IntentFilter(searchFilter));
+		
+		registerForContextMenu(lv);
+		
+		et = (EditText)findViewById(R.id.SearchEdit);
+		et.addTextChangedListener(
+				new TextWatcher() {
+					public void afterTextChanged(Editable s) {}
+					public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+					public void onTextChanged(CharSequence s, int start, int before, int count) {
+						Intent definedIntent = new Intent();
+						definedIntent.setAction(Constants.ACTION_REFRESH_USER_LIST);
+						XletContactSearch.this.sendBroadcast(definedIntent);
+					}
+				}
+		);
 	}
 	
 	protected void onResume() {
@@ -111,13 +106,13 @@ public class XletContactSearch extends XivoActivity {
 	
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		  AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-		  String phoneNumber = filteredUsersList.get(info.position).get("phonenum");
-		  clickLine(phoneNumber);
-
-		  return super.onContextItemSelected(item);
+		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+		String phoneNumber = filteredUsersList.get(info.position).get("phonenum");
+		clickLine(phoneNumber);
+		
+		return super.onContextItemSelected(item);
 	}
-
+	
 	/**
 	 * Adapter subclass based on SimpleAdapter
 	 * Allow modifying fields displayed in the ListView
@@ -125,34 +120,28 @@ public class XletContactSearch extends XivoActivity {
 	 * @author cquaquin
 	 */
 	private class AlternativeAdapter extends SimpleAdapter {
-
+		
 		public AlternativeAdapter(Context context,
 				List<? extends Map<String, ?>> data, int resource, String[] from,
 				int[] to) {
 			super(context, data, resource, from, to);
 		}
-
+		
 		@SuppressWarnings("unchecked")
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-
-		  View view = super.getView(position, convertView, parent);
-		  
-		  HashMap<String, String> line = (HashMap<String, String>) lv.getItemAtPosition(position);
-
-		  String stateIdColor = line.get("stateid_color");
-		  
-		  ImageView iconState = (ImageView) view.findViewById(R.id.statusContact);
-		  
-		  GraphicsManager.setIconStateDisplay(XletContactSearch.this, iconState, stateIdColor);
-		  
-		  String colorString = line.get("hintstatus_color");
-			  
-	      ImageView iconPhone = (ImageView) view.findViewById(R.id.phoneStatusContact);
-	      GraphicsManager.setIconPhoneDisplay(XletContactSearch.this, iconPhone, colorString);
-	      
-		  return view;
-		
+			
+			View view = super.getView(position, convertView, parent);
+			HashMap<String, String> line = (HashMap<String, String>) lv.getItemAtPosition(position);
+			String stateIdColor = line.get("stateid_color");
+			ImageView iconState = (ImageView) view.findViewById(R.id.statusContact);
+			GraphicsManager.setIconStateDisplay(XletContactSearch.this, iconState, stateIdColor);
+			String colorString = line.get("hintstatus_color");
+			ImageView iconPhone = (ImageView) view.findViewById(R.id.phoneStatusContact);
+			GraphicsManager.setIconPhoneDisplay(XletContactSearch.this, iconPhone, colorString);
+			
+			return view;
+			
 		}
 	}
 	
@@ -163,17 +152,17 @@ public class XletContactSearch extends XivoActivity {
 	 *
 	 */
 	public class IncomingReceiver extends BroadcastReceiver {
-
+		
 		@Override
 		public void onReceive(Context context, Intent intent) {
-	        if (intent.getAction().equals(Constants.ACTION_LOAD_USER_LIST)) {
-	        	Log.d( LOG_TAG , "Received Broadcast ");
-	        	if (usersAdapter != null) {
-	        		contacts = InitialListLoader.getInstance().getUsersList();
-	        		filllist(et.getText().toString());
-	        		usersAdapter.notifyDataSetChanged();
-	        	}
-	        }
+			if (intent.getAction().equals(Constants.ACTION_LOAD_USER_LIST)) {
+				Log.d( LOG_TAG , "Received Broadcast ");
+				if (usersAdapter != null) {
+					contacts = InitialListLoader.getInstance().getUsersList();
+					filllist(et.getText().toString());
+					usersAdapter.notifyDataSetChanged();
+				}
+			}
 		}
 	}
 	
@@ -183,7 +172,7 @@ public class XletContactSearch extends XivoActivity {
 	 * 
 	 */
 	public class SearchReceiver extends BroadcastReceiver {
-
+		
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			if (intent.getAction().equals(Constants.ACTION_REFRESH_USER_LIST)) {
@@ -196,7 +185,7 @@ public class XletContactSearch extends XivoActivity {
 			}
 		}
 	}
-
+	
 	private void refreshFilteredList() {
 		int contactsLen = contacts != null ? contacts.size() : 0;
 		
@@ -245,8 +234,7 @@ public class XletContactSearch extends XivoActivity {
 		lv= (ListView)findViewById(R.id.users_list);
 		lv.setAdapter(usersAdapter);
 	}
-
-		
+	
 	/**
 	 * Perform a call via Dial Activity
 	 * 
@@ -254,14 +242,14 @@ public class XletContactSearch extends XivoActivity {
 	 */
 	public void clickLine(String numToCall){
 		
-    	Intent defineIntent = new Intent();
-    	defineIntent.setAction(Constants.ACTION_XLET_DIAL_CALL);
-    	defineIntent.putExtra("numToCall", numToCall);
+		Intent defineIntent = new Intent();
+		defineIntent.setAction(Constants.ACTION_XLET_DIAL_CALL);
+		defineIntent.putExtra("numToCall", numToCall);
 		
-	    XletContactSearch.this.sendBroadcast(defineIntent);
-	    et.setText("");
+		XletContactSearch.this.sendBroadcast(defineIntent);
+		et.setText("");
 	}
-
+	
 	@Override
 	protected void onDestroy() {
 		unregisterReceiver(receiver);
