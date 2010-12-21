@@ -1,23 +1,15 @@
 package com.proformatique.android.xivoclient.xlets;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.provider.ContactsContract;
-import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -40,23 +32,20 @@ import com.proformatique.android.xivoclient.tools.GraphicsManager;
 public class XletContactSearch extends XivoActivity {
 	
 	private static final String LOG_TAG = "XLET DIRECTORY";
-	private List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();
-	private List<HashMap<String, String>> deviceContacts = null;
 	private List <HashMap<String, String>> filteredUsersList = new ArrayList<HashMap<String, String>>();
 	private EditText et;
 	AlternativeAdapter usersAdapter = null;
 	ListView lv;
 	IncomingReceiver receiver;
 	SearchReceiver searchReceiver;
-	private SharedPreferences settings;
+	private List<HashMap<String, String>> contacts = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.xlet_search);
-		usersList = InitialListLoader.getInstance().getUsersList();
-		deviceContacts = getAndroidContacts();		
+		contacts = InitialListLoader.getInstance().getAllContacts();
 		filllist("");
 		initListView();
 		
@@ -103,51 +92,6 @@ public class XletContactSearch extends XivoActivity {
 		initListView();
 	}
 	
-	/**
-	 * Returns the list of contacts on this device
-	 */
-	private List<HashMap<String, String>> getAndroidContacts() {
-		settings = PreferenceManager.getDefaultSharedPreferences(this);
-        
-        if (settings.getBoolean("include_device_contacts", false) == false) {
-        	return null;
-        }
-        
-		if (deviceContacts != null) return deviceContacts;
-		// Get all contacts
-		ContentResolver cr = getContentResolver();
-        Cursor cursor = cr.query(ContactsContract.Contacts.CONTENT_URI, null,
-            null, null, null);
-        
-        deviceContacts = new ArrayList<HashMap<String, String>>(cursor.getCount());
-        String contactId;
-        String name;
-        Cursor phones;
-        while (cursor.moveToNext()) {
-            contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
-            name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-            // Read phone numbers
-            phones = cr.query(Phone.CONTENT_URI, null, Phone.CONTACT_ID + " = " + contactId, null, null);
-            HashMap<String, String> contact;
-            while (phones.moveToNext()) {
-                contact = new HashMap<String, String>(Constants.ANDROID_CONTACT_HASH_SIZE);
-                contact.put("fullname", name);
-                contact.put("phonenum", phones.getString(phones.getColumnIndex(Phone.NUMBER)));
-                contact.put("hintstatus_longname",
-                		(String) Phone.getTypeLabel(
-                				this.getResources(), phones.getInt(
-                						phones.getColumnIndex(Phone.TYPE)), "test"));
-                contact.put("stateid_longname", "Android");
-                contact.put("hintstatus_color", "#FFFFFF");
-                contact.put("stateid_color", "grey");
-                deviceContacts.add(contact);
-            }
-            phones.close();
-        }
-        cursor.close();
-        return deviceContacts;
-	}
-
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
 			ContextMenuInfo menuInfo) {
@@ -225,7 +169,7 @@ public class XletContactSearch extends XivoActivity {
 	        if (intent.getAction().equals(Constants.ACTION_LOAD_USER_LIST)) {
 	        	Log.d( LOG_TAG , "Received Broadcast ");
 	        	if (usersAdapter != null) {
-	        		usersList = InitialListLoader.getInstance().getUsersList();
+	        		contacts = InitialListLoader.getInstance().getUsersList();
 	        		filllist(et.getText().toString());
 	        		usersAdapter.notifyDataSetChanged();
 	        	}
@@ -253,26 +197,17 @@ public class XletContactSearch extends XivoActivity {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void refreshFilteredList() {
-		int xivoLen = usersList != null ? usersList.size() : 0;
-		deviceContacts = getAndroidContacts();
-		int androidLen = deviceContacts != null ? deviceContacts.size() : 0;
+		int contactsLen = contacts != null ? contacts.size() : 0;
 		
 		if (filteredUsersList == null) {
-			filteredUsersList = new ArrayList<HashMap<String, String>>(androidLen + xivoLen);
+			filteredUsersList = new ArrayList<HashMap<String, String>>(contactsLen);
 		} else {
 			filteredUsersList.clear();
 		}
 		
-		if (usersList != null)
-			filteredUsersList.addAll(usersList);		
-		if (deviceContacts != null)
-			filteredUsersList.addAll(deviceContacts);
-		
-		if (filteredUsersList.size() != 0){
-			Collections.sort(filteredUsersList, new fullNameComparator());
-		}
+		if (contacts != null)
+			filteredUsersList.addAll(contacts);		
 	}
 	
 	/**
@@ -332,16 +267,5 @@ public class XletContactSearch extends XivoActivity {
 		unregisterReceiver(receiver);
 		unregisterReceiver(searchReceiver);
 		super.onDestroy();
-	}
-	
-	@SuppressWarnings({"unchecked"})
-	private class fullNameComparator implements Comparator
-	{
-	    public int compare(Object obj1, Object obj2)
-	    {
-	        HashMap<String, String> update1 = (HashMap<String, String>)obj1;
-	        HashMap<String, String> update2 = (HashMap<String, String>)obj2;
-	        return update1.get("fullname").compareTo(update2.get("fullname"));
-	    }
 	}
 }
