@@ -12,6 +12,7 @@ public final class Constants {
 	public static final int VERSION_MISMATCH = -5;
 	public static final int CTI_SERVER_NOT_SUPPORTED = -6;
 	public static final int LOGIN_PASSWORD_ERROR = -7;
+	public static final int FORCED_DISCONNECT = -8;
 	public static final int LOGIN_KO = 0;
 	public static final int OK = 1;
 	public static final int CONNECTION_OK = 2;
@@ -57,5 +58,6 @@ public final class Constants {
 	public static final String ACTION_LOAD_HISTORY_LIST =  "xivo.intent.action.LOAD_HISTORY_LIST";
 	public static final String ACTION_LOAD_FEATURES = "xivo.intent.action.LOAD_FEATURES";
 	public static final String ACTION_REFRESH_USER_LIST = "xivo.intent.action.USER_SEARCH";
+	public static final String ACTION_FORCED_DISCONNECT = "xivo.intent.action.FORCED_DISCONNECT";
 	
 }

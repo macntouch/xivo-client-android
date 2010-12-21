@@ -178,6 +178,12 @@ public class JsonLoopListener {
        			    	iJsonError.setAction(Constants.ACTION_DISCONNECT);
        			        context.sendBroadcast(iJsonError);
        			        break;
+       				case Constants.FORCED_DISCONNECT:
+       					Log.d(LOG_TAG, "Send Broadcast Forced disconnection");
+       					Intent iForcedDisconnection = new Intent();
+       					iForcedDisconnection.setAction(Constants.ACTION_FORCED_DISCONNECT);
+       					context.sendBroadcast(iForcedDisconnection);
+       					break;
        			}
        		} 
        	};
@@ -346,6 +352,12 @@ public class JsonLoopListener {
 								}
 
 								handler.sendEmptyMessage(4);
+							}
+							
+							if (classRec.equals("disconnect")) {
+								if (jObjCurrent.has("type") && jObjCurrent.get("type").equals("force")) {
+									handler.sendEmptyMessage(Constants.FORCED_DISCONNECT);
+								}
 							}
 
            				} catch (NullPointerException e) {

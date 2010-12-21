@@ -45,6 +45,7 @@
     <string name="call_no_phone_number">Impossible call : no phone number available</string>
     <string name="notif_xivo">Xivo is online and working, click here</string>
     <string name="notif_xivo_title">Xivo online</string>
+    <string name="forced_disconnect">Forced disconnection</string>
    
     <!-- Others -->
     <string name="context_action">Action</string>
