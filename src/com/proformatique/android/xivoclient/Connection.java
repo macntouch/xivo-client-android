@@ -30,7 +30,7 @@ import com.proformatique.android.xivoclient.tools.Constants;
  *
  */
 public class Connection {
-
+	
 	private static final String LOG_TAG = "CONNECTION";
 	private String serverAdress;
 	private int serverPort;
@@ -46,32 +46,32 @@ public class Connection {
 	private Socket networkConnection = null;
 	private boolean connected = false;
 	private boolean newConnection = true;
-    private XivoNotification xivoNotif;
+	private XivoNotification xivoNotif;
 	
 	private static Connection instance;
-
+	
 	public static Connection getInstance(){
-        if (null == instance) {
-            instance = new Connection();
-        }
+		if (null == instance) {
+			instance = new Connection();
+		}
 		return instance;
 	}
-
+	
 	public static Connection getInstance(String login, String password,
-			Activity callingActivity) {
-        if (null == instance) {
-            instance = new Connection(login, password, callingActivity);
-        } else if (!instance.connected){
-        	instance = new Connection(login, password, callingActivity);
-        }
-        return instance;
+		Activity callingActivity) {
+		if (null == instance) {
+			instance = new Connection(login, password, callingActivity);
+		} else if (!instance.connected){
+			instance = new Connection(login, password, callingActivity);
+		}
+		return instance;
 	}
-
+	
 	
 	private Connection() {
 		super();
 	}
-
+	
 	private Connection(String login, String password,
 			Activity callingActivity) {
 		super();
@@ -84,7 +84,7 @@ public class Connection {
 		this.saveLogin = this.settings.getBoolean("save_login", true);
 		this.newConnection = true;
 	}
-
+	
 	/**
 	 * Perform network connection with Xivo CTI server
 	 * 
@@ -92,24 +92,23 @@ public class Connection {
 	 */
 	public int initialize() {
 		
-			try {
-				networkConnection = new Socket(serverAdress, serverPort);
-	
-				input = new DataInputStream(networkConnection.getInputStream());
-	            String responseLine;
-	            
-				while ((responseLine = input.readLine()) != null) {
-	
-	                   if (responseLine.contains("XiVO CTI Server")) {
-	                	   return loginCTI();
-	                   }
-	               }
-				return Constants.NOT_CTI_SERVER;
-			} catch (UnknownHostException e) {
-				return Constants.BAD_HOST;
-			} catch (IOException e) {
-				return Constants.BAD_HOST;
+		try {
+			networkConnection = new Socket(serverAdress, serverPort);
+			
+			input = new DataInputStream(networkConnection.getInputStream());
+			String responseLine;
+			
+			while ((responseLine = input.readLine()) != null) {
+				if (responseLine.contains("XiVO CTI Server")) {
+					return loginCTI();
+				}
 			}
+			return Constants.NOT_CTI_SERVER;
+		} catch (UnknownHostException e) {
+			return Constants.BAD_HOST;
+		} catch (IOException e) {
+			return Constants.BAD_HOST;
+		}
 		
 	}
 	
@@ -154,8 +153,8 @@ public class Connection {
 		ReadLineObject = readJsonObjectCTI();
 		
 		try {
-		    if (ReadLineObject.getString("class").equals(Constants.XIVO_LOGIN_OK)){
-
+			if (ReadLineObject.getString("class").equals(Constants.XIVO_LOGIN_OK)){
+				
 				/**
 				 * Second step : check that password is allowed on server
 				 */
@@ -197,14 +196,14 @@ public class Connection {
 								
 								xivoNotif = new XivoNotification(callingActivity);
 								xivoNotif.createNotification();
-
+								
 								return Constants.CONNECTION_OK;
 							}
 						}
 					}
 				}
 			}
-		    
+		
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -218,7 +217,7 @@ public class Connection {
 			if (ReadLineObject.getString("errorstring").equals(Constants.XIVO_LOGIN_PASSWORD) ||
 					ReadLineObject.getString("errorstring").equals(Constants.XIVO_LOGIN_UNKNOWN_USER)) {
 				return Constants.LOGIN_PASSWORD_ERROR;
-			}			
+			}
 			else if (ReadLineObject.getString("errorstring").length() >= Constants.XIVO_CTI_VERSION_NOT_SUPPORTED.length()
 					&& ReadLineObject.getString("errorstring").subSequence(0, Constants.XIVO_CTI_VERSION_NOT_SUPPORTED.length())
 					.equals(Constants.XIVO_CTI_VERSION_NOT_SUPPORTED)) {
@@ -233,24 +232,24 @@ public class Connection {
 		return Constants.LOGIN_KO;
 	}
 	
-    private void feedStatusList(String status, JSONObject jNames, JSONObject jAllowed) throws JSONException{
+	private void feedStatusList(String status, JSONObject jNames, JSONObject jAllowed) throws JSONException{
 		
-    	if (jAllowed.getBoolean(status)){
-        	HashMap<String, String> map = new HashMap<String, String>();
-
-    		JSONObject jCapaPresenceStatus = jNames.getJSONObject(status);
-    		map.put("stateid", jCapaPresenceStatus.getString("stateid"));
-    		map.put("color", jCapaPresenceStatus.getString("color"));
-    		map.put("longname", jCapaPresenceStatus.getString("longname"));
-    		
-    		InitialListLoader.getInstance().addStatusList(map);
-    		
-    		Log.d( LOG_TAG, "StatusList : " + jCapaPresenceStatus.getString("stateid")+" "+ 
-    				jCapaPresenceStatus.getString("longname"));
-    	}
-    	
-    }
-
+		if (jAllowed.getBoolean(status)){
+			HashMap<String, String> map = new HashMap<String, String>();
+			
+			JSONObject jCapaPresenceStatus = jNames.getJSONObject(status);
+			map.put("stateid", jCapaPresenceStatus.getString("stateid"));
+			map.put("color", jCapaPresenceStatus.getString("color"));
+			map.put("longname", jCapaPresenceStatus.getString("longname"));
+			
+			InitialListLoader.getInstance().addStatusList(map);
+			
+			Log.d( LOG_TAG, "StatusList : " + jCapaPresenceStatus.getString("stateid")+" "+ 
+					jCapaPresenceStatus.getString("longname"));
+		}
+		
+	}
+	
 	/**
 	 * Perform a read action on the stream from CTI server
 	 * @return JSON object retrieved
@@ -268,16 +267,16 @@ public class Connection {
 				}
 				catch (Exception e) {
 					e.printStackTrace();
-
+					
 				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return null;
-
+		
 	}
-
+	
 	private int passwordCTI(JSONObject jsonSessionRead) throws JSONException {
 		byte[] sDigest = null;
 		sessionId = jsonSessionRead.getString("sessionid");
@@ -303,10 +302,10 @@ public class Connection {
 		} catch (IOException e) {
 			return Constants.NO_NETWORK_AVAILABLE;
 		}
-
+		
 		return Constants.CONNECTION_OK;
 	}
-
+	
 	private int sendCapasCTI() throws JSONException {
 		JSONObject jsonCapas = new JSONObject();
 		
@@ -325,20 +324,20 @@ public class Connection {
 		} catch (IOException e) {
 			return Constants.NO_NETWORK_AVAILABLE;
 		}
-
+		
 		return Constants.CONNECTION_OK;
 	}
-
-
+	
+	
 	private static String bytes2String(byte[] bytes) {
-        StringBuilder string = new StringBuilder();
-        for (byte b: bytes) {
-                String hexString = Integer.toHexString(0x00FF & b);
-                string.append(hexString.length() == 1 ? "0" + hexString : hexString);
-        }
-        return string.toString();
+		StringBuilder string = new StringBuilder();
+		for (byte b: bytes) {
+			String hexString = Integer.toHexString(0x00FF & b);
+			string.append(hexString.length() == 1 ? "0" + hexString : hexString);
+		}
+		return string.toString();
 	}
-
+	
 	/**
 	 * Perform a read action on the stream from CTI server
 	 * And return the object corresponding at input parameter ctiClass 
@@ -354,22 +353,21 @@ public class Connection {
 					Log.d( LOG_TAG, "Server: " + responseLine);
 					
 					if (ReadLineObject.get("class").equals(ctiClass))
-					   return ReadLineObject;
+						return ReadLineObject;
 				}
 				catch (Exception e) {
 					e.printStackTrace();
-
 				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return null;
-
+		
 	}
 	
 	JSONObject readData() throws IOException, JSONException{
-
+		
 		if (networkConnection.isClosed()){
 			disconnect();
 			return null;
@@ -378,14 +376,14 @@ public class Connection {
 		while (networkConnection.isConnected()) {
 			responseLine = input.readLine();
 			Log.d( LOG_TAG, "Server from ReadData: " + responseLine);
-            JSONObject jsonString = new JSONObject(responseLine);
+			JSONObject jsonString = new JSONObject(responseLine);
 			return jsonString;
 		}
-
+		
 		return null;
 		
 	}
-
+	
 	public int disconnect(){
 		
 		try {
@@ -397,17 +395,17 @@ public class Connection {
 			}
 			xivoNotif.removeNotif();
 			
-	    	EditText eLogin = (EditText) callingActivity.findViewById(R.id.login); 
-	    	EditText ePassword = (EditText) callingActivity.findViewById(R.id.password);
-	    	TextView eLoginV = (TextView) callingActivity.findViewById(R.id.login_text); 
-	    	TextView ePasswordV = (TextView) callingActivity.findViewById(R.id.password_text);
-	    	TextView eStatus = (TextView) callingActivity.findViewById(R.id.connect_status); 
-	    	
-	    	eLogin.setVisibility(View.VISIBLE);
-	    	ePassword.setVisibility(View.VISIBLE);
-	    	eLoginV.setVisibility(View.VISIBLE);
-	    	ePasswordV.setVisibility(View.VISIBLE);
-	    	eStatus.setVisibility(View.INVISIBLE);
+			EditText eLogin = (EditText) callingActivity.findViewById(R.id.login); 
+			EditText ePassword = (EditText) callingActivity.findViewById(R.id.password);
+			TextView eLoginV = (TextView) callingActivity.findViewById(R.id.login_text); 
+			TextView ePasswordV = (TextView) callingActivity.findViewById(R.id.password_text);
+			TextView eStatus = (TextView) callingActivity.findViewById(R.id.connect_status); 
+			
+			eLogin.setVisibility(View.VISIBLE);
+			ePassword.setVisibility(View.VISIBLE);
+			eLoginV.setVisibility(View.VISIBLE);
+			ePasswordV.setVisibility(View.VISIBLE);
+			eStatus.setVisibility(View.INVISIBLE);
 			
 		} catch (IOException e) {
 			return Constants.NO_NETWORK_AVAILABLE;
@@ -417,54 +415,49 @@ public class Connection {
 	}
 
 	public void sendJsonString(JSONObject jObj) {
-		new sendJsonTask().execute(jObj);		
+		new sendJsonTask().execute(jObj);
 	}
 	
-	 private class sendJsonTask extends AsyncTask<JSONObject, Integer, Integer> {
-
-			@Override
-			protected Integer doInBackground(JSONObject... params) {
-
-				JSONObject jObj = params[0];
-				try {
-					Log.d( LOG_TAG, "Sending jObj: " + jObj.toString());
-					PrintStream output = new PrintStream(Connection.getInstance().networkConnection.getOutputStream());
-					output.println(jObj.toString());
-
-					return Constants.OK; 
-					
-				} catch (IOException e) {
-					return Constants.NO_NETWORK_AVAILABLE;
-				}
-		    	
-			}
-
-		 }
-	 
-		public Boolean getSaveLogin() {
-			return saveLogin;
-		}
-
-		public JSONObject getjCapa() {
-			return jCapa;
-		}
-
-		public Socket getNetworkConnection() {
-			return networkConnection;
-		}
-
-		public boolean isConnected() {
-			return connected;
-		}
+	private class sendJsonTask extends AsyncTask<JSONObject, Integer, Integer> {
 		
-		public boolean isNewConnection() {
-			return newConnection;
+		@Override
+		protected Integer doInBackground(JSONObject... params) {
+			
+			JSONObject jObj = params[0];
+			try {
+				Log.d( LOG_TAG, "Sending jObj: " + jObj.toString());
+				PrintStream output = new PrintStream(Connection.getInstance().networkConnection.getOutputStream());
+				output.println(jObj.toString());
+				
+				return Constants.OK;
+			} catch (IOException e) {
+				return Constants.NO_NETWORK_AVAILABLE;
+			}
 		}
-
-		public void setNewConnection(boolean newConnection) {
-			this.newConnection = newConnection;
-		}
-
-
+	}
+	
+	public Boolean getSaveLogin() {
+		return saveLogin;
+	}
+	
+	public JSONObject getjCapa() {
+		return jCapa;
+	}
+	
+	public Socket getNetworkConnection() {
+		return networkConnection;
+	}
+	
+	public boolean isConnected() {
+		return connected;
+	}
+	
+	public boolean isNewConnection() {
+		return newConnection;
+	}
+	
+	public void setNewConnection(boolean newConnection) {
+		this.newConnection = newConnection;
+	}
 
 }

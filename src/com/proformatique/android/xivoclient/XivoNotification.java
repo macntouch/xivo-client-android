@@ -14,12 +14,12 @@ public class XivoNotification {
 	NotificationManager notifManager;
 	Notification notification;
 	int idRef = Constants.XIVO_NOTIF;
-
+	
 	public XivoNotification(Context context) {
 		super();
 		this.context = context;
 	}
-
+	
 	public void createNotification(){
 		notifManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
 		notification = new Notification(R.drawable.icon, "", System.currentTimeMillis());
@@ -34,7 +34,7 @@ public class XivoNotification {
 				context.getString(R.string.notif_xivo), pendingIntent);
 		notifManager.notify("XIVO", idRef, notification);
 	}
-
+	
 	public void removeNotif() {
 		notifManager.cancel("XIVO",idRef);
 	}

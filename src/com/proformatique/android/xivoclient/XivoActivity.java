@@ -28,25 +28,25 @@ public class XivoActivity extends Activity {
 	private ForcedDisconnectReceiver receiver;
 	
 	protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.login);
-        
-        receiver = new ForcedDisconnectReceiver();
-        
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Constants.ACTION_FORCED_DISCONNECT);
-        registerReceiver(receiver, new IntentFilter(filter));
-        
-        settings = PreferenceManager.getDefaultSharedPreferences(this);
-        
-        if (settings.getBoolean("use_fullscreen", false)) {
-        	this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-        			WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        }
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.login);
+		
+		receiver = new ForcedDisconnectReceiver();
+		
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(Constants.ACTION_FORCED_DISCONNECT);
+		registerReceiver(receiver, new IntentFilter(filter));
+		
+		settings = PreferenceManager.getDefaultSharedPreferences(this);
+		
+		if (settings.getBoolean("use_fullscreen", false)) {
+			this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+					WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		}
 	}
 	
 	public class ForcedDisconnectReceiver extends BroadcastReceiver {
-
+		
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			if (intent.getAction().equals(Constants.ACTION_FORCED_DISCONNECT)) {
@@ -54,7 +54,6 @@ public class XivoActivity extends Activity {
 				Toast.makeText(XivoActivity.this, R.string.forced_disconnect, Toast.LENGTH_LONG).show();
 			}
 		}
-		
 	}
 	
 	protected void onDestroy() {

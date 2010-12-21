@@ -24,7 +24,7 @@ import com.proformatique.android.xivoclient.tools.Constants;
  *
  */
 public class InitialListLoader {
-
+	
 	private static final String LOG_TAG = "LOAD_LISTS";
 	
 	/**
@@ -33,7 +33,7 @@ public class InitialListLoader {
 	 * 			 Phones list need users list to be loaded
 	 */
 	String[] lists = new String[] { "users", "phones"};
-
+	
 	private List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();
 	private List<HashMap<String, String>> historyList = new ArrayList<HashMap<String, String>>();
 	private List<String> xletsList = new ArrayList<String>();
@@ -48,7 +48,7 @@ public class InitialListLoader {
 	private HashMap<String, String> featuresIncallfilter = new HashMap<String, String>();
 	private HashMap<String, String> featuresUnc = new HashMap<String, String>();
 	private HashMap<String, String> featuresEnablevoicemail = new HashMap<String, String>();
-
+	
 	private static InitialListLoader instance;
 	
 	public static InitialListLoader getInstance(){
@@ -58,12 +58,12 @@ public class InitialListLoader {
 	private InitialListLoader(){
 		super();
 	}
-
+	
 	public static InitialListLoader init(){
 		instance = new InitialListLoader();
 		return instance;
 	}
-
+	
 	public int startLoading(){
 		int rCode;
 		
@@ -74,7 +74,7 @@ public class InitialListLoader {
 		
 		return Constants.OK;
 	}
-
+	
 	private int initJsonList(String inputClass) {
 		JSONObject jObj = createJsonInputObject(inputClass,"getlist");
 		if (jObj!=null){
@@ -88,21 +88,20 @@ public class InitialListLoader {
 			
 			JSONObject ReadLineObject = Connection.getInstance().readJsonObjectCTI(inputClass);
 			if (ReadLineObject!=null){
-
+				
 				try {
-					
 					/**
 					 * Loading Users list
 					 */
 					if (inputClass.equals("users")){
 						JSONArray jArr = ReadLineObject.getJSONArray("payload");
 						int len = jArr.length();
-
+						
 						for(int i = 0; i < len; i++){
 							HashMap<String, String> map = new HashMap<String, String>();
 							JSONObject jObjCurrent = jArr.getJSONObject(i);
 							JSONObject jObjCurrentState = jObjCurrent.getJSONObject("statedetails");
-						
+							
 							/**
 							 * Feed the useful fields to store in the list
 							 */
@@ -114,7 +113,7 @@ public class InitialListLoader {
 							map.put("stateid_color", jObjCurrentState.getString("color"));
 							map.put("techlist", jObjCurrent.getJSONArray("techlist").getString(0));
 							usersList.add(map);
-
+							
 							Log.d( LOG_TAG, "map : " + map.toString());
 						}
 					}
@@ -162,7 +161,7 @@ public class InitialListLoader {
 				}
 			}
 		}
-
+		
 		return Constants.OK;
 	}
 	
@@ -175,7 +174,7 @@ public class InitialListLoader {
 	 */
 	@SuppressWarnings("unused")
 	private int initJsonString(String inputClass, String function) {
-
+		
 		JSONObject jObj = createJsonInputObject(inputClass,"available");
 		if (jObj!=null){
 			try {
@@ -188,10 +187,10 @@ public class InitialListLoader {
 			
 			JSONObject jObjCurrent = Connection.getInstance().readJsonObjectCTI("presence");
 			if (jObjCurrent!=null){
-
+				
 				try {
 						HashMap<String, String> map = new HashMap<String, String>();
-
+						
 						if (inputClass.equals("users")){
 							map.put("xivo_userid", jObjCurrent.getString("xivo_userid"));
 						}
@@ -204,7 +203,7 @@ public class InitialListLoader {
 				}
 			}
 		}
-
+		
 		return Constants.OK;
 	}
 	
@@ -225,31 +224,31 @@ public class InitialListLoader {
 	public String getUserId() {
 		return astId+"/"+xivoId;
 	}
-
+	
 	public String getXivoId() {
 		return xivoId;
 	}
-
+	
 	public void setXivoId(String xivoId) {
 		this.xivoId = xivoId;
 	}
-
+	
 	public String getAstId() {
 		return astId;
 	}
-
+	
 	public void setAstId(String astId) {
 		this.astId = astId;
 	}
-
+	
 	public List<HashMap<String, String>> getUsersList() {
 		return usersList;
 	}
-
+	
 	public void setUsersList(List<HashMap<String, String>> usersList) {
 		this.usersList = usersList;
 	}
-
+	
 	public void replaceUsersList(int i, HashMap<String, String> map) {
 		this.usersList.set(i, map);
 	}
@@ -257,11 +256,11 @@ public class InitialListLoader {
 	public List<HashMap<String, String>> getHistoryList() {
 		return historyList;
 	}
-
+	
 	public void setHistoryList(List<HashMap<String, String>> historyList) {
 		this.historyList = historyList;
 	}
-
+	
 	public void addHistoryList(HashMap<String, String> map) {
 		this.historyList.add(map);
 	}
@@ -274,7 +273,7 @@ public class InitialListLoader {
 	public void sortHistoryList(){
 		Collections.sort(this.historyList, new DateComparator());
 	}
-
+	
 	public List<String> getXletsList() {
 		return xletsList;
 	}
@@ -282,15 +281,15 @@ public class InitialListLoader {
 	public void setXletsList(List<String> xletsList) {
 		this.xletsList = xletsList;
 	}
-
+	
 	public HashMap<String, String> getCapaPresenceState() {
 		return capaPresenceState;
 	}
-
+	
 	public void setCapaPresenceState(HashMap<String, String> capaPresenceState) {
 		this.capaPresenceState = capaPresenceState;
 	}
-
+	
 	public void putCapaPresenceState(String key, String value) {
 		this.capaPresenceState.put(key, value);
 	}
@@ -298,11 +297,11 @@ public class InitialListLoader {
 	public List<HashMap<String, String>> getStatusList() {
 		return statusList;
 	}
-
+	
 	public void setStatusList(List<HashMap<String, String>> statusList) {
 		this.statusList = statusList;
 	}
-
+	
 	public void addStatusList(HashMap<String, String> map) {
 		this.statusList.add(map);
 	}
@@ -310,80 +309,77 @@ public class InitialListLoader {
 	public HashMap<String, String> getFeaturesEnablednd() {
 		return featuresEnablednd;
 	}
-
+	
 	public void setFeaturesEnablednd(HashMap<String, String> featuresEnablednd) {
 		this.featuresEnablednd = featuresEnablednd;
 	}
-
+	
 	public HashMap<String, String> getFeaturesBusy() {
 		return featuresBusy;
 	}
-
+	
 	public void setFeaturesBusy(HashMap<String, String> featuresBusy) {
 		this.featuresBusy = featuresBusy;
 	}
-
+	
 	public HashMap<String, String> getFeaturesRna() {
 		return featuresRna;
 	}
-
+	
 	public void setFeaturesRna(HashMap<String, String> featuresRna) {
 		this.featuresRna = featuresRna;
 	}
-
+	
 	public HashMap<String, String> getFeaturesCallrecord() {
 		return featuresCallrecord;
 	}
-
+	
 	public void setFeaturesCallrecord(HashMap<String, String> featuresCallrecord) {
 		this.featuresCallrecord = featuresCallrecord;
 	}
-
+	
 	public HashMap<String, String> getFeaturesIncallfilter() {
 		return featuresIncallfilter;
 	}
-
+	
 	public void setFeaturesIncallfilter(HashMap<String, String> featuresIncallfilter) {
 		this.featuresIncallfilter = featuresIncallfilter;
 	}
-
+	
 	public HashMap<String, String> getFeaturesUnc() {
 		return featuresUnc;
 	}
-
+	
 	public void setFeaturesUnc(HashMap<String, String> featuresUnc) {
 		this.featuresUnc = featuresUnc;
 	}
-
+	
 	public HashMap<String, String> getFeaturesEnablevoicemail() {
 		return featuresEnablevoicemail;
 	}
-
+	
 	public void setFeaturesEnablevoicemail(
 			HashMap<String, String> featuresEnablevoicemail) {
 		this.featuresEnablevoicemail = featuresEnablevoicemail;
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	private class DateComparator implements Comparator
 	{
 		public int compare(Object obj1, Object obj2)
-	    {
-	    	SimpleDateFormat sd1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	        HashMap<String, String> update1 = (HashMap<String, String>)obj1;
-	        HashMap<String, String> update2 = (HashMap<String, String>)obj2;
-	        Date d1 = null, d2 = null;
-	        try {
+		{
+			SimpleDateFormat sd1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			HashMap<String, String> update1 = (HashMap<String, String>)obj1;
+			HashMap<String, String> update2 = (HashMap<String, String>)obj2;
+			Date d1 = null, d2 = null;
+			try {
 				d1 = sd1.parse(update1.get("ts"));
 				d2 = sd1.parse(update2.get("ts"));
 			} catch (ParseException e) {
 				e.printStackTrace();
 				return 0;
 			}
-	        
-	        return (((d2.getTime()-d1.getTime())>0)?1:-1);
-	    }
+			return (((d2.getTime()-d1.getTime())>0)?1:-1);
+		}
 	}
-
-
 }
