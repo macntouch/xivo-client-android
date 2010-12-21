@@ -110,26 +110,27 @@ public class XletContactSearch extends XivoActivity {
 		settings = PreferenceManager.getDefaultSharedPreferences(this);
         
         if (settings.getBoolean("include_device_contacts", false) == false) {
-        	deviceContacts = null;
         	return null;
         }
         
 		if (deviceContacts != null) return deviceContacts;
 		// Get all contacts
-		deviceContacts = new ArrayList<HashMap<String, String>>();
-        ContentResolver cr = getContentResolver();
+		ContentResolver cr = getContentResolver();
         Cursor cursor = cr.query(ContactsContract.Contacts.CONTENT_URI, null,
             null, null, null);
         
+        deviceContacts = new ArrayList<HashMap<String, String>>(cursor.getCount());
+        String contactId;
+        String name;
+        Cursor phones;
         while (cursor.moveToNext()) {
-            String contactId =
-                cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
-            String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+            contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
+            name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
             // Read phone numbers
-            Cursor phones = cr.query(Phone.CONTENT_URI, null,
-                Phone.CONTACT_ID + " = " + contactId, null, null);
+            phones = cr.query(Phone.CONTENT_URI, null, Phone.CONTACT_ID + " = " + contactId, null, null);
+            HashMap<String, String> contact;
             while (phones.moveToNext()) {
-                HashMap<String, String> contact = new HashMap<String, String>();
+                contact = new HashMap<String, String>(Constants.ANDROID_CONTACT_HASH_SIZE);
                 contact.put("fullname", name);
                 contact.put("phonenum", phones.getString(phones.getColumnIndex(Phone.NUMBER)));
                 contact.put("hintstatus_longname",
@@ -254,12 +255,21 @@ public class XletContactSearch extends XivoActivity {
 
 	@SuppressWarnings("unchecked")
 	private void refreshFilteredList() {
-		filteredUsersList.clear();
-		if (usersList != null)
-			filteredUsersList.addAll(usersList);
+		int xivoLen = usersList != null ? usersList.size() : 0;
 		deviceContacts = getAndroidContacts();
+		int androidLen = deviceContacts != null ? deviceContacts.size() : 0;
+		
+		if (filteredUsersList == null) {
+			filteredUsersList = new ArrayList<HashMap<String, String>>(androidLen + xivoLen);
+		} else {
+			filteredUsersList.clear();
+		}
+		
+		if (usersList != null)
+			filteredUsersList.addAll(usersList);		
 		if (deviceContacts != null)
 			filteredUsersList.addAll(deviceContacts);
+		
 		if (filteredUsersList.size() != 0){
 			Collections.sort(filteredUsersList, new fullNameComparator());
 		}

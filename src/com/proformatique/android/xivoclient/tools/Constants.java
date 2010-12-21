@@ -44,6 +44,7 @@ public final class Constants {
 	public static final String XIVO_LOGIN_PASSWORD = "login_password";
 	public static final String XIVO_LOGIN_UNKNOWN_USER = "user_not_found";
 	public static final int XIVO_NOTIF = 375942;
+	public static final int ANDROID_CONTACT_HASH_SIZE = 6;
 	
 	/**
 	 * Intent actions
