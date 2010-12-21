@@ -45,7 +45,7 @@ public class XletContactSearch extends XivoActivity {
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.xlet_search);
-		contacts = InitialListLoader.getInstance().getAllContacts();
+		contacts = InitialListLoader.getInstance().getAllContacts(getApplicationContext());
 		filllist("");
 		initListView();
 		
@@ -82,6 +82,7 @@ public class XletContactSearch extends XivoActivity {
 	
 	protected void onResume() {
 		super.onResume();
+		contacts = InitialListLoader.getInstance().getAllContacts(getApplicationContext());
 		refreshFilteredList();
 		filllist("");
 		initListView();

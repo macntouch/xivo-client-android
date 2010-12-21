@@ -60,6 +60,9 @@ public class InitialListLoader {
 	private List<HashMap<String, String>> androidContacts = null;
 	private List<HashMap<String, String>> allContacts = null;
 	private SharedPreferences settings;
+	private boolean androidContactsLoaded = false;
+	private ContentResolver contentResolver;
+	private Resources ressource;
 	
 	private static InitialListLoader instance;
 	
@@ -79,6 +82,8 @@ public class InitialListLoader {
 	@SuppressWarnings("unchecked")
 	public int startLoading(ContentResolver cr, Resources res, Context context){
 		int rCode;
+		this.contentResolver = cr;
+		this.ressource = res;
 		
 		for (String list : lists) {
 			rCode = initJsonList(list);
@@ -89,41 +94,13 @@ public class InitialListLoader {
 		settings = PreferenceManager.getDefaultSharedPreferences(context);
 		if (settings.getBoolean("include_device_contacts", false) == false) {
 			androidContacts = null;
+		} else {
+			loadAndroidContacts();
 		}
-		
-		Cursor cursor = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
-		androidContacts = new ArrayList<HashMap<String, String>>(cursor.getCount());
-		String contactId;
-		String name;
-		Cursor phones;
-		while (cursor.moveToNext()) {
-			contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
-			name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-			// Read phone numbers
-			phones = cr.query(Phone.CONTENT_URI, null, Phone.CONTACT_ID + " = " + contactId, null, null);
-			HashMap<String, String> contact;
-			while (phones.moveToNext()) {
-				contact = new HashMap<String, String>(Constants.ANDROID_CONTACT_HASH_SIZE);
-				contact.put("fullname", name);
-				contact.put("phonenum", phones.getString(phones.getColumnIndex(Phone.NUMBER)));
-				contact.put("hintstatus_longname",
-						(String) Phone.getTypeLabel(res, phones.getInt(
-								phones.getColumnIndex(Phone.TYPE)), "test"));
-				contact.put("stateid_longname", "Android");
-				contact.put("hintstatus_color", "#FFFFFF");
-				contact.put("stateid_color", "grey");
-				androidContacts.add(contact);
-			}
-			phones.close();
-		}
-		
 		
 		allContacts = new ArrayList<HashMap<String, String>>();
 		if (usersList != null && usersList.size() > 0) {
 			allContacts.addAll(usersList);
-		}
-		if (androidContacts != null && androidContacts.size() > 0) {
-			allContacts.addAll(androidContacts);
 		}
 		
 		if (allContacts.size() != 0){
@@ -132,10 +109,59 @@ public class InitialListLoader {
 		return Constants.OK;
 	}
 	
-	public List<HashMap<String, String>> getAllContacts() {
+	@SuppressWarnings("unchecked")
+	public List<HashMap<String, String>> getAllContacts(Context context) {
+		boolean needAndroidContacts = false;
+		settings = PreferenceManager.getDefaultSharedPreferences(context);
+		if (settings.getBoolean("include_device_contacts", false) != false) {
+			needAndroidContacts = true;
+		}
+		
+		if (needAndroidContacts == androidContactsLoaded) return allContacts;
+		if (needAndroidContacts == false)
+			return usersList;
+		if (androidContactsLoaded == false)
+			loadAndroidContacts();
+		
+		if (allContacts.size() != 0){
+			Collections.sort(allContacts, new fullNameComparator());
+		}
+		
 		return allContacts;
 	}
 	
+	private void loadAndroidContacts() {
+		Cursor cursor = this.contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
+		androidContacts = new ArrayList<HashMap<String, String>>(cursor.getCount());
+		String contactId;
+		String name;
+		Cursor phones;
+		while (cursor.moveToNext()) {
+			contactId = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
+			name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+			// Read phone numbers
+			phones = this.contentResolver.query(Phone.CONTENT_URI, null, Phone.CONTACT_ID + " = " + contactId, null, null);
+			HashMap<String, String> contact;
+			while (phones.moveToNext()) {
+				contact = new HashMap<String, String>(Constants.ANDROID_CONTACT_HASH_SIZE);
+				contact.put("fullname", name);
+				contact.put("phonenum", phones.getString(phones.getColumnIndex(Phone.NUMBER)));
+				contact.put("hintstatus_longname",
+						(String) Phone.getTypeLabel(this.ressource, phones.getInt(
+								phones.getColumnIndex(Phone.TYPE)), "test"));
+				contact.put("stateid_longname", "Android");
+				contact.put("hintstatus_color", "#FFFFFF");
+				contact.put("stateid_color", "grey");
+				androidContacts.add(contact);
+			}
+			androidContactsLoaded  = true;
+			phones.close();
+		}
+		if (androidContacts != null && androidContacts.size() > 0) {
+			allContacts.addAll(androidContacts);
+		}
+	}
+
 	private int initJsonList(String inputClass) {
 		JSONObject jObj = createJsonInputObject(inputClass,"getlist");
 		if (jObj!=null){
