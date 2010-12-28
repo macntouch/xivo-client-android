@@ -32,13 +32,14 @@ android:text="@string/credits_part2"></TextView>
 android:layout_height="wrap_content"
 android:text="@string/gpl"
 android:layout_marginTop="10dp"></TextView>
-<TextView android:layout_width="fill_parent"
+<Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/goButton" android:text="Go"></Button><TextView android:layout_width="fill_parent"
 android:layout_height="wrap_content"
 android:text="@string/gpl_part1"
 android:layout_marginTop="10dp"></TextView>
 <TextView android:layout_width="fill_parent"
 android:layout_height="wrap_content"
 android:text="@string/gpl_part2"></TextView>
+
 
 </LinearLayout>
 </ScrollView>
