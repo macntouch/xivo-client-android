@@ -23,7 +23,7 @@ public class AboutActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		setContentView(R.layout.about);
 		super.onCreate(savedInstanceState);
-		testService();
+		//testService();
 	}
 	
 	@Override

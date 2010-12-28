@@ -1,5 +1,6 @@
 package com.proformatique.android.xivoclient.service;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -8,7 +9,9 @@ import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.tools.Constants;
 
+import android.app.ActivityManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
@@ -38,11 +41,30 @@ public class XivoService extends Service {
 	private SharedPreferences loginSettings;
 	String login;
 	String password;
+	private static final String LOG_TAG = "XiVO service";
+	private static final String name = "com.proformatique.android.xivoclient.service.XivoService";
 	
 	@Override
 	public IBinder onBind(Intent intent) {
 		Log.d(getClass().getSimpleName(), "onBind()");
 		return xivoServiceStub;
+	}
+	
+	/**
+	 * Check if the service is running
+	 * @param context
+	 * @return
+	 */
+	public static boolean isRunning(Context context) {
+		ActivityManager am = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
+		List<ActivityManager.RunningServiceInfo> rs = am.getRunningServices(50);
+		for (int i = 0; i < rs.size(); i++) {
+			ActivityManager.RunningServiceInfo serviceInfo = rs.get(i);
+			if (serviceInfo.service.getClassName().equals(name))
+				return true;
+		}
+		Log.i(LOG_TAG, "XiVO service not running");
+		return false;
 	}
 	
 	private IXivoService.Stub xivoServiceStub = new IXivoService.Stub() {

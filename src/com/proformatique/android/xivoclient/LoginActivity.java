@@ -1,17 +1,13 @@
 package com.proformatique.android.xivoclient;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import android.app.ProgressDialog;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.NetworkInfo.State;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -20,9 +16,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.proformatique.android.xivoclient.service.Connection;
+import com.proformatique.android.xivoclient.service.IXivoService;
+import com.proformatique.android.xivoclient.service.XivoService;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 public class LoginActivity extends XivoActivity {
@@ -33,13 +30,20 @@ public class LoginActivity extends XivoActivity {
 	 */
 	private SharedPreferences settings;
 	private SharedPreferences loginSettings;
-	ConnectTask connectTask;
+	//ConnectTask connectTask;
 	ProgressDialog dialog;
 	private static final String LOG_TAG = "LOGIN_ACTIVITY";
+	private IXivoService xivoService;
+	private boolean serviceStarted = false;
+	private RemoteServiceConnection conn = null;
 	
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.login);
+		
+		startXivoService();
+		bindXivoService();
+		
 		
 		settings = PreferenceManager.getDefaultSharedPreferences(this);
 		loginSettings = this.getSharedPreferences("login_settings", 0);
@@ -68,6 +72,35 @@ public class LoginActivity extends XivoActivity {
 		else displayElements(true);
 	}
 	
+	private void bindXivoService() {
+		if (conn == null) {
+			conn = new RemoteServiceConnection();
+			Intent i = new Intent();
+			i.setClassName("com.proformatique.android.xivoclient", "com.proformatique.android.xivoclient.service.XivoService");
+			bindService(i, conn, Context.BIND_AUTO_CREATE);
+			Log.d("SERVICE TEST", "Service binded");
+		} else {
+			Log.d("SERVICE TEST", "Service already bound");
+		}
+	}
+
+	private void startXivoService() {
+		if (serviceStarted == false) {
+			Intent i = new Intent();
+			i.setClassName("com.proformatique.android.xivoclient", "com.proformatique.android.xivoclient.service.XivoService");
+			if (XivoService.isRunning(getApplicationContext())) {
+				Log.i(LOG_TAG, "XiVO service was running.");
+			} else {
+				Log.i(LOG_TAG, "XiVO service was not running.");
+				startService(i);
+			}
+			serviceStarted = true;
+			Log.d(LOG_TAG, "XiVO service started");
+		} else {
+			Log.d(LOG_TAG, "XiVO service already started");
+		}
+	}
+
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.menu_settings, menu);
@@ -119,7 +152,7 @@ public class LoginActivity extends XivoActivity {
 	}
 	
 	public void clickOnButtonOk(View v) {
-		if (Connection.getInstance().isConnected()) {
+		/*if (Connection.getInstance().isConnected()) {
 			Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
 			startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
 		} else {
@@ -128,7 +161,7 @@ public class LoginActivity extends XivoActivity {
 			
 			/**
 			 * Timeout Connection : 10 seconds
-			 */
+			 *//*
 			new Thread(new Runnable() {
 				public void run() {
 					
@@ -144,7 +177,8 @@ public class LoginActivity extends XivoActivity {
 				};
 			}).start();
 			
-		}
+		}*/
+		
 	}
 	
 	private void saveLoginPassword() {
@@ -194,7 +228,7 @@ public class LoginActivity extends XivoActivity {
 	 * Creating a AsyncTask to execute connection process
 	 * @author cquaquin
 	 */
-	private class ConnectTask extends AsyncTask<Void, Integer, Integer> {
+	/*private class ConnectTask extends AsyncTask<Void, Integer, Integer> {
 		
 		@Override
 		protected void onPreExecute() {
@@ -212,7 +246,7 @@ public class LoginActivity extends XivoActivity {
 			
 			 /**
 			 * Checking that web connection exists
-			 */
+			 *//*
 			ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
 			NetworkInfo netInfo = cm.getActiveNetworkInfo();
 			
@@ -276,12 +310,12 @@ public class LoginActivity extends XivoActivity {
 				
 				/**
 				 * Parsing and Displaying xlets content
-				 */
+				 *//*
 				Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
 				LoginActivity.this.startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
 			}
 		}
-	}
+	}*/
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
@@ -300,9 +334,36 @@ public class LoginActivity extends XivoActivity {
 	@Override
 	protected void onDestroy() {
 		Log.d( LOG_TAG, "DESTROY");
-		if (Connection.getInstance().isConnected()) {
+		/*if (Connection.getInstance().isConnected()) {
 			Connection.getInstance().disconnect();
-		}
+		}*/
+		releaseXivoService();
 		super.onDestroy();
+	}
+	
+	private void releaseXivoService() {
+		if (conn != null) {
+			unbindService(conn);
+			conn = null;
+			Log.d(LOG_TAG, "Service released");
+		} else {
+			Log.d(LOG_TAG, "Service not bounded");
+		}
+	}
+
+	class RemoteServiceConnection implements ServiceConnection {
+		
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			xivoService = IXivoService.Stub.asInterface((IBinder)service);
+			Log.d("SERVICE TEST", "onServiceConnected");
+		}
+		
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			xivoService = null;
+			Log.d("SERVICE TEST", "onServiceDisconnected");
+		}
+		
 	}
 }
