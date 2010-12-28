@@ -83,6 +83,8 @@
         
         <activity android:name=".xlets.XletServicesAsk" 
         android:theme="@android:style/Theme.Dialog"/>
+        
+        <service android:name=".service.XivoService"></service>
 
     </application>
     <uses-sdk android:minSdkVersion="7"/>
