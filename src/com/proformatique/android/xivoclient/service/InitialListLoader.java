@@ -1,4 +1,4 @@
-package com.proformatique.android.xivoclient;
+package com.proformatique.android.xivoclient.service;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -24,7 +24,6 @@ import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.util.Log;
 
-import com.proformatique.android.xivoclient.service.Connection;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 /**

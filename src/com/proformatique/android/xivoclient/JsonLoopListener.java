@@ -20,6 +20,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.proformatique.android.xivoclient.service.Connection;
+import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 /**

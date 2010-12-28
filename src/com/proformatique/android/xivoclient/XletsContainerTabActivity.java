@@ -26,6 +26,7 @@ import android.view.WindowManager;
 import android.widget.TabHost;
 
 import com.proformatique.android.xivoclient.service.Connection;
+import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.xlets.XletIdentity;
 

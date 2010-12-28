@@ -14,10 +14,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 
-import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.service.Connection;
+import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 public class XletServices extends XivoActivity {
