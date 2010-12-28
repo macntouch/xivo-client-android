@@ -66,7 +66,8 @@ public class XivoService extends Service {
 			// The hard work should be implemented here.
 			changed = changed == true ? false : true;
 			serviceHandler.postDelayed(this,1000L);
-			Log.i(getClass().getSimpleName(), "Task running");
+			//Log.i(getClass().getSimpleName(), "Task running");
+			
 		}
 		
 	}

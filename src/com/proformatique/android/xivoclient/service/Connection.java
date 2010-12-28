@@ -1,4 +1,4 @@
-package com.proformatique.android.xivoclient;
+package com.proformatique.android.xivoclient.service;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -21,6 +21,11 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.proformatique.android.xivoclient.InitialListLoader;
+import com.proformatique.android.xivoclient.JsonLoopListener;
+import com.proformatique.android.xivoclient.R;
+import com.proformatique.android.xivoclient.XivoNotification;
+import com.proformatique.android.xivoclient.R.id;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 /**
@@ -366,7 +371,7 @@ public class Connection {
 		
 	}
 	
-	JSONObject readData() throws IOException, JSONException{
+	public JSONObject readData() throws IOException, JSONException {
 		
 		if (networkConnection.isClosed()){
 			disconnect();

@@ -23,6 +23,8 @@ import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.util.Log;
+
+import com.proformatique.android.xivoclient.service.Connection;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 /**
@@ -98,8 +100,10 @@ public class InitialListLoader {
 			loadAndroidContacts();
 		}
 		
-		allContacts = new ArrayList<HashMap<String, String>>();
 		if (usersList != null && usersList.size() > 0) {
+			if (allContacts == null) {
+				allContacts = new ArrayList<HashMap<String, String>>(usersList.size());
+			}
 			allContacts.addAll(usersList);
 		}
 		
@@ -111,13 +115,11 @@ public class InitialListLoader {
 	
 	@SuppressWarnings("unchecked")
 	public List<HashMap<String, String>> getAllContacts(Context context) {
-		boolean needAndroidContacts = false;
 		settings = PreferenceManager.getDefaultSharedPreferences(context);
-		if (settings.getBoolean("include_device_contacts", false) != false) {
-			needAndroidContacts = true;
-		}
+		boolean needAndroidContacts = settings.getBoolean("include_device_contacts", false);
 		
-		if (needAndroidContacts == androidContactsLoaded) return allContacts;
+		if (needAndroidContacts == androidContactsLoaded)
+			return allContacts;
 		if (needAndroidContacts == false)
 			return usersList;
 		if (androidContactsLoaded == false)
@@ -158,6 +160,9 @@ public class InitialListLoader {
 			phones.close();
 		}
 		if (androidContacts != null && androidContacts.size() > 0) {
+			if (allContacts == null) {
+				allContacts = new ArrayList<HashMap<String, String>>(androidContacts.size());
+			}
 			allContacts.addAll(androidContacts);
 		}
 	}

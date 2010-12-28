@@ -22,6 +22,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.proformatique.android.xivoclient.service.Connection;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 public class LoginActivity extends XivoActivity {
