@@ -1,11 +1,27 @@
 package com.proformatique.android.xivoclient.service;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import com.proformatique.android.xivoclient.InitialListLoader;
+import com.proformatique.android.xivoclient.R;
+import com.proformatique.android.xivoclient.XletsContainerTabActivity;
+import com.proformatique.android.xivoclient.tools.Constants;
+
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.NetworkInfo.State;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
 /**
  * The XiVO service connects to the CTI server and listen to incoming events
@@ -18,6 +34,11 @@ public class XivoService extends Service {
 	private Handler serviceHandler;
 	private Task myTask= new Task();
 	boolean changed = false;
+	ConnectTask connectTask;
+	private SharedPreferences settings;
+	private SharedPreferences loginSettings;
+	String login;
+	String password;
 	
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -33,7 +54,6 @@ public class XivoService extends Service {
 		public boolean contactsChanged() throws RemoteException {
 			return changed;
 		}
-		
 	};
 	
 	@Override
@@ -55,20 +75,126 @@ public class XivoService extends Service {
 		Log.d(getClass().getSimpleName(), "onStart()");
 		super.onStart(intent, startId);
 		serviceHandler = new Handler();
-		serviceHandler.postDelayed(myTask, 2000L);
+		serviceHandler.post(myTask);
 	}
 	
 	class Task implements Runnable {
 		
 		@Override
 		public void run() {
-			// Random values are changed here for testing
-			// The hard work should be implemented here.
-			changed = changed == true ? false : true;
-			serviceHandler.postDelayed(this,1000L);
-			//Log.i(getClass().getSimpleName(), "Task running");
-			
+			ConnectXivo();
 		}
+	}
+	
+	private void ConnectXivo() {
+		if (Connection.getInstance().isConnected()) {
+			Log.d("SERVICE TEST", "Already connected");
+		} else {
+			connectTask = new ConnectTask();
+			connectTask.execute();
+			
+			/**
+			 * Timeout Connection : 10 seconds
+			 */
+			new Thread(new Runnable() {
+				public void run() {
+					
+					try {
+						connectTask.get(10, TimeUnit.SECONDS);
+					} catch (InterruptedException e) {
+						Connection.getInstance().disconnect();
+					} catch (ExecutionException e) {
+						Connection.getInstance().disconnect();
+					} catch (TimeoutException e) {
+						Connection.getInstance().disconnect();
+					}
+				};
+			}).start();
+			Log.d("SERVICE TEST", "ConnectXivo completed");
+		}
+	}
+	
+	/**
+	 * Creating a AsyncTask to execute connection process
+	 * @author cquaquin
+	 */
+	private class ConnectTask extends AsyncTask<Void, Integer, Integer> {
+		
+		@Override
+		protected Integer doInBackground(Void... params) {
+			 /**
+			 * Checking that web connection exists
+			 */
+			ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+			NetworkInfo netInfo = cm.getActiveNetworkInfo();
+			
+			if (!(netInfo == null)) {
+				if (netInfo.getState().compareTo(State.CONNECTED)==0) {
+					
+					setLoginPassword();
+					Connection connection = Connection.getInstance(login, password, XivoService.this);
+					
+					InitialListLoader initList = InitialListLoader.init();
+					int connectionCode = connection.initialize();
+					
+					if (connectionCode >= 1){
+						return initList.startLoading(getContentResolver(), getResources(), getApplicationContext());
+					}
+					return connectionCode;
+				} else return Constants.NO_NETWORK_AVAILABLE;
+			} else return Constants.NO_NETWORK_AVAILABLE;
+		}
+		
+		private void setLoginPassword() {
+			settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+			loginSettings = getApplication().getSharedPreferences("login_settings", 0);
+			if (settings.getBoolean("save_login", true)){
+				Log.d("SERVICE TEST", "login settings available");
+				login = loginSettings.getString("login","");
+				password = loginSettings.getString("password","");
+			} else {
+				Log.d("SERVICE TEST", "No login and password saved");
+			}
+		}
+		
+		protected void onPostExecute(Integer result) {
+			
+			if (result == Constants.NO_NETWORK_AVAILABLE){
+				Toast.makeText(getApplicationContext(), R.string.no_web_connection, Toast.LENGTH_LONG).show();
+			}
+			else if (result == Constants.LOGIN_PASSWORD_ERROR) {
+				Toast.makeText(getApplicationContext(), R.string.bad_login_password, Toast.LENGTH_LONG).show();
+			}
+			else if (result == Constants.BAD_HOST){
+				Toast.makeText(getApplicationContext(), R.string.bad_host, Toast.LENGTH_LONG).show();
+			}
+			else if (result == Constants.NOT_CTI_SERVER){
+				Toast.makeText(getApplicationContext(), R.string.not_cti_server, Toast.LENGTH_LONG).show();
+			}
+			else if (result == Constants.VERSION_MISMATCH) {
+				Toast.makeText(getApplicationContext(), R.string.version_mismatch, Toast.LENGTH_LONG).show();
+			}
+			else if (result == Constants.CTI_SERVER_NOT_SUPPORTED) {
+				Toast.makeText(getApplicationContext(), R.string.cti_not_supported
+						, Toast.LENGTH_LONG).show();
+			}
+			else if (result < 1){
+				Toast.makeText(getApplicationContext(), R.string.connection_failed
+						, Toast.LENGTH_LONG).show();
+			}
+			else if(result >= 1){
+				/**
+				 * Parsing and Displaying xlets content
+				 */
+				Intent defineIntent = new Intent(XivoService.this, XletsContainerTabActivity.class);
+				XivoService.this.startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
+			}
+		}
+	}
+
+	public void startActivityForResult(Intent defineIntent, int codeLaunch) {
+		// TODO Auto-generated method stub
+		Log.d("SERVICE TEST", "startActivityForResult called");
 		
 	}
 	

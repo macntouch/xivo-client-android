@@ -12,20 +12,15 @@ import java.util.HashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.TextView;
 
 import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.JsonLoopListener;
-import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoNotification;
-import com.proformatique.android.xivoclient.R.id;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 /**
@@ -42,7 +37,7 @@ public class Connection {
 	private String login;
 	private String password;
 	private Boolean saveLogin;
-	private Activity callingActivity;
+	private Context context;
 	private SharedPreferences settings;
 	private DataInputStream input;
 	private String responseLine;
@@ -63,11 +58,11 @@ public class Connection {
 	}
 	
 	public static Connection getInstance(String login, String password,
-		Activity callingActivity) {
+		Context context) {
 		if (null == instance) {
-			instance = new Connection(login, password, callingActivity);
+			instance = new Connection(login, password, context);
 		} else if (!instance.connected){
-			instance = new Connection(login, password, callingActivity);
+			instance = new Connection(login, password, context);
 		}
 		return instance;
 	}
@@ -78,12 +73,12 @@ public class Connection {
 	}
 	
 	private Connection(String login, String password,
-			Activity callingActivity) {
+			Context context) {
 		super();
 		this.login = login;
 		this.password = password;
-		this.callingActivity = callingActivity;
-		this.settings = PreferenceManager.getDefaultSharedPreferences(callingActivity);
+		this.context = context;
+		this.settings = PreferenceManager.getDefaultSharedPreferences(context);
 		this.serverAdress = this.settings.getString("server_adress", "");
 		this.serverPort = Integer.parseInt(this.settings.getString("server_port", "5003"));
 		this.saveLogin = this.settings.getBoolean("save_login", true);
@@ -199,7 +194,7 @@ public class Connection {
 								connected=true;
 								
 								
-								xivoNotif = new XivoNotification(callingActivity);
+								xivoNotif = new XivoNotification(context);
 								xivoNotif.createNotification();
 								
 								return Constants.CONNECTION_OK;
@@ -399,19 +394,6 @@ public class Connection {
 				networkConnection.close();
 			}
 			xivoNotif.removeNotif();
-			
-			EditText eLogin = (EditText) callingActivity.findViewById(R.id.login); 
-			EditText ePassword = (EditText) callingActivity.findViewById(R.id.password);
-			TextView eLoginV = (TextView) callingActivity.findViewById(R.id.login_text); 
-			TextView ePasswordV = (TextView) callingActivity.findViewById(R.id.password_text);
-			TextView eStatus = (TextView) callingActivity.findViewById(R.id.connect_status); 
-			
-			eLogin.setVisibility(View.VISIBLE);
-			ePassword.setVisibility(View.VISIBLE);
-			eLoginV.setVisibility(View.VISIBLE);
-			ePasswordV.setVisibility(View.VISIBLE);
-			eStatus.setVisibility(View.INVISIBLE);
-			
 		} catch (IOException e) {
 			return Constants.NO_NETWORK_AVAILABLE;
 		}
@@ -464,5 +446,5 @@ public class Connection {
 	public void setNewConnection(boolean newConnection) {
 		this.newConnection = newConnection;
 	}
-
+	
 }
