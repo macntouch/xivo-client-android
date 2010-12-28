@@ -6,7 +6,6 @@ import java.util.concurrent.TimeoutException;
 
 import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
-import com.proformatique.android.xivoclient.XletsContainerTabActivity;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.app.Service;
@@ -186,16 +185,8 @@ public class XivoService extends Service {
 				/**
 				 * Parsing and Displaying xlets content
 				 */
-				Intent defineIntent = new Intent(XivoService.this, XletsContainerTabActivity.class);
-				XivoService.this.startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
+				Toast.makeText(getApplicationContext(), "Connection established", Toast.LENGTH_LONG).show();
 			}
 		}
 	}
-
-	public void startActivityForResult(Intent defineIntent, int codeLaunch) {
-		// TODO Auto-generated method stub
-		Log.d("SERVICE TEST", "startActivityForResult called");
-		
-	}
-	
 }
