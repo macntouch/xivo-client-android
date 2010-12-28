@@ -11,9 +11,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.Toast;
 
 public class AboutActivity extends Activity {
@@ -27,15 +24,6 @@ public class AboutActivity extends Activity {
 		setContentView(R.layout.about);
 		super.onCreate(savedInstanceState);
 		testService();
-		
-		Button go = (Button)findViewById(R.id.goButton);
-		go.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				invokeService();
-			}
-		});
 	}
 	
 	@Override
@@ -113,13 +101,13 @@ public class AboutActivity extends Activity {
 	}
 	
 	class RemoteServiceConnection implements ServiceConnection {
-
+		
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			xivoService = IXivoService.Stub.asInterface((IBinder)service);
 			Log.d("SERVICE TEST", "onServiceConnected");
 		}
-
+		
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
 			xivoService = null;
