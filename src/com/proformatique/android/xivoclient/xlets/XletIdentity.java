@@ -5,6 +5,7 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.FrameLayout;
@@ -17,6 +18,7 @@ import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
 
 public class XletIdentity{
+	private static final String LOG_TAG = "XletIdentity";
 	Activity activity = null;
 	FrameLayout fIdentity = null;
 
@@ -35,9 +37,11 @@ public class XletIdentity{
 			
 			if (usersList != null) {
 				for (HashMap<String, String> hashMap : usersList) {
-					if (hashMap.get("xivo_userid").equals(xivoId)){
+					if (hashMap.get("xivo_userid") != null && hashMap.get("xivo_userid").equals(xivoId)){
 						userName.setText(hashMap.get("fullname")+" ("+hashMap.get("phonenum")+")");
 						break;
+					} else {
+						Log.i(LOG_TAG, "Users identity loading but it's not a XivoUser");
 					}
 				}
 			}
