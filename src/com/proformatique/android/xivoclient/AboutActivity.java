@@ -1,23 +1,23 @@
 package com.proformatique.android.xivoclient;
 
-import com.proformatique.android.xivoclient.service.IXivoService;
+//import com.proformatique.android.xivoclient.service.IXivoService;
 
 import android.app.Activity;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
+//import android.content.ComponentName;
+//import android.content.Context;
+//import android.content.Intent;
+//import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.os.RemoteException;
-import android.util.Log;
-import android.widget.Toast;
+//import android.os.IBinder;
+//import android.os.RemoteException;
+//import android.util.Log;
+//import android.widget.Toast;
 
 public class AboutActivity extends Activity {
 	
-	private IXivoService xivoService;
-	private boolean started = false;
-	private RemoteServiceConnection conn = null;
+	//private IXivoService xivoService;
+	//private boolean started = false;
+	//private RemoteServiceConnection conn = null;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -27,20 +27,20 @@ public class AboutActivity extends Activity {
 	
 	@Override
 	protected void onDestroy() {
-		releaseService();
-		stopService();
+	//	releaseService();
+	//	stopService();
 		super.onDestroy();
 	}
 	
 	/**
 	 * Temporary method to test the integration of the XiVO service
 	 */
-	public void testService() {
+	/*public void testService() {
 		startService();
 		bindService();
-	}
+	}*/
 	
-	private void startService() {
+	/*private void startService() {
 		if (!started) {
 			Intent i = new Intent();
 			i.setClassName("com.proformatique.android.xivoclient", "com.proformatique.android.xivoclient.service.XivoService");
@@ -50,9 +50,9 @@ public class AboutActivity extends Activity {
 		} else {
 			Log.d("SERVICE TEST", "Service already running");
 		}
-	}
+	}*/
 	
-	private void stopService() {
+	/*private void stopService() {
 		if (started) {
 			Intent i = new Intent();
 			i.setClassName("com.proformatique.android.xivoclient", "com.proformatique.android.xivoclient.service.XivoService");
@@ -62,9 +62,9 @@ public class AboutActivity extends Activity {
 		} else {
 			Log.d("SERVICE TEST", "Service already stopped");
 		}
-	}
+	}*/
 	
-	private void bindService() {
+	/*private void bindService() {
 		if (conn == null) {
 			conn = new RemoteServiceConnection();
 			Intent i = new Intent();
@@ -74,9 +74,9 @@ public class AboutActivity extends Activity {
 		} else {
 			Log.d("SERVICE TEST", "Service already bound");
 		}
-	}
+	}*/
 	
-	private void releaseService() {
+	/*private void releaseService() {
 		if (conn != null) {
 			unbindService(conn);
 			conn = null;
@@ -84,9 +84,9 @@ public class AboutActivity extends Activity {
 		} else {
 			Log.d("SERVICE TEST", "Service not bounded");
 		}
-	}
+	}*/
 	
-	private void invokeService() {
+	/*private void invokeService() {
 		if (conn != null) {
 			try {
 				boolean temp = xivoService.contactsChanged();
@@ -97,9 +97,9 @@ public class AboutActivity extends Activity {
 		} else {
 			Log.d("SERVICE TEST", "Service unbounded");
 		}
-	}
+	}*/
 	
-	class RemoteServiceConnection implements ServiceConnection {
+	/*class RemoteServiceConnection implements ServiceConnection {
 		
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
@@ -113,5 +113,5 @@ public class AboutActivity extends Activity {
 			Log.d("SERVICE TEST", "onServiceDisconnected");
 		}
 		
-	}
+	}*/
 }
