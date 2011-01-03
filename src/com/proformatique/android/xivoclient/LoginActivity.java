@@ -2,7 +2,7 @@ package com.proformatique.android.xivoclient;
 
 import android.app.ProgressDialog;
 import android.content.ComponentName;
-import android.content.Context;
+//import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -33,8 +33,9 @@ public class LoginActivity extends XivoActivity {
 	private SharedPreferences loginSettings;
 	ProgressDialog dialog;
 	private static final String LOG_TAG = "LOGIN_ACTIVITY";
+	@SuppressWarnings("unused")
 	private IXivoService xivoService;
-	private boolean serviceStarted = false;
+	//private boolean serviceStarted = false;
 	private RemoteServiceConnection conn = null;
 	
 	public void onCreate(Bundle savedInstanceState) {
@@ -68,7 +69,7 @@ public class LoginActivity extends XivoActivity {
 		else displayElements(true);
 	}
 	
-	private void bindXivoService() {
+	/*private void bindXivoService() {
 		if (conn == null) {
 			conn = new RemoteServiceConnection();
 			Intent i = new Intent();
@@ -78,9 +79,9 @@ public class LoginActivity extends XivoActivity {
 		} else {
 			Log.d("SERVICE TEST", "Service already bound");
 		}
-	}
-
-	private void startXivoService() {
+	}*/
+	
+	/*private void startXivoService() {
 		if (serviceStarted == false) {
 			Intent i = new Intent();
 			i.setClassName("com.proformatique.android.xivoclient", "com.proformatique.android.xivoclient.service.XivoService");
@@ -95,8 +96,8 @@ public class LoginActivity extends XivoActivity {
 		} else {
 			Log.d(LOG_TAG, "XiVO service already started");
 		}
-	}
-
+	}*/
+	
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.menu_settings, menu);
@@ -177,7 +178,7 @@ public class LoginActivity extends XivoActivity {
 		Toast.makeText(getApplicationContext(), "This button does nothing at the moment.", Toast.LENGTH_LONG).show();
 	}
 	
-	private void saveLoginPassword() {
+	/*private void saveLoginPassword() {
 		
 		String savedLogin = loginSettings.getString("login","");
 		String savedPassword = loginSettings.getString("password","");
@@ -196,7 +197,7 @@ public class LoginActivity extends XivoActivity {
 			editor.commit();
 		}
 		
-	}
+	}*/
 	
 	public void displayElements(boolean display){
 		EditText eLogin = (EditText) LoginActivity.this.findViewById(R.id.login); 

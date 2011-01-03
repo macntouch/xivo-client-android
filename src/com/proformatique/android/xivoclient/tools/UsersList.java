@@ -16,6 +16,15 @@ import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.util.Log;
 
+/**
+ * A class containing XiVO users and android contacts for a fast retreival from the XiVO
+ * client.
+ * 
+ * The class is parcelable as it has to be used between different processes
+ * 
+ * @author Pascal Cadotte-Michaud
+ *
+ */
 public class UsersList implements Parcelable {
 	
 	private static final String LOG_TAG = "UsersList";
@@ -24,6 +33,10 @@ public class UsersList implements Parcelable {
 	private List<HashMap<String, String>> allUsers = null;
 	private Context context;
 	
+	/**
+	 * Returns a combined list for android and xivo users. The list is sorted
+	 * @return allUsers
+	 */
 	public List<HashMap<String, String>> getAllUsers() {
 		if (allUsers.size() < androidUsers.size() + xivoUsers.size()) {
 			allUsers.clear();
@@ -34,6 +47,10 @@ public class UsersList implements Parcelable {
 		return allUsers;
 	}
 	
+	/**
+	 * Initialize a new UsersList. A context is needed to retrieve android contacts
+	 * @param context
+	 */
 	public UsersList(Context context) {
 		this.context = context;
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
@@ -48,6 +65,9 @@ public class UsersList implements Parcelable {
 		}
 	}
 	
+	/**
+	 * Load android users (contacts) into the UsersList class
+	 */
 	private void loadAndroidUsers() {
 		if (this.context == null)
 			Log.d(LOG_TAG, "NULL CONTEXT");
@@ -158,7 +178,10 @@ public class UsersList implements Parcelable {
 		}
 	}
 	
-	
+	/**
+	 * Changes the content of a usersList for a new one
+	 * @param usersList
+	 */
 	public void setUsers(List<HashMap<String, String>> usersList) {
 		if (xivoUsers != usersList) {
 			xivoUsers = usersList;
