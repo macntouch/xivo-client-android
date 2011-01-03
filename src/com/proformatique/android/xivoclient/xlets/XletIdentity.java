@@ -26,13 +26,18 @@ public class XletIdentity{
 		
 		TextView userName = (TextView) activity.findViewById(R.id.user_identity);
 		
-		List<HashMap<String, String>> usersList = InitialListLoader.getInstance().getUsersList();
-		String xivoId=InitialListLoader.getInstance().getXivoId();
-
-		for (HashMap<String, String> hashMap : usersList) {
-			if (hashMap.get("xivo_userid").equals(xivoId)){
-				userName.setText(hashMap.get("fullname")+" ("+hashMap.get("phonenum")+")");
-				break;
+		InitialListLoader init = InitialListLoader.getInstance();
+		List<HashMap<String, String>> usersList = null;
+		String xivoId = null;
+		if (init != null) {
+			usersList = init.getUsersList();
+			xivoId = init.getXivoId();
+			
+			for (HashMap<String, String> hashMap : usersList) {
+				if (hashMap.get("xivo_userid").equals(xivoId)){
+					userName.setText(hashMap.get("fullname")+" ("+hashMap.get("phonenum")+")");
+					break;
+				}
 			}
 		}
 		
@@ -54,21 +59,27 @@ public class XletIdentity{
 	}
 	
 	public void changeCurrentPhone() {
-		ImageView iconPhone = (ImageView)fIdentity.findViewById(R.id.identityPhoneStatus);
-		TextView textPhone = (TextView)fIdentity.findViewById(R.id.identityPhoneLongnameState);
-		String colorString = InitialListLoader.getInstance().getCapaPresenceState().get("hintstatus_color");
-		GraphicsManager.setIconPhoneDisplay(activity, iconPhone, colorString);
-		textPhone.setText(InitialListLoader.getInstance().getCapaPresenceState().get("hintstatus_longname"));
+		InitialListLoader init = InitialListLoader.getInstance();
+		if (init != null) {
+			ImageView iconPhone = (ImageView)fIdentity.findViewById(R.id.identityPhoneStatus);
+			TextView textPhone = (TextView)fIdentity.findViewById(R.id.identityPhoneLongnameState);
+			String colorString = InitialListLoader.getInstance().getCapaPresenceState().get("hintstatus_color");
+			GraphicsManager.setIconPhoneDisplay(activity, iconPhone, colorString);
+			textPhone.setText(InitialListLoader.getInstance().getCapaPresenceState().get("hintstatus_longname"));
+		}
 	}
 
 	public void changeCurrentState() {
-		String currentStateName = InitialListLoader.getInstance().getCapaPresenceState().get("longname");
-		String stateIdColor = InitialListLoader.getInstance().getCapaPresenceState().get("color");
-		ImageView iconState = (ImageView)fIdentity.findViewById(R.id.identity_current_state_image);
-		TextView textState = (TextView)fIdentity.findViewById(R.id.identity_current_state_longname);
-		
-		GraphicsManager.setIconStateDisplay(activity, iconState, stateIdColor);		
-		textState.setText(currentStateName);
+		InitialListLoader init = InitialListLoader.getInstance();
+		if (init != null) {
+			String currentStateName = InitialListLoader.getInstance().getCapaPresenceState().get("longname");
+			String stateIdColor = InitialListLoader.getInstance().getCapaPresenceState().get("color");
+			ImageView iconState = (ImageView)fIdentity.findViewById(R.id.identity_current_state_image);
+			TextView textState = (TextView)fIdentity.findViewById(R.id.identity_current_state_longname);
+			
+			GraphicsManager.setIconStateDisplay(activity, iconState, stateIdColor);		
+			textState.setText(currentStateName);
+		}
 	}
 	
 	protected void clickIdentity(View v) {
