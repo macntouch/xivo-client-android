@@ -51,12 +51,12 @@ public class XletsContainerTabActivity extends TabActivity {
 	XletIdentity xletIdentity;
 	
 	public void onCreate(Bundle savedInstanceState) {
+		startXivoService();
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.xlets_container);
 		
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		
-		startXivoService();
 		bindXivoService();
 		
 		if (settings.getBoolean("use_fullscreen", false)) {
@@ -168,10 +168,13 @@ public class XletsContainerTabActivity extends TabActivity {
 			}
 			
 			displayInit();
-			InitialListLoader.getInstance().setXletsList(xletsList);
-			@SuppressWarnings("unused")
-			JsonLoopListener jsonLoop = JsonLoopListener.getInstance(this);
-			Connection.getInstance().setNewConnection(false);
+			InitialListLoader init = InitialListLoader.getInstance();
+			if (init != null) {
+				init.setXletsList(xletsList);
+				@SuppressWarnings("unused")
+				JsonLoopListener jsonLoop = JsonLoopListener.getInstance(this);
+				Connection.getInstance().setNewConnection(false);
+			}
 		}
 	}
 	
