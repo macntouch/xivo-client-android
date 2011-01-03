@@ -1,4 +1,4 @@
-package com.proformatique.android.xivoclient;
+package com.proformatique.android.xivoclient.service;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -19,8 +19,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.proformatique.android.xivoclient.service.Connection;
-import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 /**
