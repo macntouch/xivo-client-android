@@ -91,6 +91,7 @@ public class XivoService extends Service {
 		super.onDestroy();
 	}
 	
+	@SuppressWarnings("static-access")
 	@Override
 	public void onStart(Intent intent, int startId) {
 		Log.d(getClass().getSimpleName(), "onStart()");
