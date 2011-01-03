@@ -25,6 +25,7 @@ import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.util.Log;
 
 import com.proformatique.android.xivoclient.tools.Constants;
+import com.proformatique.android.xivoclient.tools.UsersList;
 
 /**
  * This class is a useful lists provider for all class in the app
@@ -44,7 +45,7 @@ public class InitialListLoader {
 	 */
 	String[] lists = new String[] { "users", "phones"};
 	
-	private List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();
+	// private List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();
 	private List<HashMap<String, String>> historyList = new ArrayList<HashMap<String, String>>();
 	private List<String> xletsList = new ArrayList<String>();
 	private String xivoId = null;
@@ -58,12 +59,13 @@ public class InitialListLoader {
 	private HashMap<String, String> featuresIncallfilter = new HashMap<String, String>();
 	private HashMap<String, String> featuresUnc = new HashMap<String, String>();
 	private HashMap<String, String> featuresEnablevoicemail = new HashMap<String, String>();
-	private List<HashMap<String, String>> androidContacts = null;
-	private List<HashMap<String, String>> allContacts = null;
-	private SharedPreferences settings;
-	private boolean androidContactsLoaded = false;
-	private ContentResolver contentResolver;
-	private Resources ressource;
+	private UsersList usersList = null;
+	//private List<HashMap<String, String>> androidContacts = null;
+	//private List<HashMap<String, String>> allContacts = null;
+	//private SharedPreferences settings;
+	//private boolean androidContactsLoaded = false;
+	//private ContentResolver contentResolver;
+	//private Resources ressource;
 	
 	private static InitialListLoader instance;
 	
@@ -83,14 +85,15 @@ public class InitialListLoader {
 	@SuppressWarnings("unchecked")
 	public int startLoading(ContentResolver cr, Resources res, Context context){
 		int rCode;
-		this.contentResolver = cr;
-		this.ressource = res;
+		//this.contentResolver = cr;
+		//this.ressource = res;
+		usersList = new UsersList(context);
 		
 		for (String list : lists) {
 			rCode = initJsonList(list);
 			if (rCode < 1) return rCode;
 		}
-		
+		/*
 		// Init android contacts
 		settings = PreferenceManager.getDefaultSharedPreferences(context);
 		if (settings.getBoolean("include_device_contacts", false) == false) {
@@ -108,10 +111,10 @@ public class InitialListLoader {
 		
 		if (allContacts.size() != 0){
 			Collections.sort(allContacts, new fullNameComparator());
-		}
+		}*/
 		return Constants.OK;
 	}
-	
+	/*
 	@SuppressWarnings("unchecked")
 	public List<HashMap<String, String>> getAllContacts(Context context) {
 		settings = PreferenceManager.getDefaultSharedPreferences(context);
@@ -130,7 +133,7 @@ public class InitialListLoader {
 		
 		return allContacts;
 	}
-	
+	*//*
 	private void loadAndroidContacts() {
 		Cursor cursor = this.contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
 		androidContacts = new ArrayList<HashMap<String, String>>(cursor.getCount());
@@ -165,7 +168,7 @@ public class InitialListLoader {
 			allContacts.addAll(androidContacts);
 		}
 	}
-
+*/
 	private int initJsonList(String inputClass) {
 		JSONObject jObj = createJsonInputObject(inputClass,"getlist");
 		if (jObj!=null){
@@ -203,7 +206,7 @@ public class InitialListLoader {
 							map.put("stateid_longname", jObjCurrentState.getString("longname"));
 							map.put("stateid_color", jObjCurrentState.getString("color"));
 							map.put("techlist", jObjCurrent.getJSONArray("techlist").getString(0));
-							usersList.add(map);
+							usersList.addXivoUser(map);
 							
 							Log.d( LOG_TAG, "map : " + map.toString());
 						}
@@ -218,7 +221,8 @@ public class InitialListLoader {
 						 * Use users field "techlist" to search objects in phones list
 						 */
 						int i=0;
-						for (HashMap<String, String> mapUser : usersList) {
+						List<HashMap<String, String>> xivoUsers = usersList.getXivoUsers();
+						for (HashMap<String, String> mapUser : xivoUsers) {
 							JSONObject jPhone = jAllPhones.getJSONObject(mapUser.get("techlist"));
 							/**
 							 * "Real" phone number is retrieved from phones list
@@ -241,7 +245,7 @@ public class InitialListLoader {
 								capaPresenceState.put("hintstatus_code", mapUser.get("hintstatus_code"));
 								capaPresenceState.put("hintstatus_longname", mapUser.get("hintstatus_longname"));
 							}
-							usersList.set(i, mapUser);
+							usersList.setXivoUser(i, mapUser);
 							i++;
 						}
 					}
@@ -333,15 +337,15 @@ public class InitialListLoader {
 	}
 	
 	public List<HashMap<String, String>> getUsersList() {
-		return usersList;
+		return usersList.getAllUsers();
 	}
 	
 	public void setUsersList(List<HashMap<String, String>> usersList) {
-		this.usersList = usersList;
+		this.usersList.setUsers(usersList);
 	}
 	
 	public void replaceUsersList(int i, HashMap<String, String> map) {
-		this.usersList.set(i, map);
+		this.usersList.setXivoUser(i, map);
 	}
 	
 	public List<HashMap<String, String>> getHistoryList() {
@@ -483,5 +487,9 @@ public class InitialListLoader {
 			HashMap<String, String> update2 = (HashMap<String, String>)obj2;
 			return update1.get("fullname").compareTo(update2.get("fullname"));
 		}
+	}
+
+	public List<HashMap<String, String>> getAllContacts() {
+		return usersList.getAllUsers();
 	}
 }
