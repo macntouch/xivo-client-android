@@ -63,18 +63,19 @@ public class GraphicsManager {
 		  /**
 		   * Conversion of bad color strings
 		   */
-		  color = color.replaceFirst("grey", "gray");
+		if (color != null)
+			color = color.replaceFirst("grey", "gray");
 		  icon.setColorFilter(null);
 		  
 		  if (currentapiVersion <= android.os.Build.VERSION_CODES.ECLAIR_MR1) { 
 			  Drawable dr = getDrawableCopy(context, R.drawable.personal_trans);
 			  icon.setImageDrawable(dr);
 		  }
-
-		  if (!color.equals(""))
-			  icon.setColorFilter(Color.parseColor(color), PorterDuff.Mode.MULTIPLY);
-		  else
-			  icon.setColorFilter(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
+		
+		if (color != null && !color.equals(""))
+			icon.setColorFilter(Color.parseColor(color), PorterDuff.Mode.MULTIPLY);
+		else
+			icon.setColorFilter(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
 		
 	}
 
@@ -84,7 +85,8 @@ public class GraphicsManager {
 		  /**
 		   * Conversion of bad color strings
 		   */
-		color = color.replaceFirst("grey", "gray");
+		if (color != null)
+			color = color.replaceFirst("grey", "gray");
 		icon.setColorFilter(null);
 		
 		if (currentapiVersion <= android.os.Build.VERSION_CODES.ECLAIR_MR1) { 
@@ -92,10 +94,10 @@ public class GraphicsManager {
 			icon.setImageDrawable(dr);
 		}
 
-		if (!color.equals(""))
+		if (color != null && !color.equals(""))
 			icon.setColorFilter(Color.parseColor(color), PorterDuff.Mode.SRC_ATOP);
-		  else
-			  icon.setColorFilter(Color.TRANSPARENT, PorterDuff.Mode.SRC_ATOP);
+		else
+			icon.setColorFilter(Color.TRANSPARENT, PorterDuff.Mode.SRC_ATOP);
 		
 	}
 

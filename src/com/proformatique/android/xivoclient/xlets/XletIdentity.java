@@ -33,10 +33,12 @@ public class XletIdentity{
 			usersList = init.getUsersList();
 			xivoId = init.getXivoId();
 			
-			for (HashMap<String, String> hashMap : usersList) {
-				if (hashMap.get("xivo_userid").equals(xivoId)){
-					userName.setText(hashMap.get("fullname")+" ("+hashMap.get("phonenum")+")");
-					break;
+			if (usersList != null) {
+				for (HashMap<String, String> hashMap : usersList) {
+					if (hashMap.get("xivo_userid").equals(xivoId)){
+						userName.setText(hashMap.get("fullname")+" ("+hashMap.get("phonenum")+")");
+						break;
+					}
 				}
 			}
 		}

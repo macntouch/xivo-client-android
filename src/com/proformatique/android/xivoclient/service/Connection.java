@@ -430,6 +430,9 @@ public class Connection {
 	}
 	
 	public Socket getNetworkConnection() {
+		if (networkConnection == null) {
+			initialize();
+		}
 		return networkConnection;
 	}
 	

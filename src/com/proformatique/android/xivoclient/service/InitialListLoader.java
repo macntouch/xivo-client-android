@@ -70,6 +70,8 @@ public class InitialListLoader {
 	private static InitialListLoader instance;
 	
 	public static InitialListLoader getInstance(){
+		if (instance == null)
+			instance = new InitialListLoader();
 		return instance;
 	}
 	
@@ -77,8 +79,9 @@ public class InitialListLoader {
 		super();
 	}
 	
-	public static InitialListLoader init(){
+	public static InitialListLoader init(Context context){
 		instance = new InitialListLoader();
+		instance.usersList = new UsersList(context);
 		return instance;
 	}
 	
@@ -87,7 +90,6 @@ public class InitialListLoader {
 		int rCode;
 		//this.contentResolver = cr;
 		//this.ressource = res;
-		usersList = new UsersList(context);
 		
 		for (String list : lists) {
 			rCode = initJsonList(list);
@@ -337,7 +339,10 @@ public class InitialListLoader {
 	}
 	
 	public List<HashMap<String, String>> getUsersList() {
-		return usersList.getAllUsers();
+		if (usersList != null)
+			return usersList.getAllUsers();
+		else
+			return null;
 	}
 	
 	public void setUsersList(List<HashMap<String, String>> usersList) {

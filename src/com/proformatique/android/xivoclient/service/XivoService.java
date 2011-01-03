@@ -98,7 +98,7 @@ public class XivoService extends Service {
 		super.onStart(intent, startId);
 		serviceHandler = new Handler();
 		serviceHandler.post(myTask);
-		InitialListLoader.getInstance().init();
+		InitialListLoader.getInstance().init(getApplicationContext());
 	}
 	
 	class Task implements Runnable {
@@ -168,7 +168,7 @@ public class XivoService extends Service {
 					setLoginPassword();
 					Connection connection = Connection.getInstance(login, password, XivoService.this);
 					
-					InitialListLoader initList = InitialListLoader.init();
+					InitialListLoader initList = InitialListLoader.init(getApplicationContext());
 					int connectionCode = connection.initialize();
 					
 					if (connectionCode >= 1){

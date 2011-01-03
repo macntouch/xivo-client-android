@@ -19,9 +19,9 @@ import android.util.Log;
 public class UsersList implements Parcelable {
 	
 	private static final String LOG_TAG = "UsersList";
-	private List<HashMap<String, String>> xivoUsers;
-	private List<HashMap<String, String>> androidUsers;
-	private List<HashMap<String, String>> allUsers;
+	private List<HashMap<String, String>> xivoUsers = null;
+	private List<HashMap<String, String>> androidUsers = null;
+	private List<HashMap<String, String>> allUsers = null;
 	private Context context;
 	private boolean androidContactsLoaded = false;
 	
