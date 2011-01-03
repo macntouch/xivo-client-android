@@ -41,6 +41,7 @@ public class XletsContainerTabActivity extends TabActivity {
 	private static final String LOG_TAG = "XLETS_LOADING";
 	private boolean serviceStarted = false;
 	private RemoteServiceConnection conn = null;
+	@SuppressWarnings("unused")
 	private IXivoService xivoService;
 	
 	/**

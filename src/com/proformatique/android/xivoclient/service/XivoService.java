@@ -142,7 +142,7 @@ public class XivoService extends Service {
 	 */
 	private class ConnectTask extends AsyncTask<Void, Integer, Integer> {
 		
-		private ProgressDialog dialog;
+		//private ProgressDialog dialog;
 		/*
 		@Override
 		protected void onPreExecute() {
