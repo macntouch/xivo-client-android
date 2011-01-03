@@ -41,8 +41,8 @@ public class LoginActivity extends XivoActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.login);
 		
-		startXivoService();
-		bindXivoService();
+		// startXivoService(); Moved to XletsContainterTabActivity
+		// bindXivoService();
 		
 		
 		settings = PreferenceManager.getDefaultSharedPreferences(this);

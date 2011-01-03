@@ -9,14 +9,17 @@ import org.json.JSONObject;
 
 import android.app.TabActivity;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -26,14 +29,19 @@ import android.view.WindowManager;
 import android.widget.TabHost;
 
 import com.proformatique.android.xivoclient.service.Connection;
+import com.proformatique.android.xivoclient.service.IXivoService;
 import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.service.JsonLoopListener;
+import com.proformatique.android.xivoclient.service.XivoService;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.xlets.XletIdentity;
 
 public class XletsContainerTabActivity extends TabActivity {
 	
 	private static final String LOG_TAG = "XLETS_LOADING";
+	private boolean serviceStarted = false;
+	private RemoteServiceConnection conn = null;
+	private IXivoService xivoService;
 	
 	/**
 	 * TODO : Move xletsList and xletsList loading to InitialListLoader 
@@ -47,6 +55,9 @@ public class XletsContainerTabActivity extends TabActivity {
 		setContentView(R.layout.xlets_container);
 		
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+		
+		startXivoService();
+		bindXivoService();
 		
 		if (settings.getBoolean("use_fullscreen", false)) {
 			this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -84,11 +95,14 @@ public class XletsContainerTabActivity extends TabActivity {
 		 */
 		ArrayList<String> xletsTmp = decodeJsonObject(Connection.getInstance().getjCapa(), "capaxlets");
 		
-		ArrayList<String> xlets = new ArrayList<String>(xletsTmp.size());
-		for (String x : xletsTmp){
-			xlets.add(x.substring(0, x.indexOf("-")));
+		ArrayList<String> xlets = null;
+		if (xletsTmp != null) {
+			xlets = new ArrayList<String>(xletsTmp.size());
+			for (String x : xletsTmp){
+				xlets.add(x.substring(0, x.indexOf("-")));
+			}
+			Log.d( LOG_TAG, "xlets avail. : "+ xlets);
 		}
-		Log.d( LOG_TAG, "xlets avail. : "+ xlets);
 		
 		/**
 		 * The PackageManager will help us to retrieve all the activities
@@ -118,7 +132,7 @@ public class XletsContainerTabActivity extends TabActivity {
 				 * Control that xlet is available for the connected user,
 				 * the key of control is the "label" of the activity
 				 */
-				if (xlets.indexOf(label)!=-1){
+				if (xlets != null && xlets.indexOf(label)!=-1){
 					
 					try {
 						intent = new Intent().setClass(this, Class.forName(aInfo.name));
@@ -164,19 +178,20 @@ public class XletsContainerTabActivity extends TabActivity {
 	public static ArrayList<String> decodeJsonObject(JSONObject jSonObj, String parent){
 		Log.d( LOG_TAG, "JSON : "+ jSonObj);
 		
-		try {
-			JSONArray resArray = jSonObj.getJSONArray(parent);
-			ArrayList<String> resList = new ArrayList<String>(resArray.length());
-			int len = resArray.length();
-			for (int i=0;i<len;i++){
-				String curItem = resArray.getString(i);
-				resList.add(curItem);
+		if (jSonObj != null) {
+			try {
+				JSONArray resArray = jSonObj.getJSONArray(parent);
+				ArrayList<String> resList = new ArrayList<String>(resArray.length());
+				int len = resArray.length();
+				for (int i=0;i<len;i++){
+					String curItem = resArray.getString(i);
+					resList.add(curItem);
+				}
+				return resList;
+			} catch (JSONException e) {
+				e.printStackTrace();
 			}
-			return resList;
-		} catch (JSONException e) {
-			e.printStackTrace();
 		}
-		
 		return null;
 	}
 	
@@ -280,5 +295,50 @@ public class XletsContainerTabActivity extends TabActivity {
 		setResult(Constants.CODE_EXIT);
 		
 		super.onDestroy();
+	}
+	
+	private void startXivoService() {
+		if (serviceStarted == false) {
+			Intent i = new Intent();
+			i.setClassName("com.proformatique.android.xivoclient", "com.proformatique.android.xivoclient.service.XivoService");
+			if (XivoService.isRunning(getApplicationContext())) {
+				Log.i(LOG_TAG, "XiVO service was running.");
+			} else {
+				Log.i(LOG_TAG, "XiVO service was not running.");
+				startService(i);
+			}
+			serviceStarted = true;
+			Log.d(LOG_TAG, "XiVO service started");
+		} else {
+			Log.d(LOG_TAG, "XiVO service already started");
+		}
+	}
+	
+	private void bindXivoService() {
+		if (conn == null) {
+			conn = new RemoteServiceConnection();
+			Intent i = new Intent();
+			i.setClassName("com.proformatique.android.xivoclient", "com.proformatique.android.xivoclient.service.XivoService");
+			bindService(i, conn, Context.BIND_AUTO_CREATE);
+			Log.d("SERVICE TEST", "Service binded");
+		} else {
+			Log.d("SERVICE TEST", "Service already bound");
+		}
+	}
+	
+	class RemoteServiceConnection implements ServiceConnection {
+		
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			xivoService = IXivoService.Stub.asInterface((IBinder)service);
+			Log.d("SERVICE TEST", "onServiceConnected");
+		}
+		
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			xivoService = null;
+			Log.d("SERVICE TEST", "onServiceDisconnected");
+		}
+		
 	}
 }
