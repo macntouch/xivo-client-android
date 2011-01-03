@@ -23,7 +23,6 @@ public class UsersList implements Parcelable {
 	private List<HashMap<String, String>> androidUsers = null;
 	private List<HashMap<String, String>> allUsers = null;
 	private Context context;
-	private boolean androidContactsLoaded = false;
 	
 	public List<HashMap<String, String>> getAllUsers() {
 		if (allUsers.size() < androidUsers.size() + xivoUsers.size()) {
@@ -75,7 +74,6 @@ public class UsersList implements Parcelable {
 				contact.put("stateid_color", "grey");
 				androidUsers.add(contact);
 			}
-			androidContactsLoaded  = true;
 			phones.close();
 		}
 		if (androidUsers != null && androidUsers.size() > 0) {
