@@ -143,7 +143,7 @@ public class XivoService extends Service {
 	private class ConnectTask extends AsyncTask<Void, Integer, Integer> {
 		
 		private ProgressDialog dialog;
-
+		/*
 		@Override
 		protected void onPreExecute() {
 			dialog = new ProgressDialog(getApplicationContext());
@@ -152,7 +152,7 @@ public class XivoService extends Service {
 			dialog.setCancelable(false);
 			dialog.show();
 		}
-		
+		*/
 		@Override
 		protected Integer doInBackground(Void... params) {
 			 /**

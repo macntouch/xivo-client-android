@@ -88,6 +88,13 @@
         <service android:name=".service.XivoService"></service>
 
     </application>
+    <receiver android:name="BootBroadcastReceiver">
+    	<intent-filter>
+    		<action
+    			android:name="android.intent.action.BOOT_COMPLETED"/>
+    			<category android:name="android.intent.category.HOME"/>
+    	</intent-filter>
+    </receiver>
     <uses-sdk android:minSdkVersion="7"/>
 
 <uses-permission android:name="android.permission.READ_CONTACTS"></uses-permission>

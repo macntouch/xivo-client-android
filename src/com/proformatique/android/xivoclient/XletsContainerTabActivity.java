@@ -296,6 +296,7 @@ public class XletsContainerTabActivity extends TabActivity {
 		}
 		Connection.getInstance().disconnect();
 		setResult(Constants.CODE_EXIT);
+		releaseXivoService();
 		
 		super.onDestroy();
 	}
@@ -314,6 +315,16 @@ public class XletsContainerTabActivity extends TabActivity {
 			Log.d(LOG_TAG, "XiVO service started");
 		} else {
 			Log.d(LOG_TAG, "XiVO service already started");
+		}
+	}
+	
+	private void releaseXivoService() {
+		if (conn != null) {
+			unbindService(conn);
+			conn = null;
+			Log.d(LOG_TAG, "Service released");
+		} else {
+			Log.d(LOG_TAG, "Service not bounded");
 		}
 	}
 	
