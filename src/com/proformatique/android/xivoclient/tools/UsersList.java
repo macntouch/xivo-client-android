@@ -148,7 +148,7 @@ public class UsersList implements Parcelable {
 	
 	@SuppressWarnings("unchecked")
 	private class fullNameComparator implements Comparator
-
+	
 	{
 		public int compare(Object obj1, Object obj2)
 		{
@@ -158,20 +158,21 @@ public class UsersList implements Parcelable {
 		}
 	}
 	
-
+	
 	public void setUsers(List<HashMap<String, String>> usersList) {
-		if (xivoUsers != usersList)
+		if (xivoUsers != usersList) {
 			xivoUsers = usersList;
+		}
 	}
-
+	
 	public void setXivoUser(int i, HashMap<String, String> map) {
 		xivoUsers.set(i, map);
 	}
-
+	
 	public void addXivoUser(HashMap<String, String> user) {
 		xivoUsers.add(user);
 	}
-
+	
 	public List<HashMap<String, String>> getXivoUsers() {
 		return xivoUsers;
 	}
