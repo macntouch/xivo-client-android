@@ -9,7 +9,6 @@ import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.app.ActivityManager;
-import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -142,17 +141,6 @@ public class XivoService extends Service {
 	 */
 	private class ConnectTask extends AsyncTask<Void, Integer, Integer> {
 		
-		//private ProgressDialog dialog;
-		/*
-		@Override
-		protected void onPreExecute() {
-			dialog = new ProgressDialog(getApplicationContext());
-			dialog.setMessage(getString(R.string.loading));
-			dialog.setIndeterminate(true);
-			dialog.setCancelable(false);
-			dialog.show();
-		}
-		*/
 		@Override
 		protected Integer doInBackground(Void... params) {
 			 /**
