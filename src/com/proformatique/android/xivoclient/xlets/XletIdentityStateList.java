@@ -110,7 +110,7 @@ public class XletIdentityStateList extends XivoActivity {
 		 * - Call Json to change state
 		 */
 		JSONObject jObj = createJsonState(stateId);
-		Connection.getInstance().sendJsonString(jObj);
+		Connection.getInstance(getApplicationContext()).sendJsonString(jObj);
 		
 		Intent data = new Intent();
 		data.putExtra("stateid", stateId);

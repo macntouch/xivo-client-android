@@ -104,7 +104,7 @@ public class XletDialer extends XivoActivity {
 	    			phoneNumber.getText().toString().replaceAll("-", ""));
 			try {
 				Log.d( LOG_TAG, "jCalling: " + jCalling.toString());
-				PrintStream output = new PrintStream(Connection.getInstance().getNetworkConnection().getOutputStream());
+				PrintStream output = new PrintStream(Connection.getInstance(getApplicationContext()).getNetworkConnection().getOutputStream());
 				output.println(jCalling.toString());
 				
 				publishProgress(Constants.OK);

@@ -77,7 +77,7 @@ public class JsonLoopListener {
 			jObj.accumulate("userid", InitialListLoader.getInstance().getUserId());
 			
 			PrintStream output = new PrintStream(
-					Connection.getInstance().getNetworkConnection().getOutputStream());
+					Connection.getInstance(context).getNetworkConnection().getOutputStream());
 			output.println(jObj.toString());
 			Log.d( LOG_TAG , "Client : "+jObj.toString());
 		} catch (JSONException e) {
@@ -105,7 +105,7 @@ public class JsonLoopListener {
 			jObj.accumulate("morerecentthan",sIso.format(c1.getTime()));
 			
 			PrintStream output = new PrintStream(
-					Connection.getInstance().getNetworkConnection().getOutputStream());
+					Connection.getInstance(context).getNetworkConnection().getOutputStream());
 			output.println(jObj.toString());
 			Log.d( LOG_TAG , "Client : "+jObj.toString());
 		} catch (JSONException e) {
@@ -196,7 +196,7 @@ public class JsonLoopListener {
 					
 					try {
 						
-						JSONObject jObjCurrent = Connection.getInstance().readData();
+						JSONObject jObjCurrent = Connection.getInstance(context).readData();
 						String classRec = "";
 						@SuppressWarnings("unused")
 						String functionRec = "";

@@ -66,6 +66,7 @@ public class InitialListLoader {
 	//private boolean androidContactsLoaded = false;
 	//private ContentResolver contentResolver;
 	//private Resources ressource;
+	private Context context;
 	
 	private static InitialListLoader instance;
 	
@@ -79,7 +80,8 @@ public class InitialListLoader {
 		super();
 	}
 	
-	public static InitialListLoader init(Context context){
+	public InitialListLoader init(Context context){
+		this.context = context;
 		instance = new InitialListLoader();
 		instance.usersList = new UsersList(context);
 		return instance;
@@ -176,13 +178,13 @@ public class InitialListLoader {
 		if (jObj!=null){
 			try {
 				Log.d( LOG_TAG, "Jobj: " + jObj.toString());
-				PrintStream output = new PrintStream(Connection.getInstance().getNetworkConnection().getOutputStream());
+				PrintStream output = new PrintStream(Connection.getInstance(context).getNetworkConnection().getOutputStream());
 				output.println(jObj.toString());
 			} catch (IOException e) {
 				return Constants.NO_NETWORK_AVAILABLE;
 			}
 			
-			JSONObject ReadLineObject = Connection.getInstance().readJsonObjectCTI(inputClass);
+			JSONObject ReadLineObject = Connection.getInstance(context).readJsonObjectCTI(inputClass);
 			if (ReadLineObject!=null){
 				
 				try {
@@ -276,13 +278,13 @@ public class InitialListLoader {
 		if (jObj!=null){
 			try {
 				Log.d( LOG_TAG, "Jobj: " + jObj.toString());
-				PrintStream output = new PrintStream(Connection.getInstance().getNetworkConnection().getOutputStream());
+				PrintStream output = new PrintStream(Connection.getInstance(context).getNetworkConnection().getOutputStream());
 				output.println(jObj.toString());
 			} catch (IOException e) {
 				return Constants.NO_NETWORK_AVAILABLE;
 			}
 			
-			JSONObject jObjCurrent = Connection.getInstance().readJsonObjectCTI("presence");
+			JSONObject jObjCurrent = Connection.getInstance(context).readJsonObjectCTI("presence");
 			if (jObjCurrent!=null){
 				
 				try {

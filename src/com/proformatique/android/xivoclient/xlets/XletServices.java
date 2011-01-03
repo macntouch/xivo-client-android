@@ -258,7 +258,7 @@ public class XletServices extends XivoActivity {
 
 		private void sendFeaturePut(String feature, String value, String phone){
 			JSONObject jObj = createJsonFeaturePut(feature, value, phone);
-			Connection.getInstance().sendJsonString(jObj);
+			Connection.getInstance(getApplicationContext()).sendJsonString(jObj);
 		}
 
 		@Override

@@ -64,7 +64,7 @@ public class LoginActivity extends XivoActivity {
 			ePassword.setText(password);
 		}
 		
-		if (Connection.getInstance().isConnected()) {
+		if (Connection.getInstance(getApplicationContext()).isConnected()) {
 			displayElements(false);
 			Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
 			LoginActivity.this.startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
@@ -125,8 +125,8 @@ public class LoginActivity extends XivoActivity {
 			menuAbout();
 			return true;
 		case R.id.menu_disconnect:
-			if (Connection.getInstance().isConnected())
-				Connection.getInstance().disconnect();
+			if (Connection.getInstance(getApplicationContext()).isConnected())
+				Connection.getInstance(getApplicationContext()).disconnect();
 			displayElements(true);
 			return true;
 		default:
@@ -140,8 +140,8 @@ public class LoginActivity extends XivoActivity {
 	}
 	
 	private void menuExit() {
-		if (Connection.getInstance().isConnected())
-			Connection.getInstance().disconnect();
+		if (Connection.getInstance(getApplicationContext()).isConnected())
+			Connection.getInstance(getApplicationContext()).disconnect();
 		finish();
 	}
 	

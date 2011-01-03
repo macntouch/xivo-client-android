@@ -110,7 +110,7 @@ public class XivoService extends Service {
 	}
 	
 	private void ConnectXivo() {
-		if (Connection.getInstance().isConnected()) {
+		if (Connection.getInstance(getApplicationContext()).isConnected()) {
 			Log.d("SERVICE TEST", "Already connected");
 		} else {
 			connectTask = new ConnectTask();
@@ -125,11 +125,11 @@ public class XivoService extends Service {
 					try {
 						connectTask.get(10, TimeUnit.SECONDS);
 					} catch (InterruptedException e) {
-						Connection.getInstance().disconnect();
+						Connection.getInstance(getApplicationContext()).disconnect();
 					} catch (ExecutionException e) {
-						Connection.getInstance().disconnect();
+						Connection.getInstance(getApplicationContext()).disconnect();
 					} catch (TimeoutException e) {
-						Connection.getInstance().disconnect();
+						Connection.getInstance(getApplicationContext()).disconnect();
 					}
 				};
 			}).start();
@@ -168,7 +168,7 @@ public class XivoService extends Service {
 					setLoginPassword();
 					Connection connection = Connection.getInstance(login, password, XivoService.this);
 					
-					InitialListLoader initList = InitialListLoader.init(getApplicationContext());
+					InitialListLoader initList = InitialListLoader.getInstance();
 					int connectionCode = connection.initialize();
 					
 					if (connectionCode >= 1){

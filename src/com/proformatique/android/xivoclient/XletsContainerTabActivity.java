@@ -93,7 +93,7 @@ public class XletsContainerTabActivity extends TabActivity {
 		 * Get the list of xlets available for connected user
 		 * and delete the suffix starting to "-"
 		 */
-		ArrayList<String> xletsTmp = decodeJsonObject(Connection.getInstance().getjCapa(), "capaxlets");
+		ArrayList<String> xletsTmp = decodeJsonObject(Connection.getInstance(getApplicationContext()).getjCapa(), "capaxlets");
 		
 		ArrayList<String> xlets = null;
 		if (xletsTmp != null) {
@@ -161,7 +161,7 @@ public class XletsContainerTabActivity extends TabActivity {
 	protected void onResume() {
 		super.onResume();
 		
-		if (Connection.getInstance().isNewConnection()){
+		if (Connection.getInstance(getApplicationContext()).isNewConnection()){
 			try {
 				unregisterReceiver(receiver);
 			} catch (Exception e) {
@@ -173,7 +173,7 @@ public class XletsContainerTabActivity extends TabActivity {
 				init.setXletsList(xletsList);
 				@SuppressWarnings("unused")
 				JsonLoopListener jsonLoop = JsonLoopListener.getInstance(this);
-				Connection.getInstance().setNewConnection(false);
+				Connection.getInstance(getApplicationContext()).setNewConnection(false);
 			}
 		}
 	}
@@ -210,7 +210,7 @@ public class XletsContainerTabActivity extends TabActivity {
 		public void onReceive(Context context, Intent intent) {
 			Log.d( LOG_TAG , "Received Broadcast ");
 			if (intent.getAction().equals(Constants.ACTION_DISCONNECT)) {
-				Connection.getInstance().disconnect();
+				Connection.getInstance(getApplicationContext()).disconnect();
 				XletsContainerTabActivity.this.finish();
 				
 			} else if (intent.getAction().equals(Constants.ACTION_LOAD_PHONE_STATUS))
@@ -250,13 +250,13 @@ public class XletsContainerTabActivity extends TabActivity {
 	}
 	
 	private void menuDisconnect() {
-		Connection.getInstance().disconnect();
+		Connection.getInstance(getApplicationContext()).disconnect();
 		unregisterReceiver(receiver);
 		XletsContainerTabActivity.this.finish();
 	}
 	
 	private void menuExit() {
-		Connection.getInstance().disconnect();
+		Connection.getInstance(getApplicationContext()).disconnect();
 		setResult(Constants.CODE_EXIT);
 		finish();
 	}

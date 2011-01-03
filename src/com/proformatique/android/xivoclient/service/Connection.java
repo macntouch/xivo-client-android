@@ -17,7 +17,9 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.EditText;
 
+import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoNotification;
 import com.proformatique.android.xivoclient.tools.Constants;
 
@@ -48,9 +50,17 @@ public class Connection {
 	
 	private static Connection instance;
 	
-	public static Connection getInstance(){
+	public static Connection getInstance(Context context){
 		if (null == instance) {
-			instance = new Connection();
+			SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+			SharedPreferences loginSettings = context.getSharedPreferences("login_settings", 0);
+			if (settings.getBoolean("save_login", true)){
+				
+				String login = loginSettings.getString("login","");
+				String password = loginSettings.getString("password","");
+				instance = new Connection(login, password, context);
+			}
+			Log.d(LOG_TAG, "No login/password available for connection");
 		}
 		return instance;
 	}
@@ -151,7 +161,7 @@ public class Connection {
 		ReadLineObject = readJsonObjectCTI();
 		
 		try {
-			if (ReadLineObject.getString("class").equals(Constants.XIVO_LOGIN_OK)){
+			if (ReadLineObject != null && ReadLineObject.getString("class").equals(Constants.XIVO_LOGIN_OK)){
 				
 				/**
 				 * Second step : check that password is allowed on server
@@ -169,7 +179,7 @@ public class Connection {
 						if (codeCapas > 0) {
 							ReadLineObject = readJsonObjectCTI();
 							
-							if (ReadLineObject.getString("class").equals(Constants.XIVO_LOGIN_CAPAS_OK)){
+							if (ReadLineObject != null && ReadLineObject.getString("class").equals(Constants.XIVO_LOGIN_CAPAS_OK)){
 								jCapa = ReadLineObject;
 								InitialListLoader.getInstance().setXivoId(jCapa.getString("xivo_userid"));
 								InitialListLoader.getInstance().setAstId(jCapa.getString("astid"));
@@ -212,16 +222,16 @@ public class Connection {
 		}
 		
 		try {
-			if (ReadLineObject.getString("errorstring").equals(Constants.XIVO_LOGIN_PASSWORD) ||
-					ReadLineObject.getString("errorstring").equals(Constants.XIVO_LOGIN_UNKNOWN_USER)) {
+			if (ReadLineObject != null && (ReadLineObject.getString("errorstring").equals(Constants.XIVO_LOGIN_PASSWORD) ||
+					ReadLineObject.getString("errorstring").equals(Constants.XIVO_LOGIN_UNKNOWN_USER))) {
 				return Constants.LOGIN_PASSWORD_ERROR;
 			}
-			else if (ReadLineObject.getString("errorstring").length() >= Constants.XIVO_CTI_VERSION_NOT_SUPPORTED.length()
+			else if (ReadLineObject != null && ReadLineObject.getString("errorstring").length() >= Constants.XIVO_CTI_VERSION_NOT_SUPPORTED.length()
 					&& ReadLineObject.getString("errorstring").subSequence(0, Constants.XIVO_CTI_VERSION_NOT_SUPPORTED.length())
 					.equals(Constants.XIVO_CTI_VERSION_NOT_SUPPORTED)) {
 				return Constants.CTI_SERVER_NOT_SUPPORTED;
 			}
-			else if (ReadLineObject.getString("errorstring").equals(Constants.XIVO_VERSION_NOT_COMPATIBLE)) {
+			else if (ReadLineObject != null && ReadLineObject.getString("errorstring").equals(Constants.XIVO_VERSION_NOT_COMPATIBLE)) {
 				return Constants.VERSION_MISMATCH;
 			}
 		} catch (JSONException e) {
@@ -391,7 +401,10 @@ public class Connection {
 				networkConnection.shutdownOutput();
 				networkConnection.close();
 			}
-			xivoNotif.removeNotif();
+			if (xivoNotif != null) {
+				xivoNotif.removeNotif();
+				return Constants.NO_NETWORK_AVAILABLE;
+			}
 		} catch (IOException e) {
 			return Constants.NO_NETWORK_AVAILABLE;
 		}
@@ -411,7 +424,7 @@ public class Connection {
 			JSONObject jObj = params[0];
 			try {
 				Log.d( LOG_TAG, "Sending jObj: " + jObj.toString());
-				PrintStream output = new PrintStream(Connection.getInstance().networkConnection.getOutputStream());
+				PrintStream output = new PrintStream(Connection.getInstance(context).networkConnection.getOutputStream());
 				output.println(jObj.toString());
 				
 				return Constants.OK;
