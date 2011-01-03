@@ -26,6 +26,12 @@ public class UsersList implements Parcelable {
 	private boolean androidContactsLoaded = false;
 	
 	public List<HashMap<String, String>> getAllUsers() {
+		if (allUsers.size() < androidUsers.size() + xivoUsers.size()) {
+			allUsers.clear();
+			allUsers.addAll(xivoUsers);
+			allUsers.addAll(androidUsers);
+			sortAllUsers();
+		}
 		return allUsers;
 	}
 	

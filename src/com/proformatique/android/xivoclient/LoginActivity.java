@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.proformatique.android.xivoclient.service.Connection;
 import com.proformatique.android.xivoclient.service.IXivoService;
@@ -30,7 +31,6 @@ public class LoginActivity extends XivoActivity {
 	 */
 	private SharedPreferences settings;
 	private SharedPreferences loginSettings;
-	//ConnectTask connectTask;
 	ProgressDialog dialog;
 	private static final String LOG_TAG = "LOGIN_ACTIVITY";
 	private IXivoService xivoService;
@@ -40,10 +40,6 @@ public class LoginActivity extends XivoActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.login);
-		
-		// startXivoService(); Moved to XletsContainterTabActivity
-		// bindXivoService();
-		
 		
 		settings = PreferenceManager.getDefaultSharedPreferences(this);
 		loginSettings = this.getSharedPreferences("login_settings", 0);
@@ -178,7 +174,7 @@ public class LoginActivity extends XivoActivity {
 			}).start();
 			
 		}*/
-		
+		Toast.makeText(getApplicationContext(), "This button does nothing at the moment.", Toast.LENGTH_LONG).show();
 	}
 	
 	private void saveLoginPassword() {
@@ -334,9 +330,6 @@ public class LoginActivity extends XivoActivity {
 	@Override
 	protected void onDestroy() {
 		Log.d( LOG_TAG, "DESTROY");
-		/*if (Connection.getInstance().isConnected()) {
-			Connection.getInstance().disconnect();
-		}*/
 		releaseXivoService();
 		super.onDestroy();
 	}

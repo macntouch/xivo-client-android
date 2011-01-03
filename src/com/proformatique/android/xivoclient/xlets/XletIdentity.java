@@ -69,21 +69,21 @@ public class XletIdentity{
 		if (init != null) {
 			ImageView iconPhone = (ImageView)fIdentity.findViewById(R.id.identityPhoneStatus);
 			TextView textPhone = (TextView)fIdentity.findViewById(R.id.identityPhoneLongnameState);
-			String colorString = InitialListLoader.getInstance().getCapaPresenceState().get("hintstatus_color");
+			String colorString = init.getCapaPresenceState().get("hintstatus_color");
 			GraphicsManager.setIconPhoneDisplay(activity, iconPhone, colorString);
-			textPhone.setText(InitialListLoader.getInstance().getCapaPresenceState().get("hintstatus_longname"));
+			textPhone.setText(init.getCapaPresenceState().get("hintstatus_longname"));
 		}
 	}
 
 	public void changeCurrentState() {
 		InitialListLoader init = InitialListLoader.getInstance();
 		if (init != null) {
-			String currentStateName = InitialListLoader.getInstance().getCapaPresenceState().get("longname");
-			String stateIdColor = InitialListLoader.getInstance().getCapaPresenceState().get("color");
+			String currentStateName = init.getCapaPresenceState().get("longname");
+			String stateIdColor = init.getCapaPresenceState().get("color");
 			ImageView iconState = (ImageView)fIdentity.findViewById(R.id.identity_current_state_image);
 			TextView textState = (TextView)fIdentity.findViewById(R.id.identity_current_state_longname);
 			
-			GraphicsManager.setIconStateDisplay(activity, iconState, stateIdColor);		
+			GraphicsManager.setIconStateDisplay(activity, iconState, stateIdColor);
 			textState.setText(currentStateName);
 		}
 	}

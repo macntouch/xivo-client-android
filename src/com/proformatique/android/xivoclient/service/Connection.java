@@ -17,9 +17,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.EditText;
 
-import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoNotification;
 import com.proformatique.android.xivoclient.tools.Constants;
 
