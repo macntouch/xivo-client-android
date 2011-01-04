@@ -81,12 +81,12 @@ public class LoginActivity extends XivoActivity {
 			ePassword.setText(password);
 		}
 		
-		if (Connection.getInstance(getApplicationContext()).isConnected()) {
+		/*if (Connection.getInstance(getApplicationContext()).isConnected()) {
 			displayElements(false);
 			Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
 			LoginActivity.this.startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
 		}
-		else displayElements(true);
+		else displayElements(true);*/
 	}
 	
 	/**
