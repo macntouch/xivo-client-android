@@ -2,7 +2,7 @@ package com.proformatique.android.xivoclient;
 
 import android.app.ProgressDialog;
 import android.content.ComponentName;
-//import android.content.Context;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -16,7 +16,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.proformatique.android.xivoclient.service.Connection;
 import com.proformatique.android.xivoclient.service.IXivoService;
@@ -33,14 +32,34 @@ public class LoginActivity extends XivoActivity {
 	private SharedPreferences loginSettings;
 	ProgressDialog dialog;
 	private static final String LOG_TAG = "LOGIN_ACTIVITY";
-	@SuppressWarnings("unused")
 	private IXivoService xivoService;
-	//private boolean serviceStarted = false;
+	private boolean serviceStarted = false;
 	private RemoteServiceConnection conn = null;
 	
+	/**
+	 * Check if the service is running
+	 * If it is, start the tab activity
+	 * If it's not, gather user name/password
+	 * allow the user to configure the server informations
+	 * and allow the user to connect.
+	 */
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.login);
+		
+		// Starts the XiVO service set the serviceStarted variable at the same time
+		startXivoService();
+		// Binds to the service
+		bindXivoService();
+		try {
+			if (xivoService.isConnected() == true) {
+				// Go to the tab activity
+			} else {
+				// Stay here and wait for a click connection
+			}
+		} catch (Exception e) {
+			Log.e(LOG_TAG, e.toString());
+		}
 		
 		settings = PreferenceManager.getDefaultSharedPreferences(this);
 		loginSettings = this.getSharedPreferences("login_settings", 0);
@@ -69,7 +88,7 @@ public class LoginActivity extends XivoActivity {
 		else displayElements(true);
 	}
 	
-	/*private void bindXivoService() {
+	private void bindXivoService() {
 		if (conn == null) {
 			conn = new RemoteServiceConnection();
 			Intent i = new Intent();
@@ -79,9 +98,9 @@ public class LoginActivity extends XivoActivity {
 		} else {
 			Log.d("SERVICE TEST", "Service already bound");
 		}
-	}*/
+	}
 	
-	/*private void startXivoService() {
+	private void startXivoService() {
 		if (serviceStarted == false) {
 			Intent i = new Intent();
 			i.setClassName("com.proformatique.android.xivoclient", "com.proformatique.android.xivoclient.service.XivoService");
@@ -96,7 +115,7 @@ public class LoginActivity extends XivoActivity {
 		} else {
 			Log.d(LOG_TAG, "XiVO service already started");
 		}
-	}*/
+	}
 	
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
@@ -175,10 +194,13 @@ public class LoginActivity extends XivoActivity {
 			}).start();
 			
 		}*/
-		Toast.makeText(getApplicationContext(), "This button does nothing at the moment.", Toast.LENGTH_LONG).show();
+		saveLoginPassword();
+		startXivoService();
+		bindXivoService();
+		
 	}
 	
-	/*private void saveLoginPassword() {
+	private void saveLoginPassword() {
 		
 		String savedLogin = loginSettings.getString("login","");
 		String savedPassword = loginSettings.getString("password","");
@@ -197,7 +219,7 @@ public class LoginActivity extends XivoActivity {
 			editor.commit();
 		}
 		
-	}*/
+	}
 	
 	public void displayElements(boolean display){
 		EditText eLogin = (EditText) LoginActivity.this.findViewById(R.id.login); 
@@ -330,7 +352,6 @@ public class LoginActivity extends XivoActivity {
 	
 	@Override
 	protected void onDestroy() {
-		Log.d( LOG_TAG, "DESTROY");
 		releaseXivoService();
 		super.onDestroy();
 	}
@@ -350,13 +371,13 @@ public class LoginActivity extends XivoActivity {
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			xivoService = IXivoService.Stub.asInterface((IBinder)service);
-			Log.d("SERVICE TEST", "onServiceConnected");
+			Log.d(LOG_TAG, "onServiceConnected");
 		}
 		
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
 			xivoService = null;
-			Log.d("SERVICE TEST", "onServiceDisconnected");
+			Log.d(LOG_TAG, "onServiceDisconnected");
 		}
 		
 	}
