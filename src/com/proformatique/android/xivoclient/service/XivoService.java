@@ -40,7 +40,7 @@ public class XivoService extends Service {
 	private SharedPreferences loginSettings;
 	String login;
 	String password;
-	private static final String LOG_TAG = "XiVO service";
+	private static final String LOG_TAG = "XiVO " + XivoService.class.getName();
 	private static final String name = "com.proformatique.android.xivoclient.service.XivoService";
 	private boolean xivoConnected = false;
 	
@@ -136,7 +136,7 @@ public class XivoService extends Service {
 					}
 				};
 			}).start();
-			Log.d("SERVICE TEST", "ConnectXivo completed");
+			Log.d(LOG_TAG, "ConnectXivo completed");
 		}
 	}
 	

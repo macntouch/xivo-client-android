@@ -19,7 +19,7 @@ public class BootBroadcastReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		Log.d(LOG_TAG, "Boot broadcast received");
 		Intent i = new Intent();
-		i.setAction("com.proformatique.androix.xivoclient.service.XivoService");
+		i.setAction(XivoService.class.getName());
 		context.startService(i);
 	}
 	
