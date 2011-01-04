@@ -42,6 +42,7 @@ public class XivoService extends Service {
 	String password;
 	private static final String LOG_TAG = "XiVO service";
 	private static final String name = "com.proformatique.android.xivoclient.service.XivoService";
+	private boolean xivoConnected = false;
 	
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -67,12 +68,16 @@ public class XivoService extends Service {
 	}
 	
 	private IXivoService.Stub xivoServiceStub = new IXivoService.Stub() {
-		
 		/**
 		 * Query the service to know if the contact list has changed since the last query
 		 */
 		public boolean contactsChanged() throws RemoteException {
 			return changed;
+		}
+
+		@Override
+		public boolean isConnected() throws RemoteException {
+			return xivoConnected;
 		}
 	};
 	
@@ -152,7 +157,11 @@ public class XivoService extends Service {
 			if (!(netInfo == null)) {
 				if (netInfo.getState().compareTo(State.CONNECTED)==0) {
 					
-					setLoginPassword();
+					try {
+						setLoginPassword();
+					} catch (Exception e) {
+						return Constants.LOGIN_PASSWORD_ERROR;
+					}
 					Connection connection = Connection.getInstance(login, password, XivoService.this);
 					
 					InitialListLoader initList = InitialListLoader.getInstance();
@@ -166,7 +175,7 @@ public class XivoService extends Service {
 			} else return Constants.NO_NETWORK_AVAILABLE;
 		}
 		
-		private void setLoginPassword() {
+		private void setLoginPassword() throws Exception {
 			settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 			loginSettings = getApplication().getSharedPreferences("login_settings", 0);
 			if (settings.getBoolean("save_login", true)){
@@ -174,7 +183,7 @@ public class XivoService extends Service {
 				login = loginSettings.getString("login","");
 				password = loginSettings.getString("password","");
 			} else {
-				Log.d("SERVICE TEST", "No login and password saved");
+				throw new Exception();
 			}
 		}
 		

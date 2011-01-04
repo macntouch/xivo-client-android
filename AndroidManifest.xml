@@ -15,7 +15,9 @@
     <application android:icon="@drawable/icon" 
                  android:label="@string/app_name"
                  android:theme="@android:style/Theme.NoTitleBar">
-		<service android:name=".service.XivoService">
+		<service
+			android:name=".service.XivoService"
+			android:process=":remote">
 			<intent-filter>
 				<action
 					android:name="com.proformatique.android.xivoclient.service.XivoService">
@@ -101,5 +103,7 @@
     </application>
     <uses-sdk android:minSdkVersion="7"/>
 
-<uses-permission android:name="android.permission.READ_CONTACTS"></uses-permission>
+<uses-permission android:name="android.permission.READ_CONTACTS">
+</uses-permission>
+<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"></uses-permission>
 </manifest> 
