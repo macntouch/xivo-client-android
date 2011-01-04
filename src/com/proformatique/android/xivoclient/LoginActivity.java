@@ -53,9 +53,10 @@ public class LoginActivity extends XivoActivity {
 		bindXivoService();
 		try {
 			if (xivoService.isConnected() == true) {
-				// Go to the tab activity
+				startClient();
 			} else {
 				// Stay here and wait for a click connection
+				Log.i(LOG_TAG, "XiVO server not ready");
 			}
 		} catch (Exception e) {
 			Log.e(LOG_TAG, e.toString());
@@ -88,6 +89,16 @@ public class LoginActivity extends XivoActivity {
 		else displayElements(true);
 	}
 	
+	/**
+	 * Starts the client
+	 * This should be called once the service is started and connected
+	 */
+	private void startClient() {
+		displayElements(false);
+		Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
+		LoginActivity.this.startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
+	}
+
 	private void bindXivoService() {
 		if (conn == null) {
 			conn = new RemoteServiceConnection();
@@ -197,7 +208,8 @@ public class LoginActivity extends XivoActivity {
 		saveLoginPassword();
 		startXivoService();
 		bindXivoService();
-		
+		// TODO: make sure the service is started
+		startClient();
 	}
 	
 	private void saveLoginPassword() {
