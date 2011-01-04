@@ -38,7 +38,15 @@ public class UsersList implements Parcelable {
 	 * @return allUsers
 	 */
 	public List<HashMap<String, String>> getAllUsers() {
-		if (allUsers.size() < androidUsers.size() + xivoUsers.size()) {
+		if (androidUsers == null && xivoUsers == null) {
+			return null;
+		} else if (androidUsers == null && xivoUsers != null) {
+			allUsers.clear();
+			allUsers.addAll(xivoUsers);
+		} else if (androidUsers != null && xivoUsers == null) {
+			allUsers.clear();
+			allUsers.addAll(androidUsers);
+		} else if (allUsers.size() < androidUsers.size() + xivoUsers.size()) {
 			allUsers.clear();
 			allUsers.addAll(xivoUsers);
 			allUsers.addAll(androidUsers);
