@@ -22,7 +22,6 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.Toast;
 
 /**
  * The XiVO service connects to the CTI server and listen to incoming events
@@ -40,13 +39,13 @@ public class XivoService extends Service {
 	private SharedPreferences loginSettings;
 	String login;
 	String password;
-	private static final String LOG_TAG = "XiVO " + XivoService.class.getName();
+	private static final String LOG_TAG = "XiVO " + XivoService.class.getSimpleName();
 	private static final String name = "com.proformatique.android.xivoclient.service.XivoService";
-	private boolean xivoConnected = false;
+	private int xivoConnectionStatus = Constants.XIVO_DISCONNECTED;
 	
 	@Override
 	public IBinder onBind(Intent intent) {
-		Log.d(getClass().getSimpleName(), "onBind()");
+		Log.d(LOG_TAG, "onBind");
 		return xivoServiceStub;
 	}
 	
@@ -77,27 +76,28 @@ public class XivoService extends Service {
 
 		@Override
 		public boolean isConnected() throws RemoteException {
-			return xivoConnected;
+			return xivoConnectionStatus == Constants.XIVO_CONNECTED;
 		}
 	};
 	
 	@Override
 	public void onCreate() {
-		Log.d(getClass().getSimpleName(),"onCreate()");
+		Log.d(LOG_TAG,"onCreate()");
 		super.onCreate();
 	}
 	
 	@Override
 	public void onDestroy() {
-		Log.d(getClass().getSimpleName(),"onDestroy()");
+		Log.d(LOG_TAG,"onDestroy");
 		serviceHandler.removeCallbacks(myTask);
 		serviceHandler = null;
+		xivoConnectionStatus = Constants.XIVO_DISCONNECTED;
 		super.onDestroy();
 	}
 	
 	@Override
 	public void onStart(Intent intent, int startId) {
-		Log.d(getClass().getSimpleName(), "onStart()");
+		Log.d(LOG_TAG, "onStart");
 		super.onStart(intent, startId);
 		serviceHandler = new Handler();
 		serviceHandler.post(myTask);
@@ -114,7 +114,7 @@ public class XivoService extends Service {
 	
 	private void ConnectXivo() {
 		if (Connection.getInstance(getApplicationContext()).isConnected()) {
-			Log.d("SERVICE TEST", "Already connected");
+			Log.d(LOG_TAG, "Already connected");
 		} else {
 			connectTask = new ConnectTask();
 			connectTask.execute();
@@ -179,7 +179,7 @@ public class XivoService extends Service {
 			settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 			loginSettings = getApplication().getSharedPreferences("login_settings", 0);
 			if (settings.getBoolean("save_login", true)){
-				Log.d("SERVICE TEST", "login settings available");
+				Log.d(LOG_TAG, "login settings available");
 				login = loginSettings.getString("login","");
 				password = loginSettings.getString("password","");
 			} else {
@@ -188,35 +188,31 @@ public class XivoService extends Service {
 		}
 		
 		protected void onPostExecute(Integer result) {
-			
+			xivoConnectionStatus = Constants.XIVO_DISCONNECTED;
 			if (result == Constants.NO_NETWORK_AVAILABLE){
-				Toast.makeText(getApplicationContext(), R.string.no_web_connection, Toast.LENGTH_LONG).show();
+				Log.e(LOG_TAG, getString(R.string.no_web_connection));
 			}
 			else if (result == Constants.LOGIN_PASSWORD_ERROR) {
-				Toast.makeText(getApplicationContext(), R.string.bad_login_password, Toast.LENGTH_LONG).show();
+				Log.e(LOG_TAG, getString(R.string.bad_login_password));
 			}
 			else if (result == Constants.BAD_HOST){
-				Toast.makeText(getApplicationContext(), R.string.bad_host, Toast.LENGTH_LONG).show();
+				Log.e(LOG_TAG, getString(R.string.bad_host));
 			}
 			else if (result == Constants.NOT_CTI_SERVER){
-				Toast.makeText(getApplicationContext(), R.string.not_cti_server, Toast.LENGTH_LONG).show();
+				Log.e(LOG_TAG, getString(R.string.not_cti_server));
 			}
 			else if (result == Constants.VERSION_MISMATCH) {
-				Toast.makeText(getApplicationContext(), R.string.version_mismatch, Toast.LENGTH_LONG).show();
+				Log.e(LOG_TAG, getString(R.string.version_mismatch));
 			}
 			else if (result == Constants.CTI_SERVER_NOT_SUPPORTED) {
-				Toast.makeText(getApplicationContext(), R.string.cti_not_supported
-						, Toast.LENGTH_LONG).show();
+				Log.e(LOG_TAG, getString(R.string.cti_not_supported));
 			}
 			else if (result < 1){
-				Toast.makeText(getApplicationContext(), R.string.connection_failed
-						, Toast.LENGTH_LONG).show();
+				Log.e(LOG_TAG, getString(R.string.connection_failed));
 			}
 			else if(result >= 1){
-				/**
-				 * Parsing and Displaying xlets content
-				 */
-				Toast.makeText(getApplicationContext(), "Connection established", Toast.LENGTH_LONG).show();
+				Log.i(LOG_TAG, "Connection established");
+				xivoConnectionStatus = Constants.XIVO_CONNECTED;
 			}
 		}
 	}
