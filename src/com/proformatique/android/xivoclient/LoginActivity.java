@@ -31,7 +31,7 @@ public class LoginActivity extends XivoActivity {
 	private SharedPreferences settings;
 	private SharedPreferences loginSettings;
 	ProgressDialog dialog;
-	private static final String LOG_TAG = "LOGIN_ACTIVITY";
+	private static final String LOG_TAG = "XiVO " + LoginActivity.class.getSimpleName();
 	private IXivoService xivoService;
 	private boolean serviceStarted = false;
 	private RemoteServiceConnection conn = null;
@@ -52,7 +52,7 @@ public class LoginActivity extends XivoActivity {
 		// Binds to the service
 		bindXivoService();
 		try {
-			if (xivoService.isConnected() == true) {
+			if (xivoService != null && xivoService.isConnected() == true) {
 				startClient();
 			} else {
 				// Stay here and wait for a click connection
@@ -105,9 +105,9 @@ public class LoginActivity extends XivoActivity {
 			Intent i = new Intent();
 			i.setClassName("com.proformatique.android.xivoclient", "com.proformatique.android.xivoclient.service.XivoService");
 			bindService(i, conn, Context.BIND_AUTO_CREATE);
-			Log.d("SERVICE TEST", "Service binded");
+			Log.d(LOG_TAG, "Service binded");
 		} else {
-			Log.d("SERVICE TEST", "Service already bound");
+			Log.d(LOG_TAG, "Service already bound");
 		}
 	}
 	
