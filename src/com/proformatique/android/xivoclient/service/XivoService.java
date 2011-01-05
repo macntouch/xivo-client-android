@@ -63,7 +63,6 @@ public class XivoService extends Service {
 			if (serviceInfo.service.getClassName().equals(name))
 				return true;
 		}
-		Log.i(LOG_TAG, "XiVO service not running");
 		return false;
 	}
 	

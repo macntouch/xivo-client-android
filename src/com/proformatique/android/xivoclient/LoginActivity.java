@@ -8,6 +8,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -47,21 +48,31 @@ public class LoginActivity extends XivoActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.login);
 		
-		// Starts the XiVO service set the serviceStarted variable at the same time
-		startXivoService();
-		// Binds to the service
-		bindXivoService();
-		try {
-			if (xivoService != null && xivoService.isConnected() == true) {
-				startClient();
-			} else {
-				// Stay here and wait for a click connection
-				Log.i(LOG_TAG, "XiVO server not ready");
-			}
-		} catch (Exception e) {
-			Log.e(LOG_TAG, e.toString());
+		if (XivoService.isRunning(getApplicationContext()))
+			Log.i(LOG_TAG, "XiVO service is running");
+		else {
+			Log.i(LOG_TAG, "XiVO service is not running");
+			startXivoService();
 		}
 		
+		// Binds to the service
+		bindXivoService();
+		
+		/*if (xivoService != null) {
+			try {
+				if (xivoService.isConnected() == true) {
+					startClient();
+				} else {
+					// Stay here and wait for a click connection
+					Log.i(LOG_TAG, "XiVO server not connected yet.");
+				}
+			} catch (RemoteException e) {
+				Log.e(LOG_TAG, e.getMessage());
+			}
+		} else {
+			Log.i(LOG_TAG, "XiVO Service instance not available");
+		}*/
+	
 		settings = PreferenceManager.getDefaultSharedPreferences(this);
 		loginSettings = this.getSharedPreferences("login_settings", 0);
 		
@@ -115,10 +126,7 @@ public class LoginActivity extends XivoActivity {
 		if (serviceStarted == false) {
 			Intent i = new Intent();
 			i.setClassName("com.proformatique.android.xivoclient", "com.proformatique.android.xivoclient.service.XivoService");
-			if (XivoService.isRunning(getApplicationContext())) {
-				Log.i(LOG_TAG, "XiVO service was running.");
-			} else {
-				Log.i(LOG_TAG, "XiVO service was not running.");
+			if (!(XivoService.isRunning(getApplicationContext()))) {
 				startService(i);
 			}
 			serviceStarted = true;
@@ -384,6 +392,7 @@ public class LoginActivity extends XivoActivity {
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			xivoService = IXivoService.Stub.asInterface((IBinder)service);
 			Log.d(LOG_TAG, "onServiceConnected");
+			startClient();
 		}
 		
 		@Override
