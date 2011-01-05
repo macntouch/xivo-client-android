@@ -13,6 +13,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
@@ -29,7 +30,7 @@ import com.proformatique.android.xivoclient.tools.Constants;
  */
 public class Connection {
 	
-	private static final String LOG_TAG = "CONNECTION";
+	private static final String LOG_TAG = "XiVO " + Connection.class.getSimpleName();
 	private String serverAdress;
 	private int serverPort;
 	private String login;
@@ -57,8 +58,9 @@ public class Connection {
 				String login = loginSettings.getString("login","");
 				String password = loginSettings.getString("password","");
 				instance = new Connection(login, password, context);
+			} else {
+				Log.d(LOG_TAG, "No login/password available for connection");
 			}
-			Log.d(LOG_TAG, "No login/password available for connection");
 		}
 		return instance;
 	}

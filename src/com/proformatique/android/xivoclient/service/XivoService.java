@@ -9,6 +9,7 @@ import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.app.ActivityManager;
+import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -99,9 +100,19 @@ public class XivoService extends Service {
 	public void onStart(Intent intent, int startId) {
 		Log.d(LOG_TAG, "onStart");
 		super.onStart(intent, startId);
-		serviceHandler = new Handler();
-		serviceHandler.post(myTask);
-		InitialListLoader.getInstance().init(getApplicationContext());
+		// Check for a username and password here
+		settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		loginSettings = getApplication().getSharedPreferences("login_settings", 0);
+		if (settings.getBoolean("save_login", true)
+				&& loginSettings.getString("login", "").equals("") == false
+				&& loginSettings.getString("password", "").equals("") == false){
+			serviceHandler = new Handler();
+			serviceHandler.post(myTask);
+			InitialListLoader.getInstance().init(getApplicationContext());
+		} else {
+			Log.e(LOG_TAG, "No login/password settings available");
+			xivoConnectionStatus |= Constants.LOGIN_MISSING;
+		}
 	}
 	
 	class Task implements Runnable {
@@ -162,6 +173,7 @@ public class XivoService extends Service {
 					} catch (Exception e) {
 						return Constants.LOGIN_PASSWORD_ERROR;
 					}
+					
 					Connection connection = Connection.getInstance(login, password, XivoService.this);
 					
 					InitialListLoader initList = InitialListLoader.getInstance();
@@ -185,6 +197,11 @@ public class XivoService extends Service {
 			} else {
 				throw new Exception();
 			}
+		}
+		
+		@Override
+		protected void onPreExecute() {
+			Log.i(LOG_TAG, "Connection task starting");
 		}
 		
 		protected void onPostExecute(Integer result) {

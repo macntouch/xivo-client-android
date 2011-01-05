@@ -61,5 +61,6 @@ public final class Constants {
 	public static final String ACTION_FORCED_DISCONNECT = "xivo.intent.action.FORCED_DISCONNECT";
 	public static final int XIVO_DISCONNECTED = 0;
 	public static final int XIVO_CONNECTED = 1 << 0;
+	public static final int LOGIN_MISSING = 1 << 1;
 	
 }

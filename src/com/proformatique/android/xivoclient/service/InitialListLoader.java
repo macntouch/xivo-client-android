@@ -399,6 +399,9 @@ public class InitialListLoader {
 	}
 	
 	public List<HashMap<String, String>> getAllContacts() {
-		return usersList.getAllUsers();
+		if (usersList != null)
+			return usersList.getAllUsers();
+		else
+			return null;
 	}
 }
