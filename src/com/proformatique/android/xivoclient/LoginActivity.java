@@ -243,7 +243,6 @@ public class LoginActivity extends XivoActivity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
 		
-		Log.d( LOG_TAG, "onActivityResult");
 		if (requestCode == Constants.CODE_LAUNCH) {
 			Log.d( LOG_TAG, "onActivityResult : CODE_LAUNCH");
 			if (resultCode == Constants.CODE_EXIT) {
@@ -251,7 +250,6 @@ public class LoginActivity extends XivoActivity {
 				this.finish();
 			}
 		}
-		
 	}
 	
 	@Override

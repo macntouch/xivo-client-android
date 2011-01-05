@@ -9,7 +9,6 @@ import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.app.ActivityManager;
-import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
