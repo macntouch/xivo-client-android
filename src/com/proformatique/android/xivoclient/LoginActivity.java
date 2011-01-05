@@ -35,6 +35,7 @@ public class LoginActivity extends XivoActivity {
 	private IXivoService xivoService;
 	private boolean serviceStarted = false;
 	private RemoteServiceConnection conn = null;
+	public boolean xivoServiceReady = false;
 	
 	/**
 	 * Check if the service is running
@@ -53,8 +54,6 @@ public class LoginActivity extends XivoActivity {
 			Log.i(LOG_TAG, "XiVO service is not running");
 			startXivoService();
 		}
-		
-		// Binds to the service
 		bindXivoService();
 		
 		settings = PreferenceManager.getDefaultSharedPreferences(this);
@@ -164,37 +163,12 @@ public class LoginActivity extends XivoActivity {
 	}
 	
 	public void clickOnButtonOk(View v) {
-		/*if (Connection.getInstance().isConnected()) {
-			Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
-			startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
-		} else {
-			connectTask = new ConnectTask();
-			connectTask.execute();
-			
-			/**
-			 * Timeout Connection : 10 seconds
-			 *//*
-			new Thread(new Runnable() {
-				public void run() {
-					
-					try {
-						connectTask.get(10, TimeUnit.SECONDS);
-					} catch (InterruptedException e) {
-						Connection.getInstance().disconnect();
-					} catch (ExecutionException e) {
-						Connection.getInstance().disconnect();
-					} catch (TimeoutException e) {
-						Connection.getInstance().disconnect();
-					}
-				};
-			}).start();
-			
-		}*/
 		saveLoginPassword();
 		startXivoService();
 		bindXivoService();
-		// TODO: make sure the service is started
-		startClient();
+		
+		if (xivoServiceReady == true)
+			startClient();
 	}
 	
 	private void saveLoginPassword() {
@@ -274,12 +248,14 @@ public class LoginActivity extends XivoActivity {
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			xivoService = IXivoService.Stub.asInterface((IBinder)service);
 			Log.d(LOG_TAG, "onServiceConnected");
+			xivoServiceReady  = true;
 			startClient();
 		}
 		
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
 			xivoService = null;
+			xivoServiceReady = false;
 			Log.d(LOG_TAG, "onServiceDisconnected");
 		}
 		

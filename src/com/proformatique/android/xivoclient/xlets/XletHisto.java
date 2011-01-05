@@ -31,7 +31,8 @@ import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
 
 public class XletHisto extends XivoActivity {
-	private static final String LOG_TAG = "XLET HISTORY";
+	
+	private static final String LOG_TAG = "XiVO " + XletHisto.class.getSimpleName();
 	private  List<HashMap<String, String>> xletList = new ArrayList<HashMap<String, String>>();
 	AlternativeAdapter xletAdapter = null;
 	ListView lv;

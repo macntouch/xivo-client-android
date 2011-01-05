@@ -46,6 +46,7 @@ public class XivoService extends Service {
 	@Override
 	public IBinder onBind(Intent intent) {
 		Log.d(LOG_TAG, "onBind");
+		Log.i(LOG_TAG, "xivoConnectionStatus == " + xivoConnectionStatus);
 		return xivoServiceStub;
 	}
 	

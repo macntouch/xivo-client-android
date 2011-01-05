@@ -5,7 +5,6 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.FrameLayout;
@@ -18,10 +17,10 @@ import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
 
 public class XletIdentity{
-	private static final String LOG_TAG = "XletIdentity";
+	
 	Activity activity = null;
 	FrameLayout fIdentity = null;
-
+	
 	public XletIdentity(Activity activity) {
 		
 		this.activity = activity;
@@ -40,8 +39,6 @@ public class XletIdentity{
 					if (hashMap.get("xivo_userid") != null && hashMap.get("xivo_userid").equals(xivoId)){
 						userName.setText(hashMap.get("fullname")+" ("+hashMap.get("phonenum")+")");
 						break;
-					} else {
-						Log.i(LOG_TAG, "Users identity loading but it's not a XivoUser");
 					}
 				}
 			}
@@ -74,7 +71,7 @@ public class XletIdentity{
 			textPhone.setText(init.getCapaPresenceState().get("hintstatus_longname"));
 		}
 	}
-
+	
 	public void changeCurrentState() {
 		InitialListLoader init = InitialListLoader.getInstance();
 		if (init != null) {
@@ -92,6 +89,4 @@ public class XletIdentity{
 		Intent defineIntent = new Intent(activity, XletIdentityStateList.class);
 		activity.startActivityForResult(defineIntent, Constants.CODE_IDENTITY_STATE_LIST);
 	}
-	
-
 }
