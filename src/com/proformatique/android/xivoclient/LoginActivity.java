@@ -8,7 +8,6 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -58,21 +57,6 @@ public class LoginActivity extends XivoActivity {
 		// Binds to the service
 		bindXivoService();
 		
-		/*if (xivoService != null) {
-			try {
-				if (xivoService.isConnected() == true) {
-					startClient();
-				} else {
-					// Stay here and wait for a click connection
-					Log.i(LOG_TAG, "XiVO server not connected yet.");
-				}
-			} catch (RemoteException e) {
-				Log.e(LOG_TAG, e.getMessage());
-			}
-		} else {
-			Log.i(LOG_TAG, "XiVO Service instance not available");
-		}*/
-	
 		settings = PreferenceManager.getDefaultSharedPreferences(this);
 		loginSettings = this.getSharedPreferences("login_settings", 0);
 		
@@ -91,13 +75,6 @@ public class LoginActivity extends XivoActivity {
 			EditText ePassword = (EditText) findViewById(R.id.password);
 			ePassword.setText(password);
 		}
-		
-		/*if (Connection.getInstance(getApplicationContext()).isConnected()) {
-			displayElements(false);
-			Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
-			LoginActivity.this.startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
-		}
-		else displayElements(true);*/
 	}
 	
 	/**
@@ -109,7 +86,7 @@ public class LoginActivity extends XivoActivity {
 		Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
 		LoginActivity.this.startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
 	}
-
+	
 	private void bindXivoService() {
 		if (conn == null) {
 			conn = new RemoteServiceConnection();
@@ -238,7 +215,6 @@ public class LoginActivity extends XivoActivity {
 			editor.putString("password", ePassword.getText().toString());
 			editor.commit();
 		}
-		
 	}
 	
 	public void displayElements(boolean display){
@@ -263,98 +239,6 @@ public class LoginActivity extends XivoActivity {
 		}
 	}
 	
-	/**
-	 * Creating a AsyncTask to execute connection process
-	 * @author cquaquin
-	 */
-	/*private class ConnectTask extends AsyncTask<Void, Integer, Integer> {
-		
-		@Override
-		protected void onPreExecute() {
-			dialog = new ProgressDialog(LoginActivity.this);
-			dialog.setMessage(getString(R.string.loading));
-			dialog.setIndeterminate(true);
-			dialog.setCancelable(false);
-			dialog.show();
-		}
-		
-		@Override
-		protected Integer doInBackground(Void... params) {
-			EditText eLogin = (EditText) LoginActivity.this.findViewById(R.id.login); 
-			EditText ePassword = (EditText) LoginActivity.this.findViewById(R.id.password); 
-			
-			 /**
-			 * Checking that web connection exists
-			 *//*
-			ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-			NetworkInfo netInfo = cm.getActiveNetworkInfo();
-			
-			if (!(netInfo == null)) {
-				if (netInfo.getState().compareTo(State.CONNECTED)==0) {
-					
-					Connection connection = Connection.getInstance(eLogin.getText().toString(),
-							ePassword.getText().toString(), LoginActivity.this);
-					
-					InitialListLoader initList = InitialListLoader.init();
-					int connectionCode = connection.initialize();
-					
-					if (connectionCode >= 1){
-						return initList.startLoading(getContentResolver(), getResources(), getApplicationContext());
-					}
-					return connectionCode;
-				} else return Constants.NO_NETWORK_AVAILABLE;
-			} else return Constants.NO_NETWORK_AVAILABLE;
-		}
-		
-		protected void onPostExecute(Integer result) {
-			
-			if (result == Constants.NO_NETWORK_AVAILABLE){
-				dialog.dismiss();
-				Toast.makeText(LoginActivity.this, R.string.no_web_connection, Toast.LENGTH_LONG).show();
-			}
-			else if (result == Constants.LOGIN_PASSWORD_ERROR) {
-				dialog.dismiss();
-				Toast.makeText(LoginActivity.this, R.string.bad_login_password, Toast.LENGTH_LONG).show();
-			}
-			else if (result == Constants.BAD_HOST){
-				dialog.dismiss();
-				Toast.makeText(LoginActivity.this, R.string.bad_host, Toast.LENGTH_LONG).show();
-			}
-			else if (result == Constants.NOT_CTI_SERVER){
-				dialog.dismiss();
-				Toast.makeText(LoginActivity.this, R.string.not_cti_server, Toast.LENGTH_LONG).show();
-			}
-			else if (result == Constants.VERSION_MISMATCH) {
-				dialog.dismiss();
-				Toast.makeText(LoginActivity.this, R.string.version_mismatch, Toast.LENGTH_LONG).show();
-			}
-			else if (result == Constants.CTI_SERVER_NOT_SUPPORTED) {
-				dialog.dismiss();
-				Toast.makeText(LoginActivity.this, R.string.cti_not_supported
-						, Toast.LENGTH_LONG).show();
-			}
-			else if (result < 1){
-				dialog.dismiss();
-				Toast.makeText(LoginActivity.this, R.string.connection_failed
-						, Toast.LENGTH_LONG).show();
-			}
-			else if(result >= 1){
-				
-				if (Connection.getInstance().getSaveLogin()){
-					saveLoginPassword();
-				}
-				
-				displayElements(false);
-				dialog.dismiss();
-				
-				/**
-				 * Parsing and Displaying xlets content
-				 *//*
-				Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
-				LoginActivity.this.startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
-			}
-		}
-	}*/
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
