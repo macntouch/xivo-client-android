@@ -91,7 +91,7 @@ public class XivoService extends Service {
 		receiver = new IncomingReceiver();
 		
 		IntentFilter filter = new IntentFilter();
-		filter.addAction(Constants.ACTION_STOP_SERVICE);
+		filter.addAction(Constants.ACTION_DISCONNECT_REQUEST);
 		
 		registerReceiver(receiver, new IntentFilter(filter));
 		
@@ -256,11 +256,10 @@ public class XivoService extends Service {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			String intentString = intent.getAction();
-			if (intentString.equals(Constants.ACTION_STOP_SERVICE)) {
-				Log.i(LOG_TAG, "Stop service intent received");
+			if (intentString.equals(Constants.ACTION_DISCONNECT_REQUEST)) {
+				Log.i(LOG_TAG, "Disconnect request intent received");
 				Connection.getInstance(getApplicationContext()).disconnect();
 				xivoConnectionStatus = Constants.XIVO_DISCONNECTED;
-				stopService();
 			}
 		}
 	}

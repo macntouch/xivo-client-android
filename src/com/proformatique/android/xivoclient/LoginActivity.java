@@ -37,13 +37,6 @@ public class LoginActivity extends XivoActivity {
 	private RemoteServiceConnection conn = null;
 	public boolean xivoServiceReady = false;
 	
-	/**
-	 * Check if the service is running
-	 * If it is, start the tab activity
-	 * If it's not, gather user name/password
-	 * allow the user to configure the server informations
-	 * and allow the user to connect.
-	 */
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.login);
@@ -147,7 +140,7 @@ public class LoginActivity extends XivoActivity {
 		Log.i(LOG_TAG, "Menu disconnect clicked");
 		displayElements(true);
 		Intent iDisconnectIntent = new Intent();
-		iDisconnectIntent.setAction(Constants.ACTION_STOP_SERVICE);
+		iDisconnectIntent.setAction(Constants.ACTION_DISCONNECT_REQUEST);
 		getApplicationContext().sendBroadcast(iDisconnectIntent);
 	}
 	
