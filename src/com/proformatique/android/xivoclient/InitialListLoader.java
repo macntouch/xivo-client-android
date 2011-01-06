@@ -98,24 +98,27 @@ public class InitialListLoader {
 			loadAndroidContacts();
 		}
 		
-		allContacts = new ArrayList<HashMap<String, String>>();
+		if (allContacts == null) {
+			allContacts = new ArrayList<HashMap<String, String>>(usersList.size());
+		}
+		
 		if (usersList != null && usersList.size() > 0) {
 			allContacts.addAll(usersList);
 		}
 		
-		if (allContacts.size() != 0){
+		if (allContacts != null && allContacts.size() != 0){
 			Collections.sort(allContacts, new fullNameComparator());
+		} else {
+			allContacts = new ArrayList<HashMap<String, String>>();
 		}
+		
 		return Constants.OK;
 	}
 	
 	@SuppressWarnings("unchecked")
 	public List<HashMap<String, String>> getAllContacts(Context context) {
-		boolean needAndroidContacts = false;
 		settings = PreferenceManager.getDefaultSharedPreferences(context);
-		if (settings.getBoolean("include_device_contacts", false) != false) {
-			needAndroidContacts = true;
-		}
+		boolean needAndroidContacts = settings.getBoolean("include_device_contacts", false);
 		
 		if (needAndroidContacts == androidContactsLoaded) return allContacts;
 		if (needAndroidContacts == false)
@@ -154,10 +157,13 @@ public class InitialListLoader {
 				contact.put("stateid_color", "grey");
 				androidContacts.add(contact);
 			}
-			androidContactsLoaded  = true;
 			phones.close();
 		}
+		androidContactsLoaded = true;
+		
 		if (androidContacts != null && androidContacts.size() > 0) {
+			if (allContacts == null)
+				allContacts = new ArrayList<HashMap<String, String>>(androidContacts.size());
 			allContacts.addAll(androidContacts);
 		}
 	}
