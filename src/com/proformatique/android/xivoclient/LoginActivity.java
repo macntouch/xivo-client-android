@@ -270,14 +270,13 @@ public class LoginActivity extends XivoActivity {
 					saveLoginPassword();
 				}
 				
-				displayElements(false);
-				dialog.dismiss();
-				
 				/**
 				 * Parsing and Displaying xlets content
 				 */
 				Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
 				LoginActivity.this.startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
+				displayElements(false);
+				dialog.dismiss();
 			}
 		}
 	}
