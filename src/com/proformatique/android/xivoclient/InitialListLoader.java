@@ -121,8 +121,11 @@ public class InitialListLoader {
 		boolean needAndroidContacts = settings.getBoolean("include_device_contacts", false);
 		
 		if (needAndroidContacts == androidContactsLoaded) return allContacts;
-		if (needAndroidContacts == false)
+		if (needAndroidContacts == false) {
+			if (usersList.size() > 0)
+				Collections.sort(usersList, new fullNameComparator());
 			return usersList;
+		}
 		if (androidContactsLoaded == false)
 			loadAndroidContacts();
 		
