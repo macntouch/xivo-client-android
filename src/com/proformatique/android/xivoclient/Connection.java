@@ -393,19 +393,22 @@ public class Connection {
 				networkConnection.shutdownOutput();
 				networkConnection.close();
 			}
-			xivoNotif.removeNotif();
+			if (xivoNotif != null)
+				xivoNotif.removeNotif();
 			
-			EditText eLogin = (EditText) callingActivity.findViewById(R.id.login); 
-			EditText ePassword = (EditText) callingActivity.findViewById(R.id.password);
-			TextView eLoginV = (TextView) callingActivity.findViewById(R.id.login_text); 
-			TextView ePasswordV = (TextView) callingActivity.findViewById(R.id.password_text);
-			TextView eStatus = (TextView) callingActivity.findViewById(R.id.connect_status); 
-			
-			eLogin.setVisibility(View.VISIBLE);
-			ePassword.setVisibility(View.VISIBLE);
-			eLoginV.setVisibility(View.VISIBLE);
-			ePasswordV.setVisibility(View.VISIBLE);
-			eStatus.setVisibility(View.INVISIBLE);
+			if (callingActivity != null) {
+				EditText eLogin = (EditText) callingActivity.findViewById(R.id.login); 
+				EditText ePassword = (EditText) callingActivity.findViewById(R.id.password);
+				TextView eLoginV = (TextView) callingActivity.findViewById(R.id.login_text); 
+				TextView ePasswordV = (TextView) callingActivity.findViewById(R.id.password_text);
+				TextView eStatus = (TextView) callingActivity.findViewById(R.id.connect_status); 
+				
+				eLogin.setVisibility(View.VISIBLE);
+				ePassword.setVisibility(View.VISIBLE);
+				eLoginV.setVisibility(View.VISIBLE);
+				ePasswordV.setVisibility(View.VISIBLE);
+				eStatus.setVisibility(View.INVISIBLE);
+			}
 			
 		} catch (IOException e) {
 			return Constants.NO_NETWORK_AVAILABLE;

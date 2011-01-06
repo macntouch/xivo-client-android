@@ -20,7 +20,9 @@
                   android:label="@string/app_name"
                   android:launchMode="singleTask"
                   android:clearTaskOnLaunch="true"
-                  android:finishOnTaskLaunch="true">
+                  android:finishOnTaskLaunch="true"
+                  android:screenOrientation="portrait"
+                  android:configChanges="keyboardHidden|orientation">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -28,27 +30,36 @@
         </activity>
 
         <activity android:name=".SettingsActivity"
-                  android:label="@string/app_name">
+                  android:label="@string/app_name"
+                  android:screenOrientation="portrait"
+                  android:configChanges="keyboardHidden|orientation">
         </activity>
 
         <activity android:name=".AboutActivity"
-                  android:label="@string/app_name">
+                  android:label="@string/app_name"
+                  android:screenOrientation="portrait"
+                  android:configChanges="keyboardHidden|orientation">
         </activity>
 
         <activity android:name=".XletsContainerTabActivity"
                   android:label="@string/app_name" 
                   android:screenOrientation="portrait"
-                  android:launchMode="singleTop">
+                  android:launchMode="singleTop"
+                  android:configChanges="keyboardHidden|orientation">
         </activity>
 
         <activity android:name=".xlets.XletIdentityStateList"
-                  android:label="@string/app_name">
+                  android:label="@string/app_name"
+                  android:screenOrientation="portrait"
+                  android:configChanges="keyboardHidden|orientation">
         </activity>
 
         <activity android:name=".xlets.XletDialer"
                   android:label="@string/xlet_dial_label"
                   android:description="@string/xlet_dial_desc"
-                  android:launchMode="standard">
+                  android:launchMode="standard"
+                  android:screenOrientation="portrait"
+                  android:configChanges="keyboardHidden|orientation">
             <intent-filter>
                 <action android:name="xivo.intent.action.LOAD_XLET_TAB" />
             </intent-filter>
@@ -57,7 +68,9 @@
         <activity android:name=".xlets.XletContactSearch"
                   android:label="@string/xlet_search_label"
                   android:description="@string/xlet_search_desc"
-                  android:launchMode="standard">
+                  android:launchMode="standard"
+                  android:screenOrientation="portrait"
+                  android:configChanges="keyboardHidden|orientation">
             <intent-filter>
                 <action android:name="xivo.intent.action.LOAD_XLET_TAB" />
             </intent-filter>
@@ -66,7 +79,9 @@
         <activity android:name=".xlets.XletServices"
                   android:label="@string/xlet_features_label"
                   android:description="@string/xlet_features_desc"
-                  android:launchMode="standard">
+                  android:launchMode="standard"
+                  android:screenOrientation="portrait"
+                  android:configChanges="keyboardHidden|orientation">
             <intent-filter>
                 <action android:name="xivo.intent.action.LOAD_XLET_TAB" />
             </intent-filter>
@@ -75,14 +90,18 @@
         <activity android:name=".xlets.XletHisto"
                   android:label="@string/xlet_history_label"
                   android:description="@string/xlet_history_desc"
-                  android:launchMode="standard">
+                  android:launchMode="standard"
+                  android:screenOrientation="portrait"
+                  android:configChanges="keyboardHidden|orientation">
             <intent-filter>
                 <action android:name="xivo.intent.action.LOAD_XLET_TAB" />
             </intent-filter>
         </activity>
         
         <activity android:name=".xlets.XletServicesAsk" 
-        android:theme="@android:style/Theme.Dialog"/>
+        	android:theme="@android:style/Theme.Dialog"
+        	android:screenOrientation="portrait"
+        	android:configChanges="keyboardHidden|orientation"/>
 
     </application>
     <uses-sdk android:minSdkVersion="7"/>
