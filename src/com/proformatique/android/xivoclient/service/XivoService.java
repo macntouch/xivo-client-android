@@ -10,8 +10,10 @@ import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.app.ActivityManager;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -42,6 +44,7 @@ public class XivoService extends Service {
 	private static final String LOG_TAG = "XiVO " + XivoService.class.getSimpleName();
 	private static final String name = "com.proformatique.android.xivoclient.service.XivoService";
 	private int xivoConnectionStatus = Constants.XIVO_DISCONNECTED;
+	private IncomingReceiver receiver;
 	
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -83,6 +86,15 @@ public class XivoService extends Service {
 	@Override
 	public void onCreate() {
 		Log.d(LOG_TAG,"onCreate()");
+		
+		// Add event listener
+		receiver = new IncomingReceiver();
+		
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(Constants.ACTION_STOP_SERVICE);
+		
+		registerReceiver(receiver, new IntentFilter(filter));
+		
 		super.onCreate();
 	}
 	
@@ -92,7 +104,13 @@ public class XivoService extends Service {
 		serviceHandler.removeCallbacks(myTask);
 		serviceHandler = null;
 		xivoConnectionStatus = Constants.XIVO_DISCONNECTED;
+		unregisterReceiver(receiver);
 		super.onDestroy();
+	}
+	
+	public void stopService() {
+		Log.i(LOG_TAG, "Service stopping");
+		stopSelf();
 	}
 	
 	@Override
@@ -229,6 +247,20 @@ public class XivoService extends Service {
 			else if(result >= 1){
 				Log.i(LOG_TAG, "Connection established");
 				xivoConnectionStatus = Constants.XIVO_CONNECTED;
+			}
+		}
+	}
+	
+	public class IncomingReceiver extends BroadcastReceiver {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String intentString = intent.getAction();
+			if (intentString.equals(Constants.ACTION_STOP_SERVICE)) {
+				Log.i(LOG_TAG, "Stop service intent received");
+				Connection.getInstance(getApplicationContext()).disconnect();
+				xivoConnectionStatus = Constants.XIVO_DISCONNECTED;
+				stopService();
 			}
 		}
 	}

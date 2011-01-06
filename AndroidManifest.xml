@@ -21,9 +21,7 @@
 			android:name=".service.XivoService"
 			android:process=":remote">
 			<intent-filter>
-				<action
-					android:name="com.proformatique.android.xivoclient.service.XivoService">
-				</action>
+				<action android:name="xivo.intent.action.STOP_SERVICE"></action>
 			</intent-filter>
 		</service>
 		<!--

@@ -59,6 +59,11 @@ public final class Constants {
 	public static final String ACTION_LOAD_FEATURES = "xivo.intent.action.LOAD_FEATURES";
 	public static final String ACTION_REFRESH_USER_LIST = "xivo.intent.action.USER_SEARCH";
 	public static final String ACTION_FORCED_DISCONNECT = "xivo.intent.action.FORCED_DISCONNECT";
+	public static final String ACTION_STOP_SERVICE = "xivo.intent.action.STOP_SERVICE";
+	
+	/**
+	 * XivoService connection status
+	 */
 	public static final int XIVO_DISCONNECTED = 0;
 	public static final int XIVO_CONNECTED = 1 << 0;
 	public static final int LOGIN_MISSING = 1 << 1;

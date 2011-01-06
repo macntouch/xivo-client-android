@@ -136,13 +136,19 @@ public class LoginActivity extends XivoActivity {
 			menuAbout();
 			return true;
 		case R.id.menu_disconnect:
-			if (Connection.getInstance(getApplicationContext()).isConnected())
-				Connection.getInstance(getApplicationContext()).disconnect();
-			displayElements(true);
+			menuDisconnect();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+	
+	private void menuDisconnect() {
+		Log.i(LOG_TAG, "Menu disconnect clicked");
+		displayElements(true);
+		Intent iDisconnectIntent = new Intent();
+		iDisconnectIntent.setAction(Constants.ACTION_STOP_SERVICE);
+		getApplicationContext().sendBroadcast(iDisconnectIntent);
 	}
 	
 	private void menuAbout() {
@@ -151,6 +157,7 @@ public class LoginActivity extends XivoActivity {
 	}
 	
 	private void menuExit() {
+		Log.i(LOG_TAG, "Menu exit clicked");
 		if (Connection.getInstance(getApplicationContext()).isConnected())
 			Connection.getInstance(getApplicationContext()).disconnect();
 		finish();
@@ -159,7 +166,6 @@ public class LoginActivity extends XivoActivity {
 	private void menuSettings() {
 		Intent defineIntent = new Intent(this, SettingsActivity.class);
 		startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
-		
 	}
 	
 	public void clickOnButtonOk(View v) {
