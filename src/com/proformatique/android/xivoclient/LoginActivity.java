@@ -39,6 +39,7 @@ public class LoginActivity extends XivoActivity {
 	
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Log.i(LOG_TAG, "onCreate");
 		setContentView(R.layout.login);
 		
 		if (XivoService.isRunning(getApplicationContext()))
@@ -67,6 +68,12 @@ public class LoginActivity extends XivoActivity {
 			EditText ePassword = (EditText) findViewById(R.id.password);
 			ePassword.setText(password);
 		}
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		Log.i(LOG_TAG, "onResume");
 	}
 	
 	/**
