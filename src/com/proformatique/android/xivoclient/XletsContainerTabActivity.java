@@ -269,12 +269,11 @@ public class XletsContainerTabActivity extends TabActivity {
 	
 	@Override
 	protected void onDestroy() {
+		Log.i(LOG_TAG, "onDestroy");
 		try {
 			unregisterReceiver(receiver);
 		} catch (Exception e) {
 		}
-		Connection.getInstance().disconnect();
-		setResult(Constants.CODE_EXIT);
 		
 		super.onDestroy();
 	}
