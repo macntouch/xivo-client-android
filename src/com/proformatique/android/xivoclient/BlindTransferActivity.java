@@ -45,7 +45,7 @@ public class BlindTransferActivity extends Activity implements OnClickListener {
 		String number = et.getText().toString();
 		if (number != null && number.equals("") != true) {
 			// transfer the call here
-			Toast.makeText(getApplicationContext(), "transfering to " + number, Toast.LENGTH_LONG).show();
+			Toast.makeText(getApplicationContext(), getString(R.string.transfering, number), Toast.LENGTH_LONG).show();
 			finish();
 		}
 	}
