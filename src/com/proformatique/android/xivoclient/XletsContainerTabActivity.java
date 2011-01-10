@@ -255,9 +255,29 @@ public class XletsContainerTabActivity extends TabActivity {
 		case R.id.menu_about:
 			menuAbout();
 			return true;
+		case R.id.menu_blind_transfer:
+			blindTransfer();
+			return true;
+		case R.id.menu_attended_transfer:
+			attendedTransfer();
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+	
+	/**
+	 * Attended transfer has been clicked
+	 */
+	private void attendedTransfer() {
+		Log.d(LOG_TAG, "Attended transfer clicked");
+	}
+	
+	/**
+	 * Blind transfer has been clicked
+	 */
+	private void blindTransfer() {
+		Log.d(LOG_TAG, "Blind transfer clicked");
 	}
 	
 	private void menuAbout() {
