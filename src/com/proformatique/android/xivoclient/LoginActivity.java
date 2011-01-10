@@ -298,7 +298,7 @@ public class LoginActivity extends XivoActivity {
 	@Override
 	protected void onDestroy() {
 		Log.d( LOG_TAG, "DESTROY");
-		if (Connection.getInstance().isConnected()) {
+		if (Connection.getInstance() != null && Connection.getInstance().isConnected()) {
 			Connection.getInstance().disconnect();
 		}
 		super.onDestroy();
