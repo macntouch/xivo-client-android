@@ -4,12 +4,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract.Contacts;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -18,11 +25,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
@@ -31,7 +41,7 @@ import com.proformatique.android.xivoclient.tools.GraphicsManager;
 
 public class XletContactSearch extends XivoActivity {
 	
-	private static final String LOG_TAG = "XLET DIRECTORY";
+	private static final String LOG_TAG = "XiVO XletContactSearch";
 	private List <HashMap<String, String>> filteredUsersList = new ArrayList<HashMap<String, String>>();
 	private EditText et;
 	AlternativeAdapter usersAdapter = null;
@@ -39,6 +49,8 @@ public class XletContactSearch extends XivoActivity {
 	IncomingReceiver receiver;
 	SearchReceiver searchReceiver;
 	private List<HashMap<String, String>> contacts = null;
+	private String[] items;
+	protected static final int CONTACT_PICKER_RESULT = 1001;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +90,114 @@ public class XletContactSearch extends XivoActivity {
 					}
 				}
 		);
+		
+		Button searchButton = (Button) findViewById(R.id.button_search_contacts);
+		searchButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent contactPickerIntent = new Intent(Intent.ACTION_PICK,
+						Contacts.CONTENT_URI);  
+				startActivityForResult(contactPickerIntent, CONTACT_PICKER_RESULT); 
+			}
+		});
+	}
+	
+	/**
+	 * Handles results for launched activities
+	 */
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {  
+		if (resultCode == RESULT_OK) {  
+			switch (requestCode) {  
+			case CONTACT_PICKER_RESULT:  
+				readPickedContact(data);
+				break;  
+			}
+		} else {
+			// gracefully handle failure  
+			Log.w(LOG_TAG, "Warning: activity result not ok");
+		}
+	}
+	
+	/**
+	 * Reads the data received from the contact picked, creates a HashMap
+	 * and sends the call
+	 * 
+	 * @param data
+	 */
+	private void readPickedContact(Intent data) {
+		Uri result = data.getData();
+		Log.d(LOG_TAG, "Got a result " + result.toString());
+		String id = result.getLastPathSegment();
+		Cursor cursor = getContentResolver().query(
+				Phone.CONTENT_URI, null, Phone.CONTACT_ID + "=?",new String[] {id}, null);
+		if (cursor.getCount() > 0) {
+			HashMap<String, String> contact = new HashMap<String, String>();
+			cursor.moveToFirst();
+			do {
+					String[] cols = cursor.getColumnNames();
+					String number = "";
+					for (String col: cols) {
+						int index = cursor.getColumnIndex(col);
+						if (col.equals("display_name")) {
+							contact.put("Name", cursor.getString(index));
+						} else if (col.equals("data1")) {
+							number = cursor.getString(index);
+						} else if (col.equals("data2")) {
+							contact.put((String) Phone.getTypeLabel(this.getResources(), cursor.getInt(
+									cursor.getColumnIndex(Phone.TYPE)), "test"), number);
+						}
+					}
+				
+			} while (cursor.moveToNext());
+			callContact(contact);
+		} else {
+			Toast.makeText(getApplicationContext(), "This contact has no phone number", Toast.LENGTH_LONG).show();
+		}
+	}
+	
+	/**
+	 * Prompt the users for the number to call (Home, Office, etc)
+	 * 
+	 * @param contact
+	 */
+	private void callContact(HashMap<String, String> contact) {
+		Log.d("Tester", contact.toString() + " " + contact.size());
+		Set<String> keys = contact.keySet();
+		items = new String[contact.size()];
+		String title = "";
+		int i = 0;
+		for (String key: keys) {
+			if (key != "Name") {
+				String c = key + " " + contact.get(key);
+				items[i++] = c;
+			} else {
+				title = "Call " + contact.get(key);
+			}
+		}
+		items[items.length - 1] = "Cancel";
+		new AlertDialog.Builder(this)
+		.setTitle(title)
+		.setItems(items,
+			new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int i) {
+					callNumberForResult(i);
+				}
+			}).show();
+	}
+	
+	/**
+	 * Calls the choosen number for the selected android contact
+	 * @param i
+	 */
+	protected void callNumberForResult(int i) {
+		if (i == items.length - 1) {
+			Toast.makeText(getApplicationContext(), "Call cancelled", Toast.LENGTH_LONG).show();
+		} else {
+			String[] number = items[i].split(" ");
+			dialNumber(number[1]);
+		}
 	}
 	
 	protected void onResume() {
@@ -109,7 +229,7 @@ public class XletContactSearch extends XivoActivity {
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
 		String phoneNumber = filteredUsersList.get(info.position).get("phonenum");
-		clickLine(phoneNumber);
+		dialNumber(phoneNumber);
 		
 		return super.onContextItemSelected(item);
 	}
@@ -241,7 +361,7 @@ public class XletContactSearch extends XivoActivity {
 	 * 
 	 * @param v
 	 */
-	public void clickLine(String numToCall){
+	public void dialNumber(String numToCall){
 		
 		Intent defineIntent = new Intent();
 		defineIntent.setAction(Constants.ACTION_XLET_DIAL_CALL);
