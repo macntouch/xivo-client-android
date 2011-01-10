@@ -317,7 +317,7 @@ public class XletContactSearch extends XivoActivity {
 		}
 		
 		if (contacts != null)
-			filteredUsersList.addAll(contacts);		
+			filteredUsersList.addAll(contacts);
 	}
 	
 	/**
