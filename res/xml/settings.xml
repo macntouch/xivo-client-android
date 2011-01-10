@@ -39,9 +39,5 @@
   		android:key="use_fullscreen"
   		android:title="@string/use_fullscreen"
   		android:defaultValue="false"/>
-  	<CheckBoxPreference
-  		android:key="include_device_contacts"
-  		android:title="@string/include_device_contacts"
-  		android:defaultValue="true"/>
   </PreferenceCategory>
 </PreferenceScreen> 
