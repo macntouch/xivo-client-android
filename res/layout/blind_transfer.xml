@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:orientation="vertical">
+	<TextView
+		android:text="@string/transfer_prompt"
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent"
+		android:textSize="15sp"
+		android:layout_margin="10dp">
+	</TextView>
+	<EditText
+		android:id="@+id/transfer_destination"
+		android:hint="@string/transfer_hint"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_margin="10dp">
+	</EditText>
+	<LinearLayout
+		android:orientation="horizontal"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content">
+		<Button
+			android:id="@+id/button_blind_tx"
+			android:text="@string/label_tx_btn"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_margin="10dp">
+		</Button>
+		<Button
+			android:id="@+id/button_cancel_blind_tx"
+			android:text="@string/label_cancel_btn"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_margin="10dp">
+		</Button>		
+	</LinearLayout>
+</LinearLayout>

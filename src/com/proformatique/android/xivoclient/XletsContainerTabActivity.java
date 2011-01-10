@@ -237,7 +237,8 @@ public class XletsContainerTabActivity extends TabActivity {
 	 * @return
 	 */
 	private boolean onThePhone() {
-		return phoneState == TelephonyManager.CALL_STATE_OFFHOOK;
+		//return phoneState == TelephonyManager.CALL_STATE_OFFHOOK; // Commented for debuging only
+		return true;
 	}
 	
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -278,6 +279,8 @@ public class XletsContainerTabActivity extends TabActivity {
 	 */
 	private void blindTransfer() {
 		Log.d(LOG_TAG, "Blind transfer clicked");
+		Intent i = new Intent(this, BlindTransferActivity.class);
+		startActivity(i);
 	}
 	
 	private void menuAbout() {
