@@ -59,7 +59,7 @@ public class GraphicsManager {
 
 	public static void setIconStateDisplay(Context context, ImageView icon, 
 			String color) {
-		Log.d( LOG_TAG, "Color State Presence : "+ color);
+		//Log.d( LOG_TAG, "Color State Presence : "+ color);
 		  /**
 		   * Conversion of bad color strings
 		   */
@@ -80,7 +80,7 @@ public class GraphicsManager {
 
 	public static void setIconPhoneDisplay(Context context, ImageView icon, 
 			String color) {
-		Log.d( LOG_TAG, "Color Phone : "+ color);
+		//Log.d( LOG_TAG, "Color Phone : "+ color);
 		  /**
 		   * Conversion of bad color strings
 		   */
@@ -104,7 +104,7 @@ public class GraphicsManager {
 		   * Tricky tip to avoid colors being duplicated :
 		   * get a copy of the drawable and apply it on the ImageView
 		   */
-		  Log.d( LOG_TAG, "Hack : Copy drawable");
+		  //Log.d( LOG_TAG, "Hack : Copy drawable");
 
 		  Resources res = context.getResources();
 		  Drawable drawable = res.getDrawable(idRes);
