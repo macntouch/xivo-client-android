@@ -68,4 +68,6 @@
     <string name="xlet_search_desc">Contacts</string>
     
     <string name="search_hint">Search</string>
+    <string name="cancel_label">Cancel</string>
+    <string name="call_canceled">Call canceled</string>
 </resources>

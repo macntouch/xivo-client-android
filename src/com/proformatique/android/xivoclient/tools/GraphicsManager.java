@@ -81,9 +81,9 @@ public class GraphicsManager {
 	public static void setIconPhoneDisplay(Context context, ImageView icon, 
 			String color) {
 		//Log.d( LOG_TAG, "Color Phone : "+ color);
-		  /**
-		   * Conversion of bad color strings
-		   */
+		/**
+		 * Conversion of bad color strings
+		 */
 		if (color != null) {
 			color = color.replaceFirst("grey", "gray");
 			icon.setColorFilter(null);
@@ -95,29 +95,29 @@ public class GraphicsManager {
 			
 			if (!color.equals(""))
 				icon.setColorFilter(Color.parseColor(color), PorterDuff.Mode.SRC_ATOP);
-			  else
-				  icon.setColorFilter(Color.TRANSPARENT, PorterDuff.Mode.SRC_ATOP);
+			else
+				icon.setColorFilter(Color.TRANSPARENT, PorterDuff.Mode.SRC_ATOP);
 		}
 	}
 
 	private static Drawable getDrawableCopy(Context context, int idRes) {
-		  /**
-		   * Tricky tip to avoid colors being duplicated :
-		   * get a copy of the drawable and apply it on the ImageView
-		   */
-		  //Log.d( LOG_TAG, "Hack : Copy drawable");
-
-		  Resources res = context.getResources();
-		  Drawable drawable = res.getDrawable(idRes);
-		  drawable.setColorFilter(null);
-
-		  Bitmap iconBitmap = Bitmap.createBitmap(30, 30, Bitmap.Config.ARGB_4444);
-		  drawable.setBounds(0, 0, 30, 30); 
-		  drawable.draw(new Canvas(iconBitmap));
-		  Drawable dr2 = (new BitmapDrawable(res, iconBitmap)).getCurrent();
+		/**
+		 * Tricky tip to avoid colors being duplicated :
+		 * get a copy of the drawable and apply it on the ImageView
+		 */
+		//Log.d( LOG_TAG, "Hack : Copy drawable");
 		
-		  return dr2;
-		  
+		Resources res = context.getResources();
+		Drawable drawable = res.getDrawable(idRes);
+		drawable.setColorFilter(null);
+		
+		Bitmap iconBitmap = Bitmap.createBitmap(30, 30, Bitmap.Config.ARGB_4444);
+		drawable.setBounds(0, 0, 30, 30); 
+		drawable.draw(new Canvas(iconBitmap));
+		Drawable dr2 = (new BitmapDrawable(res, iconBitmap)).getCurrent();
+		
+		return dr2;
+		
 	}
 
 

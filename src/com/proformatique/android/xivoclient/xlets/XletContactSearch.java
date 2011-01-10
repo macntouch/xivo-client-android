@@ -128,7 +128,6 @@ public class XletContactSearch extends XivoActivity {
 	 */
 	private void readPickedContact(Intent data) {
 		Uri result = data.getData();
-		Log.d(LOG_TAG, "Got a result " + result.toString());
 		String id = result.getLastPathSegment();
 		Cursor cursor = getContentResolver().query(
 				Phone.CONTENT_URI, null, Phone.CONTACT_ID + "=?",new String[] {id}, null);
@@ -146,14 +145,14 @@ public class XletContactSearch extends XivoActivity {
 							number = cursor.getString(index);
 						} else if (col.equals("data2")) {
 							contact.put((String) Phone.getTypeLabel(this.getResources(), cursor.getInt(
-									cursor.getColumnIndex(Phone.TYPE)), "test"), number);
+									cursor.getColumnIndex(Phone.TYPE)), "unknown"), number);
 						}
 					}
 				
 			} while (cursor.moveToNext());
 			callContact(contact);
 		} else {
-			Toast.makeText(getApplicationContext(), "This contact has no phone number", Toast.LENGTH_LONG).show();
+			Toast.makeText(getApplicationContext(), getString(R.string.call_no_phone_number), Toast.LENGTH_LONG).show();
 		}
 	}
 	
@@ -163,7 +162,6 @@ public class XletContactSearch extends XivoActivity {
 	 * @param contact
 	 */
 	private void callContact(HashMap<String, String> contact) {
-		Log.d("Tester", contact.toString() + " " + contact.size());
 		Set<String> keys = contact.keySet();
 		items = new String[contact.size()];
 		String title = "";
@@ -173,10 +171,10 @@ public class XletContactSearch extends XivoActivity {
 				String c = key + " " + contact.get(key);
 				items[i++] = c;
 			} else {
-				title = "Call " + contact.get(key);
+				title = getString(R.string.context_action_call_short, contact.get(key));
 			}
 		}
-		items[items.length - 1] = "Cancel";
+		items[items.length - 1] = getString(R.string.cancel_label);
 		new AlertDialog.Builder(this)
 		.setTitle(title)
 		.setItems(items,
@@ -195,7 +193,7 @@ public class XletContactSearch extends XivoActivity {
 	 */
 	protected void callNumberForResult(int i) {
 		if (i == items.length - 1) {
-			Toast.makeText(getApplicationContext(), "Call cancelled", Toast.LENGTH_LONG).show();
+			Toast.makeText(getApplicationContext(), getString(R.string.call_canceled), Toast.LENGTH_LONG).show();
 		} else {
 			String[] number = items[i].split(" ");
 			dialNumber(number[1]);
