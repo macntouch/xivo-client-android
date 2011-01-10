@@ -69,4 +69,5 @@
     
     <string name="search_hint">Search</string>
 
+<string name="search_contacts_label">Search contacts</string>
 </resources>
