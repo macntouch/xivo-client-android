@@ -42,15 +42,18 @@ import com.proformatique.android.xivoclient.tools.GraphicsManager;
 public class XletContactSearch extends XivoActivity {
 	
 	private static final String LOG_TAG = "XiVO XletContactSearch";
+	
 	private List <HashMap<String, String>> filteredUsersList = new ArrayList<HashMap<String, String>>();
-	private EditText et;
-	AlternativeAdapter usersAdapter = null;
-	ListView lv;
-	IncomingReceiver receiver;
-	SearchReceiver searchReceiver;
 	private List<HashMap<String, String>> contacts = null;
+	private AlternativeAdapter usersAdapter = null;
+	
+	
 	private String[] items;
-	protected static final int CONTACT_PICKER_RESULT = 1001;
+		
+	private EditText et;
+	private ListView lv;
+	private IncomingReceiver receiver;
+	private SearchReceiver searchReceiver;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -97,7 +100,7 @@ public class XletContactSearch extends XivoActivity {
 			public void onClick(View v) {
 				Intent contactPickerIntent = new Intent(Intent.ACTION_PICK,
 						Contacts.CONTENT_URI);  
-				startActivityForResult(contactPickerIntent, CONTACT_PICKER_RESULT); 
+				startActivityForResult(contactPickerIntent, Constants.CONTACT_PICKER_RESULT); 
 			}
 		});
 	}
@@ -108,12 +111,11 @@ public class XletContactSearch extends XivoActivity {
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {  
 		if (resultCode == RESULT_OK) {  
 			switch (requestCode) {  
-			case CONTACT_PICKER_RESULT:  
+			case Constants.CONTACT_PICKER_RESULT:  
 				readPickedContact(data);
 				break;  
 			}
 		} else {
-			// gracefully handle failure  
 			Log.w(LOG_TAG, "Warning: activity result not ok");
 		}
 	}

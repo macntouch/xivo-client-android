@@ -74,6 +74,7 @@ public class InitialListLoader {
 		return Constants.OK;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private int initJsonList(String inputClass) {
 		JSONObject jObj = createJsonInputObject(inputClass,"getlist");
 		if (jObj!=null){
@@ -114,6 +115,9 @@ public class InitialListLoader {
 							usersList.add(map);
 							
 							Log.d( LOG_TAG, "map : " + map.toString());
+						}
+						if (usersList.size() > 1) {
+							Collections.sort(usersList, new fullNameComparator());
 						}
 					}
 					
