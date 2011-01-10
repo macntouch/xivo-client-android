@@ -18,6 +18,8 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -31,6 +33,9 @@ import com.proformatique.android.xivoclient.xlets.XletIdentity;
 public class XletsContainerTabActivity extends TabActivity {
 	
 	private static final String LOG_TAG = "XLETS_LOADING";
+	private TelephonyManager telephonyManager;
+	private PhoneStateListener phoneStateListener;
+	private int phoneState = TelephonyManager.CALL_STATE_IDLE;
 	
 	/**
 	 * TODO : Move xletsList and xletsList loading to InitialListLoader 
@@ -44,12 +49,42 @@ public class XletsContainerTabActivity extends TabActivity {
 		setContentView(R.layout.xlets_container);
 		
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+		telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+		phoneStateListener = new PhoneStateListener() {
+			@Override
+			public void onCallStateChanged(int state, String incomingNumber) {
+				phoneState = state;
+			}
+		};
+		
+		telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
 		
 		if (settings.getBoolean("use_fullscreen", false)) {
 			this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 					WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		}
 		displayInit();
+	}
+	
+	/**
+	 * Create a dynamic menu depending on the current phone state
+	 * 
+	 * @param menu
+	 * @return
+	 */
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		menu.clear();
+		
+		MenuInflater inflater = getMenuInflater();
+		if (onThePhone() == true) {
+			Log.d(LOG_TAG, "Currently calling");
+			inflater.inflate(R.menu.menu_settings_calling, menu);
+		} else {
+			inflater.inflate(R.menu.menu_settings_connected, menu);
+		}
+		
+		return super.onPrepareOptionsMenu(menu);
 	}
 	
 	private void displayInit() {
@@ -197,10 +232,12 @@ public class XletsContainerTabActivity extends TabActivity {
 		}
 	}
 	
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.menu_settings_connected, menu);
-		return true;
+	/**
+	 * Returns true if a call is going on
+	 * @return
+	 */
+	private boolean onThePhone() {
+		return phoneState == TelephonyManager.CALL_STATE_OFFHOOK;
 	}
 	
 	public boolean onOptionsItemSelected(MenuItem item) {

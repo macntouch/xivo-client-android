@@ -27,6 +27,8 @@
     <string name="context">Context</string>
     <string name="use_fullscreen">Enable fullscreen mode</string>
     <string name="include_device_contacts">Include contacts from this device</string>
+    <string name="attended_transfer_title">Attended transfer</string>
+    <string name="blind_transfer_title">Blind transfer</string>
 
     <!-- Messages strings -->
     <string name="connection_failed">Connection failed</string>
