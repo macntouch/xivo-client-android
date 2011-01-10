@@ -225,7 +225,7 @@ public class LoginActivity extends XivoActivity {
 					int connectionCode = connection.initialize();
 					
 					if (connectionCode >= 1){
-						return initList.startLoading(getContentResolver(), getResources(), getApplicationContext());
+						return initList.startLoading();
 					}
 					return connectionCode;
 				} else return Constants.NO_NETWORK_AVAILABLE;
