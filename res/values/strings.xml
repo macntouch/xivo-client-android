@@ -68,6 +68,4 @@
     <string name="xlet_search_desc">Contacts</string>
     
     <string name="search_hint">Search</string>
-
-<string name="search_contacts_label">Search Android contacts</string>
 </resources>
