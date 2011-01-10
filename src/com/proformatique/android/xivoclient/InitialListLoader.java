@@ -386,7 +386,7 @@ public class InitialListLoader {
 		}
 	}
 	
-	@SuppressWarnings({ "unchecked", "unused" })
+	@SuppressWarnings("unchecked")
 	private class fullNameComparator implements Comparator
 	{
 		public int compare(Object obj1, Object obj2)
