@@ -32,7 +32,7 @@ import com.proformatique.android.xivoclient.xlets.XletIdentity;
 
 public class XletsContainerTabActivity extends TabActivity {
 	
-	private static final String LOG_TAG = "XLETS_LOADING";
+	private static final String LOG_TAG = "XiVO XletsContainer";
 	private TelephonyManager telephonyManager;
 	private PhoneStateListener phoneStateListener;
 	private int phoneState = TelephonyManager.CALL_STATE_IDLE;
