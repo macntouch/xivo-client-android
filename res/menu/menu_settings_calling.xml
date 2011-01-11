@@ -1,9 +1,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
 <item android:id="@+id/menu_blind_transfer"
-	android:title="@string/blind_transfer_title"/>
+	android:title="@string/blind_transfer_title"
+	android:icon="@drawable/ic_menu_blocked_user"/>
 <item android:id="@+id/menu_attended_transfer"
-	android:title="@string/attended_transfer_title"/>
+	android:title="@string/attended_transfer_title"
+	android:icon="@drawable/ic_menu_cc"/>
 <item android:id="@+id/menu_settings"
       android:icon="@drawable/settings"
       android:title="@string/settings"/>

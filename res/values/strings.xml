@@ -74,7 +74,6 @@
     <string name="cancel_label">Cancel</string>
     <string name="call_canceled">Call canceled</string>
     <string name="transfer_hint">Destination</string>
-    <string name="label_tx_btn">Go</string>
     <string name="transfer_prompt">Enter the number you want to transfer to</string>
     <string name="label_cancel_btn">Cancel</string>
 </resources>
