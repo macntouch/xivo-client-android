@@ -91,6 +91,11 @@ public class SettingsActivity extends PreferenceActivity{
 			.getBoolean(USE_MOBILE_OPTION, USE_MOBILE_DEFAULT);
 	}
 	
+	/**
+	 * Returns the mobile phone number or null if use_mobile_number is not true
+	 * @param context
+	 * @return
+	 */
 	public static String getMobileNumber(Context context) {
 		if (getUseMobile(context)) {
 			return PreferenceManager.getDefaultSharedPreferences(context)

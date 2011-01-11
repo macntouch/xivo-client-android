@@ -93,7 +93,7 @@ public class XletDialer extends XivoActivity {
 				Log.d( LOG_TAG, "jCalling: " + jCalling.toString());
 				PrintStream output = new PrintStream(Connection.getInstance().getNetworkConnection().getOutputStream());
 				output.println(jCalling.toString());
-				
+								
 				publishProgress(Constants.OK);
 				timer(3000);
 				
