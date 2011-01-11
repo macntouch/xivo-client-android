@@ -11,10 +11,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -22,6 +20,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import com.proformatique.android.xivoclient.Connection;
 import com.proformatique.android.xivoclient.R;
+import com.proformatique.android.xivoclient.SettingsActivity;
 import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.XletsContainerTabActivity;
 import com.proformatique.android.xivoclient.tools.Constants;
@@ -82,26 +81,14 @@ public class XletDialer extends XivoActivity {
 
 		@Override
 		protected Integer doInBackground(Void... params) {
-
+			
 			timer(1000);
-
-	    	/**
-	    	 * If the user enabled "use_mobile_number" setting, the call takes
-	    	 * the mobile number for source phone. 
-	    	 */
-	    	String mobileNumber = "";
-	    	Boolean useMobile;
-	    	SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(XletDialer.this);
-	       	useMobile = settings.getBoolean("use_mobile_number",false);
-	       	
-	       	if (useMobile) 
-	       		mobileNumber = settings.getString("mobile_number","");
-	    	
-	    	/**
-	    	 * Creating Call Json object
-	    	 */
-	    	JSONObject jCalling = createJsonCallingObject("originate", mobileNumber, 
-	    			phoneNumber.getText().toString().replaceAll("-", ""));
+			
+			/**
+			 * Creating Call Json object
+			 */
+			JSONObject jCalling = createJsonCallingObject("originate", SettingsActivity.getMobileNumber(getApplicationContext()), 
+					phoneNumber.getText().toString().replaceAll("-", ""));
 			try {
 				Log.d( LOG_TAG, "jCalling: " + jCalling.toString());
 				PrintStream output = new PrintStream(Connection.getInstance().getNetworkConnection().getOutputStream());
@@ -117,7 +104,6 @@ public class XletDialer extends XivoActivity {
 				
 				return Constants.NO_NETWORK_AVAILABLE;
 			}
-	    	
 		}
 		
 		private void timer(int milliseconds){
@@ -128,7 +114,6 @@ public class XletDialer extends XivoActivity {
 				} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-
 		}
 		
 		@Override
@@ -143,16 +128,14 @@ public class XletDialer extends XivoActivity {
 			}
 			super.onProgressUpdate(values);
 		}
-
+		
 		@Override
 		protected void onPostExecute(Integer result) {
 			phoneNumber.setEnabled(true);
 			dialog.dismiss();
-
 		}
-
-	 }
-    
+	}
+	
 	 /**
 	  * Prepare the Json string for calling process
 	  * 
@@ -208,7 +191,6 @@ public class XletDialer extends XivoActivity {
 					
 					new CallJsonTask().execute();
 				}
-
 	        }
 		}
 	}

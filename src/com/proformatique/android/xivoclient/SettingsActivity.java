@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.view.WindowManager;
 
@@ -12,6 +13,10 @@ public class SettingsActivity extends PreferenceActivity{
 	
 	@SuppressWarnings("unused")
 	private static final String LOG_TAG = "SETTINGS";
+	private final static String USE_MOBILE_OPTION = "use_mobile_number";
+	private final static boolean USE_MOBILE_DEFAULT = false;
+	private static final String MOBILE_PHONE_NUMBER = "mobile_number";
+	private static final String DEFAULT_MOBILE_PHONE_NUMBER = "";
 	
 	SharedPreferences settingsPrefs;
 	
@@ -75,5 +80,23 @@ public class SettingsActivity extends PreferenceActivity{
 			}
 		});
 	}
-
+	
+	/**
+	 * Returns the use_mobile_number preference value
+	 * @param context
+	 * @return
+	 */
+	public static boolean getUseMobile(Context context) {
+		return PreferenceManager.getDefaultSharedPreferences(context)
+			.getBoolean(USE_MOBILE_OPTION, USE_MOBILE_DEFAULT);
+	}
+	
+	public static String getMobileNumber(Context context) {
+		if (getUseMobile(context)) {
+			return PreferenceManager.getDefaultSharedPreferences(context)
+				.getString(MOBILE_PHONE_NUMBER, DEFAULT_MOBILE_PHONE_NUMBER);
+		} else {
+			return null;
+		}
+	}
 }
