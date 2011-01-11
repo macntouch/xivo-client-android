@@ -9,7 +9,7 @@ import android.widget.Button;
 
 public class TransferActivity extends Activity implements OnClickListener {
 	
-	private final static String LOG_TAG = "XiVO transfer";
+	final static String LOG_TAG = "XiVO transfer";
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

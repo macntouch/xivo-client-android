@@ -375,8 +375,9 @@ public class Connection {
 		
 		while (networkConnection.isConnected()) {
 			responseLine = input.readLine();
-			Log.d( LOG_TAG, "Server from ReadData: " + responseLine);
+			Log.d( LOG_TAG, "Server from ReadData:");
 			JSONObject jsonString = new JSONObject(responseLine);
+			Log.d(LOG_TAG, jsonString.toString(4));
 			return jsonString;
 		}
 		
