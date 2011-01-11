@@ -272,6 +272,8 @@ public class XletsContainerTabActivity extends TabActivity {
 	 */
 	private void attendedTransfer() {
 		Log.d(LOG_TAG, "Attended transfer clicked");
+		Intent i = new Intent(this, AttendedTransferActivity.class);
+		startActivity(i);
 	}
 	
 	/**

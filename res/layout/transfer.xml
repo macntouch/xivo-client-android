@@ -24,14 +24,14 @@
 		android:layout_height="wrap_content"
 		android:gravity="center_horizontal">
 		<Button
-			android:id="@+id/button_blind_tx"
+			android:id="@+id/button_tx"
 			android:background="@android:drawable/ic_menu_call"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_margin="10dp">
 		</Button>
 		<Button
-			android:id="@+id/button_cancel_blind_tx"
+			android:id="@+id/button_cancel_tx"
 			android:background="@android:drawable/ic_menu_close_clear_cancel"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"

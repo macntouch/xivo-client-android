@@ -3,7 +3,7 @@ package com.proformatique.android.xivoclient;
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class BlindTransferActivity extends TransferActivity {
+public class AttendedTransferActivity extends TransferActivity {
 	
 	@Override
 	protected void transferClicked() {
