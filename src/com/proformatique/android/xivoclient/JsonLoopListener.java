@@ -235,7 +235,7 @@ public class JsonLoopListener {
 											if (com.has("status")) {
 												Log.d(LOG_TAG, com.toString(2));
 												String status = com.getString("status");
-												if (status.equals("linked_caller") || status.equals("ringing")) {
+												if (status.equals("linked_caller") || status.equals("ringing") || status.equals("calling")) {
 													InitialListLoader.getInstance().setThisChannelId(com.getString("thischannel"));
 													if (com.has("peerchannel")) {
 														InitialListLoader.getInstance().setPeerChannelId(com.getString("peerchannel"));

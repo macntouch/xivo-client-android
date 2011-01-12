@@ -38,7 +38,8 @@ public class AttendedTransferActivity extends TransferActivity {
 		
 		@Override
 		protected Integer doInBackground(Void... params) {
-			JSONObject jTransferObject = createJsonTransferObject("atxfer", number);
+			JSONObject jTransferObject = createJsonTransferObject("atxfer", "chan:" + InitialListLoader.getInstance().getUserId() + ":"
+					+ InitialListLoader.getInstance().getThisChannelId(), number);
 			Connection.getInstance().sendJsonString(jTransferObject);
 			return null;
 		}

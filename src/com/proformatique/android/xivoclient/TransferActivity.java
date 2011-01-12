@@ -51,14 +51,12 @@ public class TransferActivity extends Activity implements OnClickListener {
 		this.finish();
 	}
 	
-	protected JSONObject createJsonTransferObject(String inputClass, String numDest) {
+	protected JSONObject createJsonTransferObject(String inputClass, String numSrc, String numDest) {
 		JSONObject jsonTransfer = new JSONObject();
 		try {
 			jsonTransfer.accumulate("direction", Constants.XIVO_SERVER);
 			jsonTransfer.accumulate("class", inputClass);
-			jsonTransfer.accumulate("source",
-					"chan:" + InitialListLoader.getInstance().getUserId() + ":"
-					+ InitialListLoader.getInstance().getThisChannelId());
+			jsonTransfer.accumulate("source", numSrc);
 			jsonTransfer.accumulate("destination", "ext:"+numDest);
 			
 			return jsonTransfer;

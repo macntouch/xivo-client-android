@@ -38,7 +38,9 @@ public class BlindTransferActivity extends TransferActivity {
 		
 		@Override
 		protected Integer doInBackground(Void... params) {
-			JSONObject jTransferObject = createJsonTransferObject("transfer", number);
+			JSONObject jTransferObject = createJsonTransferObject("transfer",
+					"chan:" + InitialListLoader.getInstance().getUserId() + ":"
+					+ InitialListLoader.getInstance().getPeerChannelId(), number);
 			Connection.getInstance().sendJsonString(jTransferObject);
 			return null;
 		}
