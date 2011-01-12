@@ -40,6 +40,7 @@ public class InitialListLoader {
 	private String xivoId = null;
 	private String astId = null;
 	private String thisChannelId = null;
+	private String peerChannelId = null;
 	private HashMap<String, String> capaPresenceState  = new HashMap<String, String>();
 	private List<HashMap<String, String>> statusList = new ArrayList<HashMap<String, String>>();
 	private HashMap<String, String> featuresEnablednd = new HashMap<String, String>();
@@ -239,6 +240,14 @@ public class InitialListLoader {
 	
 	public void setThisChannelId(String channelId) {
 		this.thisChannelId = channelId;
+	}
+	
+	public String getPeerChannelId() {
+		return peerChannelId;
+	}
+	
+	public void setPeerChannelId(String peerChannelId) {
+		this.peerChannelId = peerChannelId;
 	}
 	
 	public void setXivoId(String xivoId) {
