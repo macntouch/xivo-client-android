@@ -19,6 +19,7 @@ public class AttendedTransferActivity extends TransferActivity {
 		String number = et.getText().toString();
 		if (number != null && number.equals("") != true) {
 			new AttendedTransferJSONTask().execute();
+			finish();
 		}
 	}
 	
