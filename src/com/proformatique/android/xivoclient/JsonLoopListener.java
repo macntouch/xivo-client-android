@@ -237,7 +237,11 @@ public class JsonLoopListener {
 												String status = com.getString("status");
 												if (status.equals("linked_caller") || status.equals("ringing")) {
 													InitialListLoader.getInstance().setThisChannelId(com.getString("thischannel"));
-													Log.d(LOG_TAG, "This channel id: " + InitialListLoader.getInstance().getThisChannelId());
+													if (com.has("peerchannel")) {
+														InitialListLoader.getInstance().setPeerChannelId(com.getString("peerchannel"));
+													}
+													Log.d(LOG_TAG, "This: " + InitialListLoader.getInstance().getThisChannelId() +
+															"Peer: " + InitialListLoader.getInstance().getPeerChannelId());
 												} else if (com.getString("status").equals("hangup")) {
 													InitialListLoader.getInstance().setThisChannelId(null);
 												}
@@ -388,7 +392,7 @@ public class JsonLoopListener {
 						cancel = true;
 						handler.sendEmptyMessage(Constants.NO_NETWORK_AVAILABLE);
 					} catch (JSONException e) {
-						Log.e(LOG_TAG, "JSONExceptino");
+						Log.e(LOG_TAG, "JSONException");
 						cancel = true;
 						handler.sendEmptyMessage(Constants.JSON_POPULATE_ERROR);
 					}
