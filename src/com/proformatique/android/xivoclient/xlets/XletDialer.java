@@ -132,7 +132,8 @@ public class XletDialer extends XivoActivity {
 		@Override
 		protected void onPostExecute(Integer result) {
 			phoneNumber.setEnabled(true);
-			dialog.dismiss();
+			if (dialog != null)
+				dialog.dismiss();
 		}
 	}
 	
