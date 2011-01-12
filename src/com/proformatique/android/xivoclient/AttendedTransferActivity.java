@@ -59,8 +59,9 @@ public class AttendedTransferActivity extends TransferActivity {
 		try {
 			jsonTransfer.accumulate("direction", Constants.XIVO_SERVER);
 			jsonTransfer.accumulate("class", inputClass);
-			//jsonTransfer.accumulate("source", numSrc);
-			jsonTransfer.accumulate("source", "user:special:me");
+			jsonTransfer.accumulate("source",
+					"chan:" + InitialListLoader.getInstance().getUserId() + ":"
+					+ InitialListLoader.getInstance().getChannelId());
 			jsonTransfer.accumulate("destination", "ext:"+numDest);
 			
 			return jsonTransfer;
