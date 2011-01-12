@@ -58,7 +58,7 @@ public class TransferActivity extends Activity implements OnClickListener {
 			jsonTransfer.accumulate("class", inputClass);
 			jsonTransfer.accumulate("source",
 					"chan:" + InitialListLoader.getInstance().getUserId() + ":"
-					+ InitialListLoader.getInstance().getChannelId());
+					+ InitialListLoader.getInstance().getThisChannelId());
 			jsonTransfer.accumulate("destination", "ext:"+numDest);
 			
 			return jsonTransfer;

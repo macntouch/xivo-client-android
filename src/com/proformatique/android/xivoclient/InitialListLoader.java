@@ -39,7 +39,7 @@ public class InitialListLoader {
 	private List<String> xletsList = new ArrayList<String>();
 	private String xivoId = null;
 	private String astId = null;
-	private String channelId = null;
+	private String thisChannelId = null;
 	private HashMap<String, String> capaPresenceState  = new HashMap<String, String>();
 	private List<HashMap<String, String>> statusList = new ArrayList<HashMap<String, String>>();
 	private HashMap<String, String> featuresEnablednd = new HashMap<String, String>();
@@ -233,12 +233,12 @@ public class InitialListLoader {
 		return xivoId;
 	}
 	
-	public String getChannelId() {
-		return channelId;
+	public String getThisChannelId() {
+		return thisChannelId;
 	}
 	
-	public void setChannelId(String channelId) {
-		this.channelId = channelId;
+	public void setThisChannelId(String channelId) {
+		this.thisChannelId = channelId;
 	}
 	
 	public void setXivoId(String xivoId) {

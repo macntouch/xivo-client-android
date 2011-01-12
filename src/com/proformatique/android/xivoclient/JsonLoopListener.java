@@ -233,12 +233,13 @@ public class JsonLoopListener {
 										for (int j = 0; j < comms.length(); j++) {
 											JSONObject com = jStatus.getJSONObject("comms").getJSONObject(comms.getString(j));
 											if (com.has("status")) {
+												Log.d(LOG_TAG, com.toString(2));
 												String status = com.getString("status");
 												if (status.equals("linked_caller") || status.equals("ringing")) {
-													InitialListLoader.getInstance().setChannelId(com.getString("thischannel"));
-													Log.d(LOG_TAG, "Channel id: " + InitialListLoader.getInstance().getChannelId());
+													InitialListLoader.getInstance().setThisChannelId(com.getString("thischannel"));
+													Log.d(LOG_TAG, "This channel id: " + InitialListLoader.getInstance().getThisChannelId());
 												} else if (com.getString("status").equals("hangup")) {
-													InitialListLoader.getInstance().setChannelId(null);
+													InitialListLoader.getInstance().setThisChannelId(null);
 												}
 											}
 										}

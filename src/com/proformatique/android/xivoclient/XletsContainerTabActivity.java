@@ -237,7 +237,7 @@ public class XletsContainerTabActivity extends TabActivity {
 	 * @return
 	 */
 	private boolean onThePhone() {
-		return InitialListLoader.getInstance().getChannelId() != null;
+		return InitialListLoader.getInstance().getThisChannelId() != null;
 	}
 	
 	public boolean onOptionsItemSelected(MenuItem item) {
