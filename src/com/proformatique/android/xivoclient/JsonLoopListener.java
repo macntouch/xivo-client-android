@@ -230,16 +230,15 @@ public class JsonLoopListener {
 								if (id != null && id.equals(InitialListLoader.getInstance().getUserId())) {
 									JSONArray comms = jStatus.getJSONObject("comms").names();
 									if (comms != null) {
-										Log.d(LOG_TAG, "comms = " + comms.toString());
 										for (int j = 0; j < comms.length(); j++) {
 											JSONObject com = jStatus.getJSONObject("comms").getJSONObject(comms.getString(j));
-											Log.d(LOG_TAG, "com = " + com.toString());
-											if (SettingsActivity.getUseMobile(context)) {
-												InitialListLoader.getInstance().setChannelId(com.getString("peerchannel"));
-											} else {
+											String status = com.getString("status");
+											if (status.equals("linked_caller") || status.equals("ringing")) {
 												InitialListLoader.getInstance().setChannelId(com.getString("thischannel"));
+												Log.d(LOG_TAG, "Channel id: " + InitialListLoader.getInstance().getChannelId());
+											} else if (com.getString("status").equals("hangup")) {
+												InitialListLoader.getInstance().setChannelId(null);
 											}
-											Log.d(LOG_TAG, "Channel id: " + InitialListLoader.getInstance().getChannelId());
 										}
 									}
 								}
