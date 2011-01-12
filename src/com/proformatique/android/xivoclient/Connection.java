@@ -377,7 +377,7 @@ public class Connection {
 			responseLine = input.readLine();
 			Log.d( LOG_TAG, "Server from ReadData:");
 			JSONObject jsonString = new JSONObject(responseLine);
-			Log.d(LOG_TAG, jsonString.toString(4));
+			Log.d(LOG_TAG, jsonString.toString());
 			return jsonString;
 		}
 		
