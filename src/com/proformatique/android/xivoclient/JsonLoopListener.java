@@ -225,6 +225,25 @@ public class JsonLoopListener {
 							HashMap<String, String> map = new HashMap<String, String>();
 							
 							JSONObject jStatus = jObjCurrent.getJSONObject("status");
+							if (jStatus != null) {
+								String id = jObjCurrent.getString("astid") + "/" + jStatus.getString("id");
+								if (id != null && id.equals(InitialListLoader.getInstance().getUserId())) {
+									JSONArray comms = jStatus.getJSONObject("comms").names();
+									if (comms != null) {
+										Log.d(LOG_TAG, "comms = " + comms.toString());
+										for (int j = 0; j < comms.length(); j++) {
+											JSONObject com = jStatus.getJSONObject("comms").getJSONObject(comms.getString(j));
+											Log.d(LOG_TAG, "com = " + com.toString());
+											if (SettingsActivity.getUseMobile(context)) {
+												InitialListLoader.getInstance().setChannelId(com.getString("peerchannel"));
+											} else {
+												InitialListLoader.getInstance().setChannelId(com.getString("thischannel"));
+											}
+											Log.d(LOG_TAG, "Channel id: " + InitialListLoader.getInstance().getChannelId());
+										}
+									}
+								}
+							}
 							JSONObject jHintStatus = jStatus.getJSONObject("hintstatus");
 							map.put("xivo_userid", jStatus.getString("id"));
 							if (jHintStatus.has("code")){
@@ -359,12 +378,15 @@ public class JsonLoopListener {
 						}
 						
 					} catch (NullPointerException e) {
+						Log.e(LOG_TAG, "NullPointerException");
 						cancel = true;
 						handler.sendEmptyMessage(Constants.JSON_POPULATE_ERROR);
 					} catch (IOException e) {
+						Log.e(LOG_TAG, "IOException");
 						cancel = true;
 						handler.sendEmptyMessage(Constants.NO_NETWORK_AVAILABLE);
 					} catch (JSONException e) {
+						Log.e(LOG_TAG, "JSONExceptino");
 						cancel = true;
 						handler.sendEmptyMessage(Constants.JSON_POPULATE_ERROR);
 					}
