@@ -1,9 +1,6 @@
 package com.proformatique.android.xivoclient;
 
-import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -41,32 +38,8 @@ public class AttendedTransferActivity extends TransferActivity {
 		
 		@Override
 		protected Integer doInBackground(Void... params) {
-			JSONObject jTransferObject = createJsonTransferObject("atxfer", SettingsActivity
-					.getMobileNumber(getApplicationContext()), number);
+			JSONObject jTransferObject = createJsonTransferObject("atxfer", number);
 			Connection.getInstance().sendJsonString(jTransferObject);
-			return null;
-		}
-	}
-	
-	private JSONObject createJsonTransferObject(String inputClass,
-		String numSrc, String numDest) {
-		if (numSrc == null || numSrc.equals("")) {
-			numSrc = "user:special:me";
-		} else {
-			numSrc = "ext:"+numSrc;
-		}
-		
-		JSONObject jsonTransfer = new JSONObject();
-		try {
-			jsonTransfer.accumulate("direction", Constants.XIVO_SERVER);
-			jsonTransfer.accumulate("class", inputClass);
-			jsonTransfer.accumulate("source",
-					"chan:" + InitialListLoader.getInstance().getUserId() + ":"
-					+ InitialListLoader.getInstance().getChannelId());
-			jsonTransfer.accumulate("destination", "ext:"+numDest);
-			
-			return jsonTransfer;
-		} catch (JSONException e) {
 			return null;
 		}
 	}

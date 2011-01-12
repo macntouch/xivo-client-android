@@ -1,5 +1,10 @@
 package com.proformatique.android.xivoclient;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.proformatique.android.xivoclient.tools.Constants;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
@@ -46,4 +51,19 @@ public class TransferActivity extends Activity implements OnClickListener {
 		this.finish();
 	}
 	
+	protected JSONObject createJsonTransferObject(String inputClass, String numDest) {
+		JSONObject jsonTransfer = new JSONObject();
+		try {
+			jsonTransfer.accumulate("direction", Constants.XIVO_SERVER);
+			jsonTransfer.accumulate("class", inputClass);
+			jsonTransfer.accumulate("source",
+					"chan:" + InitialListLoader.getInstance().getUserId() + ":"
+					+ InitialListLoader.getInstance().getChannelId());
+			jsonTransfer.accumulate("destination", "ext:"+numDest);
+			
+			return jsonTransfer;
+		} catch (JSONException e) {
+			return null;
+		}
+	}
 }
