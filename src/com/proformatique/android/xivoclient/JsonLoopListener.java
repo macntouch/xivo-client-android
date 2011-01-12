@@ -232,12 +232,14 @@ public class JsonLoopListener {
 									if (comms != null) {
 										for (int j = 0; j < comms.length(); j++) {
 											JSONObject com = jStatus.getJSONObject("comms").getJSONObject(comms.getString(j));
-											String status = com.getString("status");
-											if (status.equals("linked_caller") || status.equals("ringing")) {
-												InitialListLoader.getInstance().setChannelId(com.getString("thischannel"));
-												Log.d(LOG_TAG, "Channel id: " + InitialListLoader.getInstance().getChannelId());
-											} else if (com.getString("status").equals("hangup")) {
-												InitialListLoader.getInstance().setChannelId(null);
+											if (com.has("status")) {
+												String status = com.getString("status");
+												if (status.equals("linked_caller") || status.equals("ringing")) {
+													InitialListLoader.getInstance().setChannelId(com.getString("thischannel"));
+													Log.d(LOG_TAG, "Channel id: " + InitialListLoader.getInstance().getChannelId());
+												} else if (com.getString("status").equals("hangup")) {
+													InitialListLoader.getInstance().setChannelId(null);
+												}
 											}
 										}
 									}

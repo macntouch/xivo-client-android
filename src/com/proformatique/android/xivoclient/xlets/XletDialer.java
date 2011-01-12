@@ -75,7 +75,7 @@ public class XletDialer extends XivoActivity {
 			text.setText(getString(R.string.calling, phoneNumber.getText().toString()));
 			
 			dialog.show();
-
+			
 			super.onPreExecute();
 		}
 

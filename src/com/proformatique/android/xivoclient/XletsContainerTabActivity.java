@@ -237,8 +237,7 @@ public class XletsContainerTabActivity extends TabActivity {
 	 * @return
 	 */
 	private boolean onThePhone() {
-		//return phoneState == TelephonyManager.CALL_STATE_OFFHOOK; // Commented for debuging only
-		return true;
+		return InitialListLoader.getInstance().getChannelId() != null;
 	}
 	
 	public boolean onOptionsItemSelected(MenuItem item) {
