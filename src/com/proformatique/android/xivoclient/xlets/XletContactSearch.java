@@ -42,6 +42,11 @@ import com.proformatique.android.xivoclient.tools.GraphicsManager;
 public class XletContactSearch extends XivoActivity {
 	
 	private static final String LOG_TAG = "XiVO XletContactSearch";
+	private static final int CALL_MENU = 0;
+	private static final int TRANSFER_MENU = 1;
+	private static final int CALL_ITEM_INDEX = 0;
+	private static final int ATXFER_ITEM_INDEX = 1;
+	private static final int TRANSFER_ITEM_INDEX = 2;
 	
 	private List <HashMap<String, String>> filteredUsersList = new ArrayList<HashMap<String, String>>();
 	private List<HashMap<String, String>> contacts = null;
@@ -216,10 +221,16 @@ public class XletContactSearch extends XivoActivity {
 			{
 				AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)menuInfo;
 				menu.setHeaderTitle(getString(R.string.context_action));
-				String callAction = getString(R.string.context_action_call, 
-						filteredUsersList.get(info.position).get("fullname"), 
-						filteredUsersList.get(info.position).get("phonenum"));
-				menu.add(0, 1, 0, callAction);
+				// Normal menu (Not currently on the phone)
+				if (InitialListLoader.getInstance().getThisChannelId() == null) {
+					String callAction = getString(R.string.context_action_call, 
+							filteredUsersList.get(info.position).get("fullname"), 
+							filteredUsersList.get(info.position).get("phonenum"));
+					menu.add(CALL_MENU, CALL_ITEM_INDEX, 0, callAction);
+				} else { // On the phone menu
+					menu.add(TRANSFER_MENU, ATXFER_ITEM_INDEX, 0, getString(R.string.attended_transfer_title));
+					menu.add(TRANSFER_MENU, TRANSFER_ITEM_INDEX, 0, getString(R.string.blind_transfer_title));
+				}
 			}
 		}
 		super.onCreateContextMenu(menu, v, menuInfo);
@@ -227,9 +238,35 @@ public class XletContactSearch extends XivoActivity {
 	
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-		String phoneNumber = filteredUsersList.get(info.position).get("phonenum");
-		dialNumber(phoneNumber);
+		Log.d(LOG_TAG, item.getTitle().toString());
+		switch (item.getGroupId()) {
+		// Call menu
+		case CALL_MENU:
+			switch (item.getItemId()) {
+			case CALL_ITEM_INDEX:
+				AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+				String phoneNumber = filteredUsersList.get(info.position).get("phonenum");
+				dialNumber(phoneNumber);
+				break;
+			default:
+				break;
+			}
+			break;
+		// Transfer menu
+		case TRANSFER_MENU:
+			switch (item.getItemId()) {
+			case ATXFER_ITEM_INDEX:
+				Log.d(LOG_TAG, "Attended transfer selected");
+				break;
+			case TRANSFER_ITEM_INDEX:
+				Log.d(LOG_TAG, "Blind transfer selected");
+				break;
+			}
+			break;
+			
+		default:
+			break;
+		}
 		
 		return super.onContextItemSelected(item);
 	}
