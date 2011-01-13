@@ -420,7 +420,9 @@ public class XletContactSearch extends XivoActivity {
 	}
 	
 	public void transferNumber(String numToCall) {
-		return;
+		Intent i = new Intent(XletContactSearch.this, BlindTransferActivity.class);
+		i.putExtra("num", numToCall);
+		startActivity(i);
 	}
 	
 	@Override
