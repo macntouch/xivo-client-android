@@ -16,7 +16,8 @@
 		android:hint="@string/transfer_hint"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
-		android:layout_margin="10dp">
+		android:layout_margin="10dp"
+		android:inputType="phone">
 	</EditText>
 	<LinearLayout
 		android:orientation="horizontal"
