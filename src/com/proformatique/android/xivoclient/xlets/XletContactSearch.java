@@ -33,6 +33,9 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
+
+import com.proformatique.android.xivoclient.AttendedTransferActivity;
+import com.proformatique.android.xivoclient.BlindTransferActivity;
 import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
@@ -239,13 +242,13 @@ public class XletContactSearch extends XivoActivity {
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		Log.d(LOG_TAG, item.getTitle().toString());
+		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+		String phoneNumber = filteredUsersList.get(info.position).get("phonenum");
 		switch (item.getGroupId()) {
 		// Call menu
 		case CALL_MENU:
 			switch (item.getItemId()) {
 			case CALL_ITEM_INDEX:
-				AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-				String phoneNumber = filteredUsersList.get(info.position).get("phonenum");
 				dialNumber(phoneNumber);
 				break;
 			default:
@@ -257,9 +260,11 @@ public class XletContactSearch extends XivoActivity {
 			switch (item.getItemId()) {
 			case ATXFER_ITEM_INDEX:
 				Log.d(LOG_TAG, "Attended transfer selected");
+				atxferNumber(phoneNumber);
 				break;
 			case TRANSFER_ITEM_INDEX:
 				Log.d(LOG_TAG, "Blind transfer selected");
+				transferNumber(phoneNumber);
 				break;
 			}
 			break;
@@ -406,6 +411,16 @@ public class XletContactSearch extends XivoActivity {
 		
 		XletContactSearch.this.sendBroadcast(defineIntent);
 		et.setText("");
+	}
+	
+	public void atxferNumber(String numToCall) {
+		Intent i = new Intent(XletContactSearch.this, AttendedTransferActivity.class);
+		i.putExtra("num", numToCall);
+		startActivity(i);
+	}
+	
+	public void transferNumber(String numToCall) {
+		return;
 	}
 	
 	@Override
