@@ -416,7 +416,7 @@ public class JsonLoopListener {
 										}
 										Log.d(LOG_TAG, "This: " + InitialListLoader.getInstance().getThisChannelId() +
 												"Peer: " + InitialListLoader.getInstance().getPeerChannelId());
-									} else if (com.getString("status").equals("hangup")) {
+									} else if (com.getString("status").equals("hangup") || com.getString("status").equals("unlinked-called")) {
 										InitialListLoader.getInstance().setThisChannelId(null);
 									}
 								}
