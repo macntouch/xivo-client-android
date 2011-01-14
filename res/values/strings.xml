@@ -49,6 +49,7 @@
     <string name="notif_xivo">Xivo is online and working, click here</string>
     <string name="notif_xivo_title">Xivo online</string>
     <string name="forced_disconnect">Forced disconnection</string>
+    <string name="no_phone_error">This contact does not have a phone number</string>
    
     <!-- Others -->
     <string name="context_action">Action</string>
@@ -73,7 +74,9 @@
     <string name="search_hint">Search</string>
     <string name="cancel_label">Cancel</string>
     <string name="call_canceled">Call canceled</string>
+    <string name="transfer_canceled">Transfer canceled</string>
     <string name="transfer_hint">Destination</string>
     <string name="transfer_prompt">Enter the number you want to transfer to</string>
     <string name="label_cancel_btn">Cancel</string>
+    <string name="unknown_contact_name">Unknown</string>
 </resources>
