@@ -26,7 +26,7 @@ import com.proformatique.android.xivoclient.XletsContainerTabActivity;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 public class XletDialer extends XivoActivity {
-
+	
 	private static final String LOG_TAG = "XLET DIALER";
 	EditText phoneNumber;
 	IncomingReceiver receiver;
@@ -35,42 +35,42 @@ public class XletDialer extends XivoActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		
 		setContentView(R.layout.xlet_dialer);
 		phoneNumber = (EditText) findViewById(R.id.number);
-
+		
 		receiver = new IncomingReceiver();
-
+		
 		/**
 		 *  Register a BroadcastReceiver for Intent action that trigger a call
 		 */
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Constants.ACTION_XLET_DIAL_CALL);
-        registerReceiver(receiver, new IntentFilter(filter));
-
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(Constants.ACTION_XLET_DIAL_CALL);
+		registerReceiver(receiver, new IntentFilter(filter));
+		
 	}
 	
 	public void clickOnCall(View v) {
 		if (!("").equals(phoneNumber.getText().toString())){
 			new CallJsonTask().execute();
 		}
-    }
-    
+	}
+	
 	/**
 	 * Creating a AsyncTask to run call process
 	 * @author cquaquin
 	 */
-	 private class CallJsonTask extends AsyncTask<Void, Integer, Integer> {
-
+	private class CallJsonTask extends AsyncTask<Void, Integer, Integer> {
+		
 		@Override
 		protected void onPreExecute() {
 			
 			phoneNumber.setEnabled(false);
 			dialog = new Dialog(XletDialer.this);
-
+			
 			dialog.setContentView(R.layout.xlet_dialer_call);
 			dialog.setTitle(R.string.calling_title);
-
+			
 			TextView text = (TextView) dialog.findViewById(R.id.call_message);
 			text.setText(getString(R.string.calling, phoneNumber.getText().toString()));
 			
@@ -78,7 +78,7 @@ public class XletDialer extends XivoActivity {
 			
 			super.onPreExecute();
 		}
-
+		
 		@Override
 		protected Integer doInBackground(Void... params) {
 			
@@ -137,14 +137,14 @@ public class XletDialer extends XivoActivity {
 		}
 	}
 	
-	 /**
-	  * Prepare the Json string for calling process
-	  * 
-	  * @param inputClass
-	  * @param phoneNumberSrc
-	  * @param phoneNumberDest
-	  * @return
-	  */
+	/**
+	 * Prepare the Json string for calling process
+	 * 
+	 * @param inputClass
+	 * @param phoneNumberSrc
+	 * @param phoneNumberDest
+	 * @return
+	 */
 	private JSONObject createJsonCallingObject(String inputClass, 
 			String phoneNumberSrc,
 			String phoneNumberDest) {
@@ -169,7 +169,7 @@ public class XletDialer extends XivoActivity {
 			return null;
 		}
 	}
-
+	
 	/**
 	 * BroadcastReceiver, intercept Intents with action ACTION_XLET_DIAL_CALL
 	 * to perform a call
@@ -177,13 +177,13 @@ public class XletDialer extends XivoActivity {
 	 *
 	 */
 	public class IncomingReceiver extends BroadcastReceiver {
-
+		
 		@Override
 		public void onReceive(Context context, Intent intent) {
-	        if (intent.getAction().equals(Constants.ACTION_XLET_DIAL_CALL)) {
-	        	Log.d( LOG_TAG , "Received Broadcast ");
+			if (intent.getAction().equals(Constants.ACTION_XLET_DIAL_CALL)) {
+				Log.d( LOG_TAG , "Received Broadcast ");
 				Bundle extra = intent.getExtras();
-		
+				
 				if (extra != null){
 					XletsContainerTabActivity parentAct;
 					phoneNumber.setText(extra.getString("numToCall"));
@@ -192,71 +192,70 @@ public class XletDialer extends XivoActivity {
 					
 					new CallJsonTask().execute();
 				}
-	        }
+			}
 		}
 	}
-
-    public void clickOn1(View v) {
-    	phoneNumber.append("1");
-    }
-
-    public void clickOn2(View v) {
-    	phoneNumber.append("2");
-    }
 	
-    public void clickOn3(View v) {
-    	phoneNumber.append("3");
-    }
-
-    public void clickOn4(View v) {
-    	phoneNumber.append("4");
-    }
-
-    public void clickOn5(View v) {
-    	phoneNumber.append("5");
-    }
-
-    public void clickOn6(View v) {
-    	phoneNumber.append("6");
-    }
-
-    public void clickOn7(View v) {
-    	phoneNumber.append("7");
-    }
-
-    public void clickOn8(View v) {
-    	phoneNumber.append("8");
-    }
-
-    public void clickOn9(View v) {
-    	phoneNumber.append("9");
-    }
-
-    public void clickOn0(View v) {
-    	phoneNumber.append("0");
-    }
-
-    public void clickOnStar(View v) {
-    	phoneNumber.append("*");
-    }
-
-    public void clickOnSharp(View v) {
-    	phoneNumber.append("#");
-    }
-
-    public void clickOnDelete(View v) {
-    	keyPressed(KeyEvent.KEYCODE_DEL);
-    }
-
-    private void keyPressed(int keyCode) {
-        KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
-        phoneNumber.onKeyDown(keyCode, event);
-    }
-
-    
-    protected void onDestroy() {
+	public void clickOn1(View v) {
+		phoneNumber.append("1");
+	}
+	
+	public void clickOn2(View v) {
+		phoneNumber.append("2");
+	}
+	
+	public void clickOn3(View v) {
+		phoneNumber.append("3");
+	}
+	
+	public void clickOn4(View v) {
+		phoneNumber.append("4");
+	}
+	
+	public void clickOn5(View v) {
+		phoneNumber.append("5");
+	}
+	
+	public void clickOn6(View v) {
+		phoneNumber.append("6");
+	}
+	
+	public void clickOn7(View v) {
+		phoneNumber.append("7");
+	}
+	
+	public void clickOn8(View v) {
+		phoneNumber.append("8");
+	}
+	
+	public void clickOn9(View v) {
+		phoneNumber.append("9");
+	}
+	
+	public void clickOn0(View v) {
+		phoneNumber.append("0");
+	}
+	
+	public void clickOnStar(View v) {
+		phoneNumber.append("*");
+	}
+	
+	public void clickOnSharp(View v) {
+		phoneNumber.append("#");
+	}
+	
+	public void clickOnDelete(View v) {
+		keyPressed(KeyEvent.KEYCODE_DEL);
+	}
+	
+	private void keyPressed(int keyCode) {
+		KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
+		phoneNumber.onKeyDown(keyCode, event);
+	}
+	
+	
+	protected void onDestroy() {
 		unregisterReceiver(receiver);
 		super.onDestroy();
 	}
-
 }
