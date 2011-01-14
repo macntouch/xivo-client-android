@@ -413,12 +413,22 @@ public class XletContactSearch extends XivoActivity {
 		et.setText("");
 	}
 	
+	/**
+	 * Sends an blind transfer to numToCall
+	 * 
+	 * @param numToCall
+	 */
 	public void atxferNumber(String numToCall) {
 		Intent i = new Intent(XletContactSearch.this, AttendedTransferActivity.class);
 		i.putExtra("num", numToCall);
 		startActivity(i);
 	}
 	
+	/**
+	 * Sends a blind transfer to numToCall
+	 * 
+	 * @param numToCall
+	 */
 	public void transferNumber(String numToCall) {
 		Intent i = new Intent(XletContactSearch.this, BlindTransferActivity.class);
 		i.putExtra("num", numToCall);
