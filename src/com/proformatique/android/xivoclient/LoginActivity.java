@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
@@ -67,6 +68,20 @@ public class LoginActivity extends XivoActivity {
 		else displayElements(true);
 	}
 	
+	public static void startInCallScreenKiller(Context context) {
+		Intent inCallScreenKillerIntent = new Intent();
+		inCallScreenKillerIntent.setClassName(context.getPackageName(), InCallScreenKiller.class.getName());
+		context.startService(inCallScreenKillerIntent);
+		Log.d(LOG_TAG, "InCallScreenKiller started");
+	}
+	
+	public static void stopInCallScreenKiller(Context context) {
+		Intent inCallScreenKillerIntent = new Intent();
+		inCallScreenKillerIntent.setClassName(context.getPackageName(), InCallScreenKiller.class.getName());
+		context.stopService(inCallScreenKillerIntent);
+		Log.d(LOG_TAG, "InCallScreenKilled stopped");
+	}
+	
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.menu_settings, menu);
@@ -85,12 +100,14 @@ public class LoginActivity extends XivoActivity {
 			menuSettings();
 			return true;
 		case R.id.menu_exit:
+			LoginActivity.stopInCallScreenKiller(this);
 			menuExit();
 			return true;
 		case R.id.menu_about:
 			menuAbout();
 			return true;
 		case R.id.menu_disconnect:
+			LoginActivity.stopInCallScreenKiller(this);
 			if (Connection.getInstance().isConnected())
 				Connection.getInstance().disconnect();
 			displayElements(true);
@@ -298,6 +315,7 @@ public class LoginActivity extends XivoActivity {
 	@Override
 	protected void onDestroy() {
 		Log.d( LOG_TAG, "DESTROY");
+		LoginActivity.stopInCallScreenKiller(this);
 		if (Connection.getInstance() != null && Connection.getInstance().isConnected()) {
 			Connection.getInstance().disconnect();
 		}

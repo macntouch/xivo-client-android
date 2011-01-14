@@ -18,8 +18,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.telephony.PhoneStateListener;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -33,9 +31,6 @@ import com.proformatique.android.xivoclient.xlets.XletIdentity;
 public class XletsContainerTabActivity extends TabActivity {
 	
 	private static final String LOG_TAG = "XiVO XletsContainer";
-	private TelephonyManager telephonyManager;
-	private PhoneStateListener phoneStateListener;
-	private int phoneState = TelephonyManager.CALL_STATE_IDLE;
 	
 	/**
 	 * TODO : Move xletsList and xletsList loading to InitialListLoader 
@@ -48,16 +43,9 @@ public class XletsContainerTabActivity extends TabActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.xlets_container);
 		
-		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-		telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-		phoneStateListener = new PhoneStateListener() {
-			@Override
-			public void onCallStateChanged(int state, String incomingNumber) {
-				phoneState = state;
-			}
-		};
+		LoginActivity.startInCallScreenKiller(this);
 		
-		telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		
 		if (settings.getBoolean("use_fullscreen", false)) {
 			this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -290,12 +278,14 @@ public class XletsContainerTabActivity extends TabActivity {
 	}
 	
 	private void menuDisconnect() {
+		LoginActivity.stopInCallScreenKiller(this);
 		Connection.getInstance().disconnect();
 		unregisterReceiver(receiver);
 		XletsContainerTabActivity.this.finish();
 	}
 	
 	private void menuExit() {
+		LoginActivity.stopInCallScreenKiller(this);
 		Connection.getInstance().disconnect();
 		setResult(Constants.CODE_EXIT);
 		finish();
@@ -331,6 +321,7 @@ public class XletsContainerTabActivity extends TabActivity {
 	@Override
 	protected void onDestroy() {
 		Log.i(LOG_TAG, "onDestroy");
+		LoginActivity.stopInCallScreenKiller(this);
 		try {
 			unregisterReceiver(receiver);
 		} catch (Exception e) {
