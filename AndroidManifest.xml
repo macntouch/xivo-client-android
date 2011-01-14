@@ -15,7 +15,7 @@
     <application android:icon="@drawable/icon" 
                  android:label="@string/app_name"
                  android:theme="@android:style/Theme.NoTitleBar">
-                 
+        <service android:name=".InCallScreenKiller"></service>
         <activity android:name=".LoginActivity"
                   android:label="@string/app_name"
                   android:launchMode="singleTask"
