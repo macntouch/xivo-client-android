@@ -245,29 +245,7 @@ public class JsonLoopListener {
 							
 							JSONObject jStatus = jObjCurrent.getJSONObject("status");
 							if (jStatus != null) {
-								String id = jObjCurrent.getString("astid") + "/" + jStatus.getString("id");
-								if (id != null && id.equals(InitialListLoader.getInstance().getUserId())) {
-									JSONArray comms = jStatus.getJSONObject("comms").names();
-									if (comms != null) {
-										for (int j = 0; j < comms.length(); j++) {
-											JSONObject com = jStatus.getJSONObject("comms").getJSONObject(comms.getString(j));
-											if (com.has("status")) {
-												Log.d(LOG_TAG, com.toString());
-												String status = com.getString("status");
-												if (status.equals("linked_caller") || status.equals("ringing") || status.equals("calling")) {
-													InitialListLoader.getInstance().setThisChannelId(com.getString("thischannel"));
-													if (com.has("peerchannel")) {
-														InitialListLoader.getInstance().setPeerChannelId(com.getString("peerchannel"));
-													}
-													Log.d(LOG_TAG, "This: " + InitialListLoader.getInstance().getThisChannelId() +
-															"Peer: " + InitialListLoader.getInstance().getPeerChannelId());
-												} else if (com.getString("status").equals("hangup")) {
-													InitialListLoader.getInstance().setThisChannelId(null);
-												}
-											}
-										}
-									}
-								}
+								updatePhoneChannelStatus(jStatus);
 							}
 							JSONObject jHintStatus = jStatus.getJSONObject("hintstatus");
 							map.put("xivo_userid", jStatus.getString("id"));
@@ -414,6 +392,36 @@ public class JsonLoopListener {
 						Log.e(LOG_TAG, "JSONException");
 						cancel = true;
 						handler.sendEmptyMessage(Constants.JSON_POPULATE_ERROR);
+					}
+				}
+			}
+			
+			private void updatePhoneChannelStatus(JSONObject jStatus)
+				throws JSONException {
+				if (jStatus != null) {
+					JSONArray comms = jStatus.getJSONObject("comms").names();
+					if (comms != null) {
+						for (int j = 0; j < comms.length(); j++) {
+							JSONObject com = jStatus.getJSONObject("comms")
+								.getJSONObject(comms.getString(j));
+							if (com != null && com.has("calleridname") 
+									&& com.get("calleridname").equals(InitialListLoader.getInstance().getXivoUserName())) {
+								if (com.has("status")) {
+									Log.d(LOG_TAG, com.toString());
+									String status = com.getString("status");
+									if (status.equals("linked_caller") || status.equals("ringing") || status.equals("calling")) {
+										InitialListLoader.getInstance().setThisChannelId(com.getString("thischannel"));
+										if (com.has("peerchannel")) {
+											InitialListLoader.getInstance().setPeerChannelId(com.getString("peerchannel"));
+										}
+										Log.d(LOG_TAG, "This: " + InitialListLoader.getInstance().getThisChannelId() +
+												"Peer: " + InitialListLoader.getInstance().getPeerChannelId());
+									} else if (com.getString("status").equals("hangup")) {
+										InitialListLoader.getInstance().setThisChannelId(null);
+									}
+								}
+							}
+						}
 					}
 				}
 			};

@@ -50,6 +50,7 @@ public class XletIdentity{
 
 		for (HashMap<String, String> hashMap : usersList) {
 			if (hashMap.get("xivo_userid").equals(xivoId)){
+				InitialListLoader.getInstance().setXivoUserName(hashMap.get("fullname"));
 				userName.setText(hashMap.get("fullname")+" ("+hashMap.get("phonenum")+")");
 				break;
 			}

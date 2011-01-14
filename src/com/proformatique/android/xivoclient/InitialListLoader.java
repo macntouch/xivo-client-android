@@ -69,6 +69,7 @@ public class InitialListLoader {
 	private HashMap<String, String> featuresIncallfilter = new HashMap<String, String>();
 	private HashMap<String, String> featuresUnc = new HashMap<String, String>();
 	private HashMap<String, String> featuresEnablevoicemail = new HashMap<String, String>();
+	private String xivoUserName;
 	
 	private static InitialListLoader instance;
 	
@@ -432,5 +433,13 @@ public class InitialListLoader {
 			HashMap<String, String> update2 = (HashMap<String, String>)obj2;
 			return update1.get("fullname").compareTo(update2.get("fullname"));
 		}
+	}
+	
+	public void setXivoUserName(String xivoUserName) {
+		this.xivoUserName = xivoUserName;
+	}
+	
+	public String getXivoUserName() {
+		return xivoUserName;
 	}
 }
