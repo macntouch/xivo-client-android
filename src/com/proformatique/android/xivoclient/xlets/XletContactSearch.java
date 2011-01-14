@@ -374,7 +374,8 @@ public class XletContactSearch extends XivoActivity {
 		default:
 			break;
 		}
-		
+		et = (EditText)findViewById(R.id.SearchEdit);
+		et.setText("");
 		return super.onContextItemSelected(item);
 	}
 	
