@@ -389,10 +389,8 @@ public class XletContactSearch extends XivoActivity {
 				this,
 				filteredUsersList,
 				R.layout.xlet_search_items,
-				new String[] { "fullname","phonenum","stateid","stateid_longname", "stateid_color",
-						"hintstatus_code", "hintstatus_longname", "hintstatus_color" },
-				new int[] { R.id.fullname, R.id.phonenum, R.id.stateid, R.id.longname_state, 0,
-						R.id.phoneStateCode, R.id.phone_longname_state, R.id.phoneStateColor} );
+				Constants.USERS_LIST_FROM_STRINGS,
+				Constants.USERS_LIST_TO_RESSOURCES);
 		
 		lv= (ListView)findViewById(R.id.users_list);
 		lv.setAdapter(usersAdapter);
