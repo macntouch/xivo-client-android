@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -146,14 +147,37 @@ public class InitialListLoader {
 					/**
 					 * Loading Phones list
 					 */
-					else if (inputClass.equals("phones")){
-						JSONObject jAllPhones = ReadLineObject.getJSONObject("payload").getJSONObject(astId);
+					else if (inputClass.equals("phones") && ReadLineObject.has("payload")){
+						JSONObject jPayloads = ReadLineObject.getJSONObject("payload");
+						JSONArray jAllPhones = new JSONArray();
+						for (Iterator<String> keyIter = jPayloads.keys(); keyIter.hasNext();) {
+							String key = keyIter.next();
+							Log.d(LOG_TAG, "Adding " + key + " to jAllPhones");
+							jAllPhones.put(jPayloads.getJSONObject(key));
+						}
+						int nbXivo = jAllPhones.length();
 						/**
 						 * Use users field "techlist" to search objects in phones list
 						 */
 						int i=0;
 						for (HashMap<String, String> mapUser : usersList) {
-							JSONObject jPhone = jAllPhones.getJSONObject(mapUser.get("techlist"));
+							if (!(mapUser.containsKey("techlist"))) {
+								Log.d(LOG_TAG, "This user has no phone, skipping");
+								Log.d(LOG_TAG, mapUser.toString());
+								continue;
+							}
+							JSONObject jPhone = null;
+							for (int j = 0; j < nbXivo; j++) {
+								JSONObject xivo = jAllPhones.getJSONObject(j);
+								if (xivo.has(mapUser.get("techlist")) == true) {
+									jPhone = xivo.getJSONObject(mapUser.get("techlist"));
+									break;
+								}
+							}
+							if (jPhone == null) {
+								Log.d(LOG_TAG, "No phone for this user, skipping");
+								continue;
+							}
 							/**
 							 * "Real" phone number is retrieved from phones list
 							 */
