@@ -162,13 +162,13 @@ public class LoginActivity extends XivoActivity {
 			connectTask.execute();
 			
 			/**
-			 * Timeout Connection : 10 seconds
+			 * Timeout Connection : 20 seconds
 			 */
 			new Thread(new Runnable() {
 				public void run() {
 					
 					try {
-						connectTask.get(10, TimeUnit.SECONDS);
+						connectTask.get(20, TimeUnit.SECONDS);
 					} catch (InterruptedException e) {
 						Connection.getInstance().disconnect();
 					} catch (ExecutionException e) {
