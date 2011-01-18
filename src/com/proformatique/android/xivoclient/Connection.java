@@ -186,7 +186,9 @@ public class Connection {
 				 */
 				if (codePassword > 0) {
 					ReadLineObject = readJsonObjectCTI();
-					if (ReadLineObject.getString("class").equals(Constants.XIVO_PASSWORD_OK))
+					if (ReadLineObject != null
+							&& ReadLineObject.has("class")
+							&& ReadLineObject.getString("class").equals(Constants.XIVO_PASSWORD_OK))
 					{
 						int codeCapas = sendCapasCTI();
 						if (codeCapas > 0) {
@@ -378,7 +380,9 @@ public class Connection {
 						ReadLineObject = new JSONObject(responseLine);
 						Log.d( LOG_TAG, "Server: " + responseLine);
 						
-						if (ReadLineObject.get("class").equals(ctiClass))
+						if (ReadLineObject != null
+								&& ReadLineObject.has("class")
+								&& ReadLineObject.get("class").equals(ctiClass))
 							return ReadLineObject;
 					}
 					catch (Exception e) {
@@ -404,7 +408,7 @@ public class Connection {
 			responseLine = input.readLine();
 			Log.d( LOG_TAG, "Server from ReadData:");
 			JSONObject jsonString = new JSONObject(responseLine);
-			Log.d(LOG_TAG, jsonString.toString());
+			Log.d(LOG_TAG, "jsonString: " + jsonString.toString());
 			return jsonString;
 		}
 		
