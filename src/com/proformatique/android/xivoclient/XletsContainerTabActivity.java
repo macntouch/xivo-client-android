@@ -70,7 +70,12 @@ public class XletsContainerTabActivity extends TabActivity {
 			this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 					WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		}
-		displayInit();
+		if (Connection.getInstance().isConnected() != true) {
+			Log.e(LOG_TAG, "Activity started without a connection");
+			finish();
+		} else {
+			displayInit();
+		}
 	}
 	
 	/**
@@ -202,7 +207,8 @@ public class XletsContainerTabActivity extends TabActivity {
 	
 	public static ArrayList<String> decodeJsonObject(JSONObject jSonObj, String parent){
 		Log.d( LOG_TAG, "JSON : "+ jSonObj);
-		
+		if (jSonObj == null)
+			return null;
 		try {
 			JSONArray resArray = jSonObj.getJSONArray(parent);
 			ArrayList<String> resList = new ArrayList<String>(resArray.length());
