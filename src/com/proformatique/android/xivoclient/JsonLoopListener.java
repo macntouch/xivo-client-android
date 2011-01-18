@@ -56,6 +56,9 @@ public class JsonLoopListener {
 	protected String LOG_TAG = "JSONLOOP";
 	private static boolean cancel = false;
 	private static JsonLoopListener instance;
+	
+	// Keep a copy of useMobile and mobileNumber since the config can't be
+	// accessed from other threads
 	private static boolean useMobile;
 	private static String mobileNumber;
 	

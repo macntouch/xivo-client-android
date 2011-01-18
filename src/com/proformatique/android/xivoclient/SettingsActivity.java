@@ -26,6 +26,7 @@ import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.WindowManager;
 
 public class SettingsActivity extends PreferenceActivity{
@@ -95,6 +96,10 @@ public class SettingsActivity extends PreferenceActivity{
 						editor.commit();
 						
 					}
+				} else if (key.equals(USE_MOBILE_OPTION)) {
+					JsonLoopListener.setUseMobile(getUseMobile(getApplicationContext()));
+				} else if (key.equals(MOBILE_PHONE_NUMBER)) {
+					JsonLoopListener.setMobileNumber(getMobileNumber(getApplicationContext()));
 				}
 			}
 		});
