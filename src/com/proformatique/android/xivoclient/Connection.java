@@ -170,6 +170,8 @@ public class Connection {
 		}
 		
 		ReadLineObject = readJsonObjectCTI();
+		if (ReadLineObject == null)
+			return Constants.LOGIN_KO;
 		
 		try {
 			if (ReadLineObject.getString("class").equals(Constants.XIVO_LOGIN_OK)){
