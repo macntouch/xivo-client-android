@@ -370,16 +370,18 @@ public class Connection {
 		JSONObject ReadLineObject;
 		
 		try {
-			while ((responseLine = input.readLine()) != null) {
-				try {
-					ReadLineObject = new JSONObject(responseLine);
-					Log.d( LOG_TAG, "Server: " + responseLine);
-					
-					if (ReadLineObject.get("class").equals(ctiClass))
-						return ReadLineObject;
-				}
-				catch (Exception e) {
-					e.printStackTrace();
+			if (input != null) {
+				while ((responseLine = input.readLine()) != null) {
+					try {
+						ReadLineObject = new JSONObject(responseLine);
+						Log.d( LOG_TAG, "Server: " + responseLine);
+						
+						if (ReadLineObject.get("class").equals(ctiClass))
+							return ReadLineObject;
+					}
+					catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		} catch (IOException e) {
