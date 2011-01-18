@@ -74,6 +74,13 @@ public class JsonLoopListener {
 		return instance;
 	}
 	
+	public static void setUseMobile(boolean newValue) {
+		useMobile = newValue;
+	}
+	
+	public static void setMobileNumber(String number) {
+		mobileNumber = number;
+	}
 	
 	private JsonLoopListener(Context context) {
 		this.context = context;
