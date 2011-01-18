@@ -72,6 +72,7 @@ public class InitialListLoader {
 	private HashMap<String, String> featuresEnablevoicemail = new HashMap<String, String>();
 	private String xivoUserName;
 	private String xivoPhoneNum;
+	private String peersPeerNumber;
 	
 	private static InitialListLoader instance;
 	
@@ -481,5 +482,13 @@ public class InitialListLoader {
 	
 	public String getXivoPhoneNum() {
 		return xivoPhoneNum;
+	}
+	
+	public String getPeersPeerNumber() {
+		return peersPeerNumber;
+	}
+	
+	public void setPeersPeerNumber(String peersPeerNumber) {
+		this.peersPeerNumber = peersPeerNumber;
 	}
 }
