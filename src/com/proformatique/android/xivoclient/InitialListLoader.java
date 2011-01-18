@@ -103,8 +103,15 @@ public class InitialListLoader {
 		if (jObj!=null){
 			try {
 				Log.d( LOG_TAG, "Jobj: " + jObj.toString());
-				PrintStream output = new PrintStream(Connection.getInstance().getNetworkConnection().getOutputStream());
-				output.println(jObj.toString());
+				if (Connection.getInstance() != null && Connection.getInstance().getNetworkConnection() != null) {
+					PrintStream output = new PrintStream(Connection.getInstance().getNetworkConnection().getOutputStream());
+					if (output != null)
+						output.println(jObj.toString());
+					else
+						Log.d(LOG_TAG, "No output stream");
+				} else {
+					Log.d(LOG_TAG, "No network connection");
+				}
 			} catch (IOException e) {
 				return Constants.NO_NETWORK_AVAILABLE;
 			}
