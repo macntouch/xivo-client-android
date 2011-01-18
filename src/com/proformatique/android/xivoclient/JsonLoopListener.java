@@ -495,6 +495,9 @@ public class JsonLoopListener {
 						&& comm.has("thischannel")
 						&& comm.getString("thischannel").equals(InitialListLoader.getInstance().getThisChannelId())) {
 					InitialListLoader.getInstance().setPeersPeerNumber(comm.getString("peerchannel"));
+				} else if (comm.getString("status").equals("hangup") || comm.getString("status").equals("unlinked-caller")) {
+					InitialListLoader.getInstance().setThisChannelId(null);
+					InitialListLoader.getInstance().setPeerChannelId(null);
 				}
 			}
 		}

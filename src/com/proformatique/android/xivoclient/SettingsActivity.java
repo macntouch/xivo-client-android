@@ -26,7 +26,6 @@ import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.view.WindowManager;
 
 public class SettingsActivity extends PreferenceActivity{
