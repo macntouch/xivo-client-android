@@ -70,8 +70,17 @@ public class AttendedTransferActivity extends TransferActivity {
 		
 		@Override
 		protected Integer doInBackground(Void... params) {
-			JSONObject jTransferObject = createJsonTransferObject("atxfer", "chan:" + InitialListLoader.getInstance().getUserId() + ":"
-					+ InitialListLoader.getInstance().getThisChannelId(), number);
+			String source ="chan:" + InitialListLoader.getInstance().getUserId() +
+			":";
+			if (SettingsActivity.getUseMobile(AttendedTransferActivity.this)) {
+				Log.i(LOG_TAG, "Using mobile");
+				source += InitialListLoader.getInstance().getPeersPeerNumber();
+			} else {
+				Log.i(LOG_TAG, "Not using mobile");
+				source += InitialListLoader.getInstance().getThisChannelId();
+				
+			}
+			JSONObject jTransferObject = createJsonTransferObject("atxfer", source, number);
 			Connection.getInstance().sendJsonString(jTransferObject);
 			return null;
 		}
