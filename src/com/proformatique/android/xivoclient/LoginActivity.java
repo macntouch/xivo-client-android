@@ -57,8 +57,8 @@ public class LoginActivity extends XivoActivity {
 	ConnectTask connectTask;
 	LoadingTask loadingTask;
 	private static final String LOG_TAG = "LOGIN_ACTIVITY";
-	private static final int DIALOG_CONNECTING = 0;
-	private static final int DIALOG_LOADING = 1;
+	
+	private ProgressDialog progressDialog;
 	
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -89,33 +89,6 @@ public class LoginActivity extends XivoActivity {
 			LoginActivity.this.startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
 		}
 		else displayElements(true);
-	}
-	
-	@Override
-	protected Dialog onCreateDialog(int id) {
-		Log.d(LOG_TAG, "onCreateDialog");
-		switch (id) {
-		case DIALOG_CONNECTING: {
-			Log.d(LOG_TAG, "onConnecting");
-			ProgressDialog progressDialog = null;
-			progressDialog = new ProgressDialog(this);
-			progressDialog.setMessage("Connecting");
-			progressDialog.setCancelable(false);
-			progressDialog.show();
-			return progressDialog;
-		}
-		case DIALOG_LOADING: {
-			Log.d(LOG_TAG, "onLoading");
-			ProgressDialog progressDialog = null;
-			progressDialog = new ProgressDialog(this);
-			progressDialog.setMessage("Loading");
-			progressDialog.setCancelable(false);
-			progressDialog.show();
-			return progressDialog;
-		}
-		default:
-			return null;
-		}
 	}
 	
 	public static void startInCallScreenKiller(Context context) {
@@ -210,12 +183,12 @@ public class LoginActivity extends XivoActivity {
 					}
 					loadingTask.execute();
 					try {
-						loadingTask.get();
+						loadingTask.get(60, TimeUnit.SECONDS);
+					} catch (TimeoutException e) {
+						Log.d(LOG_TAG, e.toString());
 					} catch (InterruptedException e) {
-						Connection.getInstance().disconnect();
 						Log.d(LOG_TAG, e.toString());
 					} catch (ExecutionException e) {
-						Connection.getInstance().disconnect();
 						Log.d(LOG_TAG, e.toString());
 					}
 				};
@@ -281,7 +254,7 @@ public class LoginActivity extends XivoActivity {
 			Log.d(LOG_TAG, "LoadingTask onPostExecute");
 			Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
 			LoginActivity.this.startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
-			dismissDialog(DIALOG_LOADING);
+			progressDialog.dismiss();
 		}
 	}
 	
@@ -293,7 +266,10 @@ public class LoginActivity extends XivoActivity {
 		
 		@Override
 		protected void onPreExecute() {
-			showDialog(DIALOG_CONNECTING);
+			progressDialog = new ProgressDialog(LoginActivity.this);
+			progressDialog.setCancelable(false);
+			progressDialog.setMessage("Connecting");
+			progressDialog.show();
 		}
 		
 		@Override
@@ -322,8 +298,7 @@ public class LoginActivity extends XivoActivity {
 		
 		protected void onPostExecute(Integer result) {
 			Log.d(LOG_TAG, "Connect Task onPostExecute");
-			dismissDialog(DIALOG_CONNECTING);
-			showDialog(DIALOG_LOADING);
+			progressDialog.dismiss();
 			if (result == Constants.NO_NETWORK_AVAILABLE){
 				Toast.makeText(LoginActivity.this, R.string.no_web_connection, Toast.LENGTH_LONG).show();
 			}
@@ -352,6 +327,10 @@ public class LoginActivity extends XivoActivity {
 					saveLoginPassword();
 				}
 				displayElements(false);
+				progressDialog = new ProgressDialog(LoginActivity.this);
+				progressDialog.setCancelable(false);
+				progressDialog.setMessage("Loading...");
+				progressDialog.show();
 			}
 		}
 	}
