@@ -71,6 +71,7 @@ public class InitialListLoader {
 	private HashMap<String, String> featuresUnc = new HashMap<String, String>();
 	private HashMap<String, String> featuresEnablevoicemail = new HashMap<String, String>();
 	private String xivoUserName;
+	private String xivoPhoneNum;
 	
 	private static InitialListLoader instance;
 	
@@ -472,5 +473,13 @@ public class InitialListLoader {
 	
 	public String getXivoUserName() {
 		return xivoUserName;
+	}
+	
+	public void setXivoPhoneNum(String number) {
+		this.xivoPhoneNum = number;
+	}
+	
+	public String getXivoPhoneNum() {
+		return xivoPhoneNum;
 	}
 }
