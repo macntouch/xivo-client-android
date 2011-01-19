@@ -164,6 +164,8 @@ public class Connection {
 		try {
 			Log.d( LOG_TAG, "Client: " + jLogin.toString());
 			PrintStream output = new PrintStream(networkConnection.getOutputStream());
+			if (output == null)
+				return Constants.NO_NETWORK_AVAILABLE;
 			output.println(jLogin.toString());
 		} catch (IOException e) {
 			return Constants.NO_NETWORK_AVAILABLE;
@@ -174,7 +176,8 @@ public class Connection {
 			return Constants.LOGIN_KO;
 		
 		try {
-			if (ReadLineObject.getString("class").equals(Constants.XIVO_LOGIN_OK)){
+			if (ReadLineObject.has("class") && ReadLineObject.getString("class")
+					.equals(Constants.XIVO_LOGIN_OK)){
 				
 				/**
 				 * Second step : check that password is allowed on server
@@ -194,7 +197,9 @@ public class Connection {
 						if (codeCapas > 0) {
 							ReadLineObject = readJsonObjectCTI();
 							
-							if (ReadLineObject.getString("class").equals(Constants.XIVO_LOGIN_CAPAS_OK)){
+							if (ReadLineObject != null && ReadLineObject.has("class")
+									&& ReadLineObject.getString("class")
+									.equals(Constants.XIVO_LOGIN_CAPAS_OK)){
 								jCapa = ReadLineObject;
 								InitialListLoader.getInstance().setXivoId(jCapa.getString("xivo_userid"));
 								InitialListLoader.getInstance().setAstId(jCapa.getString("astid"));
