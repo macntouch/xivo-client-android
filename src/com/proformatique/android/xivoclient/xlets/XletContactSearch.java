@@ -88,7 +88,8 @@ public class XletContactSearch extends XivoActivity {
 		
 		setContentView(R.layout.xlet_search);
 		contacts = InitialListLoader.getInstance().getUsersList();
-		filllist("");
+		et = (EditText)findViewById(R.id.SearchEdit);
+		filllist(et.getText().toString());
 		initListView();
 		
 		receiver = new IncomingReceiver();
@@ -108,7 +109,6 @@ public class XletContactSearch extends XivoActivity {
 		
 		registerForContextMenu(lv);
 		
-		et = (EditText)findViewById(R.id.SearchEdit);
 		et.addTextChangedListener(
 				new TextWatcher() {
 					public void afterTextChanged(Editable s) {}
@@ -332,7 +332,7 @@ public class XletContactSearch extends XivoActivity {
 		super.onResume();
 		contacts = InitialListLoader.getInstance().getUsersList();
 		refreshFilteredList();
-		filllist("");
+		filllist(et.getText().toString());
 		initListView();
 	}
 	
