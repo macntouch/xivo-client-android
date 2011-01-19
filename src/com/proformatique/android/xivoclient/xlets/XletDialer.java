@@ -171,13 +171,6 @@ public class XletDialer extends XivoActivity {
 			}
 			super.onProgressUpdate(values);
 		}
-		
-		@Override
-		protected void onPostExecute(Integer result) {
-			phoneNumber.setEnabled(true);
-			if (dialog != null)
-				dialog.dismiss();
-		}
 	}
 	
 	/**
@@ -238,9 +231,15 @@ public class XletDialer extends XivoActivity {
 			} else if (intent.getAction().equals(Constants.ACTION_HANGUP)) {
 				Log.d(LOG_TAG, "Hangup action received");
 				setPhoneOffHook(false);
+				phoneNumber.setEnabled(true);
+				if (dialog != null)
+					dialog.dismiss();
 			} else if (intent.getAction().equals(Constants.ACTION_OFFHOOK)) {
 				Log.d(LOG_TAG, "OffHook action received");
 				setPhoneOffHook(true);
+				phoneNumber.setEnabled(true);
+				if (dialog != null)
+					dialog.dismiss();
 			}
 		}
 	}
