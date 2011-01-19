@@ -81,6 +81,8 @@ public final class Constants {
 	public static final String ACTION_LOAD_FEATURES = "xivo.intent.action.LOAD_FEATURES";
 	public static final String ACTION_REFRESH_USER_LIST = "xivo.intent.action.USER_SEARCH";
 	public static final String ACTION_FORCED_DISCONNECT = "xivo.intent.action.FORCED_DISCONNECT";
+	public static final String ACTION_HANGUP = "xivo.intent.action.HANGUP";
+	public static final String ACTION_OFFHOOK = "xivo.intent.action.OFFHOOK";
 	
 	/**
 	 * List view arrays

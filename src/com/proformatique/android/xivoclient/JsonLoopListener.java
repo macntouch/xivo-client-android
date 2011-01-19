@@ -474,6 +474,7 @@ public class JsonLoopListener {
 			String peerChannel = comm.has("peerchannel") ? comm.getString("peerchannel") : null;
 			if (myNum != null && thisChannel.contains(myNum)) {
 				if (status.equals("linked-caller")) {
+					sendOnThePhoneIntent();
 					InitialListLoader.getInstance().setThisChannelId(thisChannel);
 					if (peerChannel != null)
 						InitialListLoader.getInstance().setPeerChannelId(peerChannel);
@@ -488,6 +489,7 @@ public class JsonLoopListener {
 				l.setPeersPeerChannelId(comm.getString("peerchannel"));
 				l.setThisChannelId(comm.getString("peerchannel"));
 				l.setPeerChannelId(comm.getString("thischannel"));
+				sendOnThePhoneIntent();
 			}
 		}
 	}
@@ -508,11 +510,13 @@ public class JsonLoopListener {
 		
 		if (linenum == 1 && peerChannel != null && peerChannel.contains(mobileNumber)
 				&& status.equals("ringing")) {
+			sendOnThePhoneIntent();
 			InitialListLoader l = InitialListLoader.getInstance();
 			l.setThisChannelId(peerChannel);
 			l.setPeerChannelId(thisChannel);
 		} else if (linenum == 2 && status.equals("linked-caller") && thisChannel != null 
 				&& thisChannel.equals(InitialListLoader.getInstance().getPeerChannelId())) {
+			sendOnThePhoneIntent();
 			InitialListLoader.getInstance().setPeersPeerChannelId(peerChannel);
 		} else if ((status.equals("unlinked-caller") || status.equals("hangup"))
 				&& (peerChannel != null && peerChannel.contains(mobileNumber))) {
@@ -520,13 +524,26 @@ public class JsonLoopListener {
 		}
 	}
 	
+	/**
+	 * Sets channels to null and send and hangup broadcast
+	 */
 	private void resetChannels() {
+		Intent iHangup = new Intent();
+		iHangup.setAction(Constants.ACTION_HANGUP);
+		context.sendBroadcast(iHangup);
+		
 		InitialListLoader l = InitialListLoader.getInstance();
 		l.setThisChannelId(null);
 		l.setPeerChannelId(null);
 		l.setPeersPeerChannelId(null);
 	}
-
+	
+	private void sendOnThePhoneIntent() {
+		Intent iOffhook = new Intent();
+		iOffhook.setAction(Constants.ACTION_OFFHOOK);
+		context.sendBroadcast(iOffhook);
+	}
+	
 	public static boolean isCancel() {
 		return cancel;
 	}

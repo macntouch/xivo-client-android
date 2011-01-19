@@ -36,6 +36,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import com.proformatique.android.xivoclient.Connection;
 import com.proformatique.android.xivoclient.R;
@@ -50,12 +51,14 @@ public class XletDialer extends XivoActivity {
 	EditText phoneNumber;
 	IncomingReceiver receiver;
 	Dialog dialog;
+	private boolean offHook;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.xlet_dialer);
+		setPhoneOffHook(false);
 		phoneNumber = (EditText) findViewById(R.id.number);
 		
 		receiver = new IncomingReceiver();
@@ -65,13 +68,34 @@ public class XletDialer extends XivoActivity {
 		 */
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(Constants.ACTION_XLET_DIAL_CALL);
+		filter.addAction(Constants.ACTION_HANGUP);
+		filter.addAction(Constants.ACTION_OFFHOOK);
 		registerReceiver(receiver, new IntentFilter(filter));
 		
 	}
 	
 	public void clickOnCall(View v) {
-		if (!("").equals(phoneNumber.getText().toString())){
-			new CallJsonTask().execute();
+		if (offHook) {
+			Log.d(LOG_TAG, "click on call");
+		} else {
+			if (!("").equals(phoneNumber.getText().toString())){
+				new CallJsonTask().execute();
+			}
+		}
+	}
+	
+	/**
+	 * Set the status of the phone to update the dial button
+	 * @param offHook
+	 */
+	public void setPhoneOffHook(boolean offHook) {
+		this.offHook = offHook;
+		if (offHook) {
+			((ImageButton)findViewById(R.id.dialButton)).setImageDrawable(getResources()
+					.getDrawable(R.drawable.ic_dial_action_hangup));
+		} else {
+			((ImageButton)findViewById(R.id.dialButton)).setImageDrawable(getResources()
+					.getDrawable(R.drawable.ic_dial_action_call));
 		}
 	}
 	
@@ -211,6 +235,12 @@ public class XletDialer extends XivoActivity {
 					
 					new CallJsonTask().execute();
 				}
+			} else if (intent.getAction().equals(Constants.ACTION_HANGUP)) {
+				Log.d(LOG_TAG, "Hangup action received");
+				setPhoneOffHook(false);
+			} else if (intent.getAction().equals(Constants.ACTION_OFFHOOK)) {
+				Log.d(LOG_TAG, "OffHook action received");
+				setPhoneOffHook(true);
 			}
 		}
 	}
