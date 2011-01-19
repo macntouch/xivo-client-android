@@ -448,7 +448,6 @@ public class JsonLoopListener {
 	}
 	
 	private void updatePhoneChannelStatus(JSONObject jStatus) throws JSONException {
-		Log.i(LOG_TAG, "updatePhoneChannelStatus");
 		JSONArray comms = jStatus.getJSONObject("comms").names();
 		if (comms == null)
 			return;
@@ -456,58 +455,78 @@ public class JsonLoopListener {
 			JSONObject comm = jStatus.getJSONObject("comms")
 					.getJSONObject(comms.getString(j));
 			if (comm != null && comm.has("calleridname") && comm.has("status")) {
-				parseComm(comm);
+				if (useMobile)
+					parseCommMobile(comm);
+				else
+					parseComm(comm);
+				InitialListLoader.getInstance().showChannels();
 			}
 		}
 	}
 	
 	private void parseComm(JSONObject comm) throws JSONException {
 		Log.d(LOG_TAG, "parseComm " + comm.toString());
+		String thisChannel = comm.has("thischannel") ? comm.getString("thischannel") : null;
 		
-		if (useMobile == false && comm.has("thischannel")) {
+		if (thisChannel != null) {
 			String myNum = InitialListLoader.getInstance().getXivoPhoneNum();
-			String thisChannel = comm.getString("thischannel");
+			String status = comm.getString("status");
+			String peerChannel = comm.has("peerchannel") ? comm.getString("peerchannel") : null;
 			if (myNum != null && thisChannel.contains(myNum)) {
-				String status = comm.getString("status");
 				if (status.equals("linked-caller")) {
 					InitialListLoader.getInstance().setThisChannelId(thisChannel);
-					if (comm.has("peerchannel"))
-						InitialListLoader.getInstance().setPeerChannelId(comm.getString("peerchannel"));
+					if (peerChannel != null)
+						InitialListLoader.getInstance().setPeerChannelId(peerChannel);
 					else
 						InitialListLoader.getInstance().setPeerChannelId(null);
 				} else if (status.equals("unlinked-caller") || status.equals("hangup")) {
-					InitialListLoader.getInstance().setThisChannelId(null);
-					InitialListLoader.getInstance().setPeerChannelId(null);
+					resetChannels();
 				}
-			} else {
-				return;
-			}
-		} else {
-			if (comm.has("status")) {
-				if (comm.get("status").equals("ringing")
-						&& comm.has("peerchannel")) {
-					String peerChannel = comm.getString("peerchannel");
-					if (mobileNumber != null && peerChannel.contains(mobileNumber)) {
-							InitialListLoader.getInstance().setPeerChannelId(comm.getString("peerchannel"));
-							InitialListLoader.getInstance().setThisChannelId(comm.getString("thischannel"));
-					}
-				} else if (comm.getString("status").equals("linked-caller") 
-						&& comm.has("thischannel")
-						&& comm.getString("thischannel").equals(InitialListLoader.getInstance().getThisChannelId())) {
-					InitialListLoader.getInstance().setPeersPeerNumber(comm.getString("peerchannel"));
-				} else if (comm.getString("status").equals("hangup") || comm.getString("status").equals("unlinked-caller")) {
-					InitialListLoader.getInstance().setThisChannelId(null);
-					InitialListLoader.getInstance().setPeerChannelId(null);
-				}
+			} else if (myNum != null && status.equals("linked-caller") && peerChannel != null
+					&& peerChannel.contains(myNum)) {
+				InitialListLoader l = InitialListLoader.getInstance();
+				l.setPeersPeerChannelId(comm.getString("peerchannel"));
+				l.setThisChannelId(comm.getString("peerchannel"));
+				l.setPeerChannelId(comm.getString("thischannel"));
 			}
 		}
-		
-		if (InitialListLoader.getInstance().getPeerChannelId() != null)
-			Log.i(LOG_TAG, "Peer channel = " + InitialListLoader.getInstance().getPeerChannelId());
-		if (InitialListLoader.getInstance().getThisChannelId() != null)
-			Log.i(LOG_TAG, "This channel = " + InitialListLoader.getInstance().getThisChannelId());
 	}
 	
+	/**
+	 * Parses the comm part of an incomming phone status update.
+	 * This method is valid only when using a mobile number.
+	 * 
+	 * @param comm
+	 * @throws JSONException
+	 */
+	private void parseCommMobile(JSONObject comm) throws JSONException {
+		Log.d(LOG_TAG, "Parsing comm (mobile): " + comm.toString());
+		String status = comm.getString("status");
+		String thisChannel = comm.has("thischannel") ? comm.getString("thischannel") : null;
+		String peerChannel = comm.has("peerchannel") ? comm.getString("peerchannel") : null;
+		int linenum = comm.has("linenum") ? comm.getInt("linenum") : 0;
+		
+		if (linenum == 1 && peerChannel != null && peerChannel.contains(mobileNumber)
+				&& status.equals("ringing")) {
+			InitialListLoader l = InitialListLoader.getInstance();
+			l.setThisChannelId(peerChannel);
+			l.setPeerChannelId(thisChannel);
+		} else if (linenum == 2 && status.equals("linked-caller") && thisChannel != null 
+				&& thisChannel.equals(InitialListLoader.getInstance().getPeerChannelId())) {
+			InitialListLoader.getInstance().setPeersPeerChannelId(peerChannel);
+		} else if ((status.equals("unlinked-caller") || status.equals("hangup"))
+				&& (peerChannel != null && peerChannel.contains(mobileNumber))) {
+			resetChannels();
+		}
+	}
+	
+	private void resetChannels() {
+		InitialListLoader l = InitialListLoader.getInstance();
+		l.setThisChannelId(null);
+		l.setPeerChannelId(null);
+		l.setPeersPeerChannelId(null);
+	}
+
 	public static boolean isCancel() {
 		return cancel;
 	}

@@ -74,7 +74,7 @@ public class AttendedTransferActivity extends TransferActivity {
 			":";
 			if (SettingsActivity.getUseMobile(AttendedTransferActivity.this)) {
 				Log.i(LOG_TAG, "Using mobile");
-				source += InitialListLoader.getInstance().getPeersPeerNumber();
+				source += InitialListLoader.getInstance().getPeersPeerChannelId();
 			} else {
 				Log.i(LOG_TAG, "Not using mobile");
 				source += InitialListLoader.getInstance().getThisChannelId();

@@ -72,7 +72,7 @@ public class InitialListLoader {
 	private HashMap<String, String> featuresEnablevoicemail = new HashMap<String, String>();
 	private String xivoUserName;
 	private String xivoPhoneNum;
-	private String peersPeerNumber;
+	private String peersPeerChannelId;
 	
 	private static InitialListLoader instance;
 	
@@ -484,11 +484,20 @@ public class InitialListLoader {
 		return xivoPhoneNum;
 	}
 	
-	public String getPeersPeerNumber() {
-		return peersPeerNumber;
+	public String getPeersPeerChannelId() {
+		return peersPeerChannelId;
 	}
 	
-	public void setPeersPeerNumber(String peersPeerNumber) {
-		this.peersPeerNumber = peersPeerNumber;
+	public void setPeersPeerChannelId(String peersPeerChannelId) {
+		this.peersPeerChannelId = peersPeerChannelId;
+	}
+	
+	/**
+	 * Logs the channels to Log.d
+	 */
+	public void showChannels() {
+		Log.d(LOG_TAG, "This channel = " + thisChannelId);
+		Log.d(LOG_TAG, "Peer channel = " + peerChannelId);
+		Log.d(LOG_TAG, "Peer's peer channel = " + peersPeerChannelId);
 	}
 }
