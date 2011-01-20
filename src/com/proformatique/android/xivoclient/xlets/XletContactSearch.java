@@ -65,10 +65,7 @@ public class XletContactSearch extends XivoActivity {
 	
 	private static final String LOG_TAG = "XiVO XletContactSearch";
 	private static final int CALL_MENU = 0;
-	private static final int TRANSFER_MENU = 1;
 	private static final int CALL_ITEM_INDEX = 0;
-	private static final int ATXFER_ITEM_INDEX = 1;
-	private static final int TRANSFER_ITEM_INDEX = 2;
 	
 	private List <HashMap<String, String>> filteredUsersList = new ArrayList<HashMap<String, String>>();
 	private List<HashMap<String, String>> contacts = null;
@@ -331,12 +328,12 @@ public class XletContactSearch extends XivoActivity {
 	}
 	
 	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v,
-			ContextMenuInfo menuInfo) {
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 		switch (v.getId()){
 		case R.id.users_list:
 			{
-				AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)menuInfo;
+				AdapterView.AdapterContextMenuInfo info = 
+					(AdapterView.AdapterContextMenuInfo)menuInfo;
 				menu.setHeaderTitle(getString(R.string.context_action));
 				// Normal menu (Not currently on the phone)
 				if (InitialListLoader.getInstance().getThisChannelId() == null) {
@@ -345,8 +342,10 @@ public class XletContactSearch extends XivoActivity {
 							filteredUsersList.get(info.position).get("phonenum"));
 					menu.add(CALL_MENU, CALL_ITEM_INDEX, 0, callAction);
 				} else { // On the phone menu
-					menu.add(TRANSFER_MENU, ATXFER_ITEM_INDEX, 0, getString(R.string.attended_transfer_title));
-					menu.add(TRANSFER_MENU, TRANSFER_ITEM_INDEX, 0, getString(R.string.blind_transfer_title));
+					menu.add(Constants.TRANSFER_MENU, Constants.ATXFER_ITEM_INDEX, 0, 
+							getString(R.string.attended_transfer_title));
+					menu.add(Constants.TRANSFER_MENU, Constants.TRANSFER_ITEM_INDEX, 0, 
+							getString(R.string.blind_transfer_title));
 				}
 				break;
 			}
@@ -371,13 +370,13 @@ public class XletContactSearch extends XivoActivity {
 			}
 			break;
 		// Transfer menu
-		case TRANSFER_MENU:
+		case Constants.TRANSFER_MENU:
 			switch (item.getItemId()) {
-			case ATXFER_ITEM_INDEX:
+			case Constants.ATXFER_ITEM_INDEX:
 				Log.d(LOG_TAG, "Attended transfer selected");
 				atxferNumber(phoneNumber);
 				break;
-			case TRANSFER_ITEM_INDEX:
+			case Constants.TRANSFER_ITEM_INDEX:
 				Log.d(LOG_TAG, "Blind transfer selected");
 				transferNumber(phoneNumber);
 				break;
