@@ -17,7 +17,6 @@
  * along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.proformatique.android.xivoclient;
 package com.proformatique.android.xivoclient.service;
 
 import java.io.IOException;
@@ -39,6 +38,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.proformatique.android.xivoclient.SettingsActivity;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 /**

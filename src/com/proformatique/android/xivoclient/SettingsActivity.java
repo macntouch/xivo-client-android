@@ -19,6 +19,8 @@
 
 package com.proformatique.android.xivoclient;
 
+import com.proformatique.android.xivoclient.service.JsonLoopListener;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;

@@ -25,10 +25,15 @@ import java.util.concurrent.TimeoutException;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.NetworkInfo.State;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Looper;
@@ -40,9 +45,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.proformatique.android.xivoclient.service.Connection;
 import com.proformatique.android.xivoclient.service.IXivoService;
+import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.service.XivoService;
 import com.proformatique.android.xivoclient.tools.Constants;
 
@@ -55,7 +62,6 @@ public class LoginActivity extends XivoActivity {
 	private SharedPreferences settings;
 	private SharedPreferences loginSettings;
 	ProgressDialog dialog;
-	private static final String LOG_TAG = "XiVO " + LoginActivity.class.getSimpleName();
 	private IXivoService xivoService;
 	private boolean serviceStarted = false;
 	private RemoteServiceConnection conn = null;
@@ -189,8 +195,8 @@ public class LoginActivity extends XivoActivity {
 	
 	private void menuDisconnect() {
         LoginActivity.stopInCallScreenKiller(this);
-        if (Connection.getInstance().isConnected())
-            Connection.getInstance().disconnect();
+        if (Connection.getInstance(LoginActivity.this).isConnected())
+            Connection.getInstance(LoginActivity.this).disconnect();
 		Log.i(LOG_TAG, "Menu disconnect clicked");
 		displayElements(true);
 		Intent iDisconnectIntent = new Intent();
@@ -222,7 +228,7 @@ public class LoginActivity extends XivoActivity {
 		
 		if (xivoServiceReady == true)
 			startClient();*/
-		if (Connection.getInstance().isConnected()) {
+		if (Connection.getInstance(LoginActivity.this).isConnected()) {
 			Intent defineIntent = new Intent(LoginActivity.this, XletsContainerTabActivity.class);
 			startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
 		} else {
@@ -239,11 +245,11 @@ public class LoginActivity extends XivoActivity {
 					try {
 						connectTask.get(10, TimeUnit.SECONDS);
 					} catch (InterruptedException e) {
-						Connection.getInstance().disconnect();
+						Connection.getInstance(LoginActivity.this).disconnect();
 					} catch (ExecutionException e) {
-						Connection.getInstance().disconnect();
+						Connection.getInstance(LoginActivity.this).disconnect();
 					} catch (TimeoutException e) {
-						Connection.getInstance().disconnect();
+						Connection.getInstance(LoginActivity.this).disconnect();
 					}
 					loadingTask.execute();
 					try {
@@ -352,7 +358,7 @@ public class LoginActivity extends XivoActivity {
 					Connection connection = Connection.getInstance(eLogin.getText().toString(),
 							ePassword.getText().toString(), LoginActivity.this);
 					
-					InitialListLoader.init();
+					//InitialListLoader.init();
 					
 					return  connection.initialize();
 				} else return Constants.NO_NETWORK_AVAILABLE;
@@ -386,7 +392,7 @@ public class LoginActivity extends XivoActivity {
 						, Toast.LENGTH_LONG).show();
 			}
 			else if(result >= 1){
-				if (Connection.getInstance().getSaveLogin()){
+				if (Connection.getInstance(LoginActivity.this).getSaveLogin()){
 					saveLoginPassword();
 				}
 				displayElements(false);
@@ -415,8 +421,8 @@ public class LoginActivity extends XivoActivity {
 	protected void onDestroy() {
 		Log.d( LOG_TAG, "DESTROY");
 		LoginActivity.stopInCallScreenKiller(this);
-		if (Connection.getInstance() != null && Connection.getInstance().isConnected()) {
-			Connection.getInstance().disconnect();
+		if (Connection.getInstance(LoginActivity.this) != null && Connection.getInstance(LoginActivity.this).isConnected()) {
+			Connection.getInstance(LoginActivity.this).disconnect();
 		}
 		releaseXivoService();
 		super.onDestroy();
@@ -431,7 +437,7 @@ public class LoginActivity extends XivoActivity {
 			Log.d(LOG_TAG, "Service not bounded");
 		}
 	}
-
+	
 	class RemoteServiceConnection implements ServiceConnection {
 		
 		@Override

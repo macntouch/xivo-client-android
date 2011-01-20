@@ -73,7 +73,7 @@ public class XletsContainerTabActivity extends TabActivity {
 			this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 					WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		}
-		if (Connection.getInstance().isConnected() != true) {
+		if (Connection.getInstance(XletsContainerTabActivity.this).isConnected() != true) {
 			Log.e(LOG_TAG, "Activity started without a connection");
 			finish();
 		} else {

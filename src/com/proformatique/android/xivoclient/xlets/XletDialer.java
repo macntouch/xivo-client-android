@@ -38,13 +38,12 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import com.proformatique.android.xivoclient.Connection;
-import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.SettingsActivity;
 import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.XletsContainerTabActivity;
 import com.proformatique.android.xivoclient.service.Connection;
+import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 public class XletDialer extends XivoActivity {
@@ -111,7 +110,7 @@ public class XletDialer extends XivoActivity {
 		protected Integer doInBackground(Void... params) {
 			JSONObject jHangupObject = createJsonHangupObject();
 			if (jHangupObject != null) {
-				Connection.getInstance().sendJsonString(jHangupObject);
+				Connection.getInstance(XletDialer.this).sendJsonString(jHangupObject);
 			} else {
 				Log.d(LOG_TAG, "Null hangup object");
 			}

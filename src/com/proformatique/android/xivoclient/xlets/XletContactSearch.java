@@ -55,7 +55,6 @@ import android.widget.Toast;
 
 import com.proformatique.android.xivoclient.AttendedTransferActivity;
 import com.proformatique.android.xivoclient.BlindTransferActivity;
-import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.service.InitialListLoader;

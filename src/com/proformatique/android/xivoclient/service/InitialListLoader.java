@@ -33,13 +33,10 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.res.Resources;
-import android.util.Log;
 
+import android.content.Context;
+import android.util.Log;
 import com.proformatique.android.xivoclient.tools.Constants;
-import com.proformatique.android.xivoclient.tools.UsersList;
 
 /**
  * This class is a useful lists provider for all class in the app
@@ -59,6 +56,7 @@ public class InitialListLoader {
 	 */
 	String[] lists = new String[] { "users", "phones"};
 	
+	private List<HashMap<String, String>> usersList = new ArrayList<HashMap<String, String>>();
 	private List<HashMap<String, String>> historyList = new ArrayList<HashMap<String, String>>();
 	private List<String> xletsList = new ArrayList<String>();
 	private String xivoId = null;
@@ -74,16 +72,14 @@ public class InitialListLoader {
 	private HashMap<String, String> featuresIncallfilter = new HashMap<String, String>();
 	private HashMap<String, String> featuresUnc = new HashMap<String, String>();
 	private HashMap<String, String> featuresEnablevoicemail = new HashMap<String, String>();
-	private Context context;
 	private String xivoUserName;
 	private String xivoPhoneNum;
 	private String peersPeerChannelId;
+	private Context context;
 	
 	private static InitialListLoader instance;
 	
 	public static InitialListLoader getInstance(){
-		if (instance == null)
-			instance = new InitialListLoader();
 		return instance;
 	}
 	
@@ -91,10 +87,9 @@ public class InitialListLoader {
 		super();
 	}
 	
-	public InitialListLoader init(Context context){
-		this.context = context;
+	public static InitialListLoader init(Context context){
 		instance = new InitialListLoader();
-		instance.usersList = new UsersList(context);
+		instance.context = context;
 		return instance;
 	}
 	
@@ -114,8 +109,8 @@ public class InitialListLoader {
 		if (jObj!=null){
 			try {
 				Log.d( LOG_TAG, "Jobj: " + jObj.toString());
-				if (Connection.getInstance() != null && Connection.getInstance().getNetworkConnection() != null) {
-					PrintStream output = new PrintStream(Connection.getInstance().getNetworkConnection().getOutputStream());
+				if (Connection.getInstance(context) != null && Connection.getInstance(context).getNetworkConnection() != null) {
+					PrintStream output = new PrintStream(Connection.getInstance(context).getNetworkConnection().getOutputStream());
 					if (output != null)
 						output.println(jObj.toString());
 					else
@@ -153,7 +148,7 @@ public class InitialListLoader {
 							map.put("stateid_longname", jObjCurrentState.getString("longname"));
 							map.put("stateid_color", jObjCurrentState.getString("color"));
 							map.put("techlist", jObjCurrent.getJSONArray("techlist").getString(0));
-							usersList.addXivoUser(map);
+							usersList.add(map);
 							
 							Log.d( LOG_TAG, "map : " + map.toString());
 						}
@@ -217,7 +212,7 @@ public class InitialListLoader {
 								capaPresenceState.put("hintstatus_code", mapUser.get("hintstatus_code"));
 								capaPresenceState.put("hintstatus_longname", mapUser.get("hintstatus_longname"));
 							}
-							usersList.setXivoUser(i, mapUser);
+							usersList.set(i, mapUser);
 							i++;
 						}
 					}
@@ -325,18 +320,15 @@ public class InitialListLoader {
 	}
 	
 	public List<HashMap<String, String>> getUsersList() {
-		if (usersList != null)
-			return usersList.getAllUsers();
-		else
-			return null;
+		return usersList;
 	}
 	
 	public void setUsersList(List<HashMap<String, String>> usersList) {
-		this.usersList.setUsers(usersList);
+		this.usersList = usersList;
 	}
 	
 	public void replaceUsersList(int i, HashMap<String, String> map) {
-		this.usersList.setXivoUser(i, map);
+		this.usersList.set(i, map);
 	}
 	
 	public List<HashMap<String, String>> getHistoryList() {
@@ -469,11 +461,15 @@ public class InitialListLoader {
 		}
 	}
 	
-	public List<HashMap<String, String>> getAllContacts() {
-		if (usersList != null)
-			return usersList.getAllUsers();
-		else
-			return null;
+	@SuppressWarnings("unchecked")
+	private class fullNameComparator implements Comparator
+	{
+		public int compare(Object obj1, Object obj2)
+		{
+			HashMap<String, String> update1 = (HashMap<String, String>)obj1;
+			HashMap<String, String> update2 = (HashMap<String, String>)obj2;
+			return update1.get("fullname").compareTo(update2.get("fullname"));
+		}
 	}
 	
 	public void setXivoUserName(String xivoUserName) {

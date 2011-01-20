@@ -440,7 +440,7 @@ public class Connection {
 			if (xivoNotif != null)
 				xivoNotif.removeNotif();
 			
-			if (callingActivity != null) {
+			/*if (callingActivity != null) {
 				EditText eLogin = (EditText) callingActivity.findViewById(R.id.login); 
 				EditText ePassword = (EditText) callingActivity.findViewById(R.id.password);
 				TextView eLoginV = (TextView) callingActivity.findViewById(R.id.login_text); 
@@ -452,7 +452,7 @@ public class Connection {
 				eLoginV.setVisibility(View.VISIBLE);
 				ePasswordV.setVisibility(View.VISIBLE);
 				eStatus.setVisibility(View.INVISIBLE);
-			}
+			}*/
 			
 		} catch (IOException e) {
 			return Constants.NO_NETWORK_AVAILABLE;
