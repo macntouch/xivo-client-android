@@ -468,7 +468,7 @@ public class InitialListLoader {
 		{
 			HashMap<String, String> update1 = (HashMap<String, String>)obj1;
 			HashMap<String, String> update2 = (HashMap<String, String>)obj2;
-			return update1.get("fullname").compareTo(update2.get("fullname"));
+			return update1.get("fullname").compareToIgnoreCase(update2.get("fullname"));
 		}
 	}
 	
