@@ -39,6 +39,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import com.proformatique.android.xivoclient.Connection;
+import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.SettingsActivity;
 import com.proformatique.android.xivoclient.XivoActivity;
@@ -76,7 +77,7 @@ public class XletDialer extends XivoActivity {
 	
 	public void clickOnCall(View v) {
 		if (offHook) {
-			Log.d(LOG_TAG, "click on call");
+			new HangupJsonTask().execute();
 		} else {
 			if (!("").equals(phoneNumber.getText().toString())){
 				new CallJsonTask().execute();
@@ -97,6 +98,25 @@ public class XletDialer extends XivoActivity {
 			((ImageButton)findViewById(R.id.dialButton)).setImageDrawable(getResources()
 					.getDrawable(R.drawable.ic_dial_action_call));
 		}
+	}
+	
+	/**
+	 * Creates and send an hangup command to the CTI server Asynchronously
+	 *
+	 */
+	private class HangupJsonTask extends AsyncTask<Void, Integer, Integer> {
+		
+		@Override
+		protected Integer doInBackground(Void... params) {
+			JSONObject jHangupObject = createJsonHangupObject();
+			if (jHangupObject != null) {
+				Connection.getInstance().sendJsonString(jHangupObject);
+			} else {
+				Log.d(LOG_TAG, "Null hangup object");
+			}
+			return null;
+		}
+		
 	}
 	
 	/**
@@ -207,6 +227,40 @@ public class XletDialer extends XivoActivity {
 	}
 	
 	/**
+	 * Create an hangup JSON object
+	 * "{
+	 *   "class": "ipbxcommand",
+	 *   "details": {
+	 *     "channelids": "chan:xivo/17:SIP/4002-00000755",
+	 *     "command": "hangup"
+	 *   },
+	 *   "direction": "xivoserver"
+	 * }" 
+	 * @return
+	 */
+	public JSONObject createJsonHangupObject() {
+		JSONObject j = new JSONObject();
+		JSONObject details = new JSONObject();
+		String source = "chan:" + InitialListLoader.getInstance().getUserId() + ":";
+		if (SettingsActivity.getUseMobile(this))
+			source += InitialListLoader.getInstance().getPeersPeerChannelId();
+		else
+			source += InitialListLoader.getInstance().getThisChannelId();
+		try {
+			details.accumulate("command", "hangup");
+			details.accumulate("channelids", source);
+			j.accumulate("class", "ipbxcommand");
+			j.accumulate("direction", Constants.XIVO_SERVER);
+			j.accumulate("details", details);
+			return j;
+		} catch (JSONException e) {
+			Log.e(LOG_TAG, "JSONException");
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	/**
 	 * BroadcastReceiver, intercept Intents with action ACTION_XLET_DIAL_CALL
 	 * to perform a call
 	 * @author cquaquin
@@ -301,9 +355,18 @@ public class XletDialer extends XivoActivity {
 		phoneNumber.onKeyDown(keyCode, event);
 	}
 	
+	@Override
+	protected void onPause() {
+		if (dialog != null)
+			dialog.dismiss();
+		super.onPause();
+	}
 	
+	@Override
 	protected void onDestroy() {
 		unregisterReceiver(receiver);
+		if (dialog != null)
+			dialog.dismiss();
 		super.onDestroy();
 	}
 }
