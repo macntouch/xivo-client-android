@@ -80,7 +80,6 @@ public class XletContactSearch extends XivoActivity {
 	private EditText et;
 	private ListView lv;
 	private IncomingReceiver receiver;
-	private SearchReceiver searchReceiver;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -93,7 +92,6 @@ public class XletContactSearch extends XivoActivity {
 		initListView();
 		
 		receiver = new IncomingReceiver();
-		searchReceiver = new SearchReceiver();
 		
 		/**
 		 *  Register a BroadcastReceiver for Intent action that trigger a change
@@ -101,11 +99,8 @@ public class XletContactSearch extends XivoActivity {
 		 */
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(Constants.ACTION_LOAD_USER_LIST);
+		filter.addAction(Constants.ACTION_REFRESH_USER_LIST);
 		registerReceiver(receiver, new IntentFilter(filter));
-		
-		IntentFilter searchFilter = new IntentFilter();
-		searchFilter.addAction(Constants.ACTION_REFRESH_USER_LIST);
-		registerReceiver(searchReceiver, new IntentFilter(searchFilter));
 		
 		registerForContextMenu(lv);
 		
@@ -327,11 +322,10 @@ public class XletContactSearch extends XivoActivity {
 				}
 			}).show();
 	}
-
+	
 	protected void onResume() {
 		super.onResume();
 		contacts = InitialListLoader.getInstance().getUsersList();
-		refreshFilteredList();
 		filllist(et.getText().toString());
 		initListView();
 	}
@@ -447,20 +441,7 @@ public class XletContactSearch extends XivoActivity {
 					filllist(et.getText().toString());
 					usersAdapter.notifyDataSetChanged();
 				}
-			}
-		}
-	}
-	
-	/**
-	 * BroadcastReceiver, intercept Intents with action ACTION_REFRESH_USER_LIST
-	 * to perform a reload of the displayer list
-	 * 
-	 */
-	public class SearchReceiver extends BroadcastReceiver {
-		
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			if (intent.getAction().equals(Constants.ACTION_REFRESH_USER_LIST)) {
+			} else if (intent.getAction().equals(Constants.ACTION_REFRESH_USER_LIST)) {
 				Log.d(LOG_TAG, "Received search Broadcast");
 				if (usersAdapter != null) {
 					filllist(et.getText().toString());
@@ -471,34 +452,24 @@ public class XletContactSearch extends XivoActivity {
 		}
 	}
 	
-	private void refreshFilteredList() {
-		int contactsLen = contacts != null ? contacts.size() : 0;
-		
-		if (filteredUsersList == null) {
-			filteredUsersList = new ArrayList<HashMap<String, String>>(contactsLen);
-		} else {
-			filteredUsersList.clear();
-		}
-		
-		if (contacts != null)
-			filteredUsersList.addAll(contacts);
-	}
-	
 	/**
 	 * Fill the filtered user list to display on the listview
 	 * 
 	 * @param filter -- The search value to look for
 	 */
 	private void filllist(String filter) {
-		refreshFilteredList();
 		if (filter.equals("") == false) {
-			List<HashMap<String, String>> tmp = filteredUsersList;
 			filteredUsersList = new ArrayList<HashMap<String, String>>();
 			int len = filter.length();
-			for (HashMap<String, String> user: tmp) {
+			for (HashMap<String, String> user: contacts) {
 				if (len <= user.get("fullname").length() && filter.equalsIgnoreCase((String) user.get("fullname").subSequence(0, len))) {
 					filteredUsersList.add(user);
 				}
+			}
+		} else {
+			if (contacts.size() > filteredUsersList.size()) {
+				filteredUsersList.clear();
+				filteredUsersList.addAll(contacts);
 			}
 		}
 	}
@@ -558,7 +529,6 @@ public class XletContactSearch extends XivoActivity {
 	@Override
 	protected void onDestroy() {
 		unregisterReceiver(receiver);
-		unregisterReceiver(searchReceiver);
 		super.onDestroy();
 	}
 }
