@@ -1,3 +1,22 @@
+/* XiVO Client Android
+ * Copyright (C) 2010-2011, Proformatique
+ *
+ * This file is part of XiVO Client Android.
+ *
+ * XiVO Client Android is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * XiVO Client Android is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.proformatique.android.xivoclient.service;
 
 import java.io.IOException;
@@ -9,11 +28,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
@@ -44,6 +63,8 @@ public class InitialListLoader {
 	private List<String> xletsList = new ArrayList<String>();
 	private String xivoId = null;
 	private String astId = null;
+	private String thisChannelId = null;
+	private String peerChannelId = null;
 	private HashMap<String, String> capaPresenceState  = new HashMap<String, String>();
 	private List<HashMap<String, String>> statusList = new ArrayList<HashMap<String, String>>();
 	private HashMap<String, String> featuresEnablednd = new HashMap<String, String>();
@@ -53,8 +74,10 @@ public class InitialListLoader {
 	private HashMap<String, String> featuresIncallfilter = new HashMap<String, String>();
 	private HashMap<String, String> featuresUnc = new HashMap<String, String>();
 	private HashMap<String, String> featuresEnablevoicemail = new HashMap<String, String>();
-	private UsersList usersList = null;
 	private Context context;
+	private String xivoUserName;
+	private String xivoPhoneNum;
+	private String peersPeerChannelId;
 	
 	private static InitialListLoader instance;
 	
@@ -75,24 +98,31 @@ public class InitialListLoader {
 		return instance;
 	}
 	
-	public int startLoading(ContentResolver cr, Resources res, Context context){
+	public int startLoading(){
 		int rCode;
 		
 		for (String list : lists) {
 			rCode = initJsonList(list);
 			if (rCode < 1) return rCode;
 		}
-		
 		return Constants.OK;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private int initJsonList(String inputClass) {
 		JSONObject jObj = createJsonInputObject(inputClass,"getlist");
 		if (jObj!=null){
 			try {
 				Log.d( LOG_TAG, "Jobj: " + jObj.toString());
-				PrintStream output = new PrintStream(Connection.getInstance(context).getNetworkConnection().getOutputStream());
-				output.println(jObj.toString());
+				if (Connection.getInstance() != null && Connection.getInstance().getNetworkConnection() != null) {
+					PrintStream output = new PrintStream(Connection.getInstance().getNetworkConnection().getOutputStream());
+					if (output != null)
+						output.println(jObj.toString());
+					else
+						Log.d(LOG_TAG, "No output stream");
+				} else {
+					Log.d(LOG_TAG, "No network connection");
+				}
 			} catch (IOException e) {
 				return Constants.NO_NETWORK_AVAILABLE;
 			}
@@ -127,20 +157,45 @@ public class InitialListLoader {
 							
 							Log.d( LOG_TAG, "map : " + map.toString());
 						}
+						if (usersList.size() > 1) {
+							Collections.sort(usersList, new fullNameComparator());
+						}
 					}
 					
 					/**
 					 * Loading Phones list
 					 */
-					else if (inputClass.equals("phones")){
-						JSONObject jAllPhones = ReadLineObject.getJSONObject("payload").getJSONObject(astId);
+					else if (inputClass.equals("phones") && ReadLineObject.has("payload")){
+						JSONObject jPayloads = ReadLineObject.getJSONObject("payload");
+						JSONArray jAllPhones = new JSONArray();
+						for (Iterator<String> keyIter = jPayloads.keys(); keyIter.hasNext();) {
+							String key = keyIter.next();
+							Log.d(LOG_TAG, "Adding " + key + " to jAllPhones");
+							jAllPhones.put(jPayloads.getJSONObject(key));
+						}
+						int nbXivo = jAllPhones.length();
 						/**
 						 * Use users field "techlist" to search objects in phones list
 						 */
 						int i=0;
-						List<HashMap<String, String>> xivoUsers = usersList.getXivoUsers();
-						for (HashMap<String, String> mapUser : xivoUsers) {
-							JSONObject jPhone = jAllPhones.getJSONObject(mapUser.get("techlist"));
+						for (HashMap<String, String> mapUser : usersList) {
+							if (!(mapUser.containsKey("techlist"))) {
+								Log.d(LOG_TAG, "This user has no phone, skipping");
+								Log.d(LOG_TAG, mapUser.toString());
+								continue;
+							}
+							JSONObject jPhone = null;
+							for (int j = 0; j < nbXivo; j++) {
+								JSONObject xivo = jAllPhones.getJSONObject(j);
+								if (xivo.has(mapUser.get("techlist")) == true) {
+									jPhone = xivo.getJSONObject(mapUser.get("techlist"));
+									break;
+								}
+							}
+							if (jPhone == null) {
+								Log.d(LOG_TAG, "No phone for this user, skipping");
+								continue;
+							}
 							/**
 							 * "Real" phone number is retrieved from phones list
 							 */
@@ -239,6 +294,22 @@ public class InitialListLoader {
 	
 	public String getXivoId() {
 		return xivoId;
+	}
+	
+	public String getThisChannelId() {
+		return thisChannelId;
+	}
+	
+	public void setThisChannelId(String channelId) {
+		this.thisChannelId = channelId;
+	}
+	
+	public String getPeerChannelId() {
+		return peerChannelId;
+	}
+	
+	public void setPeerChannelId(String peerChannelId) {
+		this.peerChannelId = peerChannelId;
 	}
 	
 	public void setXivoId(String xivoId) {
@@ -403,5 +474,38 @@ public class InitialListLoader {
 			return usersList.getAllUsers();
 		else
 			return null;
+	}
+	
+	public void setXivoUserName(String xivoUserName) {
+		this.xivoUserName = xivoUserName;
+	}
+	
+	public String getXivoUserName() {
+		return xivoUserName;
+	}
+	
+	public void setXivoPhoneNum(String number) {
+		this.xivoPhoneNum = number;
+	}
+	
+	public String getXivoPhoneNum() {
+		return xivoPhoneNum;
+	}
+	
+	public String getPeersPeerChannelId() {
+		return peersPeerChannelId;
+	}
+	
+	public void setPeersPeerChannelId(String peersPeerChannelId) {
+		this.peersPeerChannelId = peersPeerChannelId;
+	}
+	
+	/**
+	 * Logs the channels to Log.d
+	 */
+	public void showChannels() {
+		Log.d(LOG_TAG, "This channel = " + thisChannelId);
+		Log.d(LOG_TAG, "Peer channel = " + peerChannelId);
+		Log.d(LOG_TAG, "Peer's peer channel = " + peersPeerChannelId);
 	}
 }

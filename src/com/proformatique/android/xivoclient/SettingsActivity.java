@@ -1,3 +1,22 @@
+/* XiVO Client Android
+ * Copyright (C) 2010-2011, Proformatique
+ *
+ * This file is part of XiVO Client Android.
+ *
+ * XiVO Client Android is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * XiVO Client Android is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.proformatique.android.xivoclient;
 
 import android.content.Context;
@@ -5,6 +24,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.view.WindowManager;
 
@@ -12,6 +32,10 @@ public class SettingsActivity extends PreferenceActivity{
 	
 	@SuppressWarnings("unused")
 	private static final String LOG_TAG = "SETTINGS";
+	private final static String USE_MOBILE_OPTION = "use_mobile_number";
+	private final static boolean USE_MOBILE_DEFAULT = false;
+	private static final String MOBILE_PHONE_NUMBER = "mobile_number";
+	private static final String DEFAULT_MOBILE_PHONE_NUMBER = "";
 	
 	SharedPreferences settingsPrefs;
 	
@@ -71,9 +95,36 @@ public class SettingsActivity extends PreferenceActivity{
 						editor.commit();
 						
 					}
+				} else if (key.equals(USE_MOBILE_OPTION)) {
+					JsonLoopListener.setUseMobile(getUseMobile(getApplicationContext()));
+				} else if (key.equals(MOBILE_PHONE_NUMBER)) {
+					JsonLoopListener.setMobileNumber(getMobileNumber(getApplicationContext()));
 				}
 			}
 		});
 	}
-
+	
+	/**
+	 * Returns the use_mobile_number preference value
+	 * @param context
+	 * @return
+	 */
+	public static boolean getUseMobile(Context context) {
+		return PreferenceManager.getDefaultSharedPreferences(context)
+			.getBoolean(USE_MOBILE_OPTION, USE_MOBILE_DEFAULT);
+	}
+	
+	/**
+	 * Returns the mobile phone number or null if use_mobile_number is not true
+	 * @param context
+	 * @return
+	 */
+	public static String getMobileNumber(Context context) {
+		if (getUseMobile(context)) {
+			return PreferenceManager.getDefaultSharedPreferences(context)
+				.getString(MOBILE_PHONE_NUMBER, DEFAULT_MOBILE_PHONE_NUMBER);
+		} else {
+			return null;
+		}
+	}
 }

@@ -1,3 +1,23 @@
+/* XiVO Client Android
+ * Copyright (C) 2010-2011, Proformatique
+ *
+ * This file is part of XiVO Client Android.
+ *
+ * XiVO Client Android is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * XiVO Client Android is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package com.proformatique.android.xivoclient;
 package com.proformatique.android.xivoclient.service;
 
 import java.io.IOException;
@@ -38,7 +58,16 @@ public class JsonLoopListener {
 	private static boolean cancel = false;
 	private static JsonLoopListener instance;
 	
+	// Keep a copy of useMobile and mobileNumber since the config can't be
+	// accessed from other threads
+	private static boolean useMobile;
+	private static String mobileNumber;
+	
 	public static JsonLoopListener getInstance(Context context) {
+		useMobile = SettingsActivity.getUseMobile(context);
+		if (useMobile) {
+			mobileNumber = SettingsActivity.getMobileNumber(context);
+		}
 		if (null == instance) {
 			instance = new JsonLoopListener(context);
 		} else if (cancel == true) {
@@ -49,6 +78,13 @@ public class JsonLoopListener {
 		return instance;
 	}
 	
+	public static void setUseMobile(boolean newValue) {
+		useMobile = newValue;
+	}
+	
+	public static void setMobileNumber(String number) {
+		mobileNumber = number;
+	}
 	
 	private JsonLoopListener(Context context) {
 		this.context = context;
@@ -224,21 +260,25 @@ public class JsonLoopListener {
 						if (classRec.equals("phones")) {
 							HashMap<String, String> map = new HashMap<String, String>();
 							
-							JSONObject jStatus = jObjCurrent.getJSONObject("status");
-							JSONObject jHintStatus = jStatus.getJSONObject("hintstatus");
-							map.put("xivo_userid", jStatus.getString("id"));
-							if (jHintStatus.has("code")){
-								map.put("hintstatus_color", jHintStatus.getString("color"));
-								map.put("hintstatus_code", jHintStatus.getString("code"));
-								map.put("hintstatus_longname", jHintStatus.getString("longname"));
+							if (jObjCurrent.has("status")) {
+								JSONObject jStatus = jObjCurrent.getJSONObject("status");
+								updatePhoneChannelStatus(jStatus);
+							
+								JSONObject jHintStatus = jStatus.getJSONObject("hintstatus");
+								map.put("xivo_userid", jStatus.getString("id"));
+								if (jHintStatus.has("code")){
+									map.put("hintstatus_color", jHintStatus.getString("color"));
+									map.put("hintstatus_code", jHintStatus.getString("code"));
+									map.put("hintstatus_longname", jHintStatus.getString("longname"));
+								}
+								else {
+									map.put("hintstatus_color", "");
+									map.put("hintstatus_code", "");
+									map.put("hintstatus_longname", "");
+								}
+								updateUserList(InitialListLoader.getInstance().getUsersList(), map, "phone");
+								handler.sendEmptyMessage(1);
 							}
-							else {
-								map.put("hintstatus_color", "");
-								map.put("hintstatus_code", "");
-								map.put("hintstatus_longname", "");
-							}
-							updateUserList(InitialListLoader.getInstance().getUsersList(), map, "phone");
-							handler.sendEmptyMessage(1);
 						}
 						
 						/**
@@ -359,19 +399,22 @@ public class JsonLoopListener {
 						}
 						
 					} catch (NullPointerException e) {
+						Log.e(LOG_TAG, e.toString());
+						e.printStackTrace();
 						cancel = true;
 						handler.sendEmptyMessage(Constants.JSON_POPULATE_ERROR);
 					} catch (IOException e) {
+						Log.e(LOG_TAG, "IOException");
 						cancel = true;
 						handler.sendEmptyMessage(Constants.NO_NETWORK_AVAILABLE);
 					} catch (JSONException e) {
+						Log.e(LOG_TAG, e.toString());
 						cancel = true;
 						handler.sendEmptyMessage(Constants.JSON_POPULATE_ERROR);
 					}
 				}
 			};
 		};
-		
 		thread.start();
 	}
 	
@@ -403,6 +446,103 @@ public class JsonLoopListener {
 				}
 			}
 		}
+	}
+	
+	private void updatePhoneChannelStatus(JSONObject jStatus) throws JSONException {
+		JSONArray comms = jStatus.getJSONObject("comms").names();
+		if (comms == null)
+			return;
+		for (int j = 0; j < comms.length(); j++) {
+			JSONObject comm = jStatus.getJSONObject("comms")
+					.getJSONObject(comms.getString(j));
+			if (comm != null && comm.has("calleridname") && comm.has("status")) {
+				if (useMobile)
+					parseCommMobile(comm);
+				else
+					parseComm(comm);
+				InitialListLoader.getInstance().showChannels();
+			}
+		}
+	}
+	
+	private void parseComm(JSONObject comm) throws JSONException {
+		Log.d(LOG_TAG, "parseComm " + comm.toString());
+		String thisChannel = comm.has("thischannel") ? comm.getString("thischannel") : null;
+		
+		if (thisChannel != null) {
+			String myNum = InitialListLoader.getInstance().getXivoPhoneNum();
+			String status = comm.getString("status");
+			String peerChannel = comm.has("peerchannel") ? comm.getString("peerchannel") : null;
+			if (myNum != null && thisChannel.contains(myNum)) {
+				if (status.equals("linked-caller")) {
+					sendOnThePhoneIntent();
+					InitialListLoader.getInstance().setThisChannelId(thisChannel);
+					if (peerChannel != null)
+						InitialListLoader.getInstance().setPeerChannelId(peerChannel);
+					else
+						InitialListLoader.getInstance().setPeerChannelId(null);
+				} else if (status.equals("unlinked-caller") || status.equals("hangup")) {
+					resetChannels();
+				}
+			} else if (myNum != null && status.equals("linked-caller") && peerChannel != null
+					&& peerChannel.contains(myNum)) {
+				InitialListLoader l = InitialListLoader.getInstance();
+				l.setPeersPeerChannelId(comm.getString("peerchannel"));
+				l.setThisChannelId(comm.getString("peerchannel"));
+				l.setPeerChannelId(comm.getString("thischannel"));
+				sendOnThePhoneIntent();
+			}
+		}
+	}
+	
+	/**
+	 * Parses the comm part of an incomming phone status update.
+	 * This method is valid only when using a mobile number.
+	 * 
+	 * @param comm
+	 * @throws JSONException
+	 */
+	private void parseCommMobile(JSONObject comm) throws JSONException {
+		Log.d(LOG_TAG, "Parsing comm (mobile): " + comm.toString());
+		String status = comm.getString("status");
+		String thisChannel = comm.has("thischannel") ? comm.getString("thischannel") : null;
+		String peerChannel = comm.has("peerchannel") ? comm.getString("peerchannel") : null;
+		int linenum = comm.has("linenum") ? comm.getInt("linenum") : 0;
+		
+		if (linenum == 1 && peerChannel != null && peerChannel.contains(mobileNumber)
+				&& status.equals("ringing")) {
+			sendOnThePhoneIntent();
+			InitialListLoader l = InitialListLoader.getInstance();
+			l.setThisChannelId(peerChannel);
+			l.setPeerChannelId(thisChannel);
+		} else if (linenum == 2 && status.equals("linked-caller") && thisChannel != null 
+				&& thisChannel.equals(InitialListLoader.getInstance().getPeerChannelId())) {
+			sendOnThePhoneIntent();
+			InitialListLoader.getInstance().setPeersPeerChannelId(peerChannel);
+		} else if ((status.equals("unlinked-caller") || status.equals("hangup"))
+				&& (peerChannel != null && peerChannel.contains(mobileNumber))) {
+			resetChannels();
+		}
+	}
+	
+	/**
+	 * Sets channels to null and send and hangup broadcast
+	 */
+	private void resetChannels() {
+		Intent iHangup = new Intent();
+		iHangup.setAction(Constants.ACTION_HANGUP);
+		context.sendBroadcast(iHangup);
+		
+		InitialListLoader l = InitialListLoader.getInstance();
+		l.setThisChannelId(null);
+		l.setPeerChannelId(null);
+		l.setPeersPeerChannelId(null);
+	}
+	
+	private void sendOnThePhoneIntent() {
+		Intent iOffhook = new Intent();
+		iOffhook.setAction(Constants.ACTION_OFFHOOK);
+		context.sendBroadcast(iOffhook);
 	}
 	
 	public static boolean isCancel() {

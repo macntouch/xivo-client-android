@@ -1,3 +1,22 @@
+/* XiVO Client Android
+ * Copyright (C) 2010-2011, Proformatique
+ *
+ * This file is part of XiVO Client Android.
+ *
+ * XiVO Client Android is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * XiVO Client Android is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.proformatique.android.xivoclient;
 
 import java.util.ArrayList;
@@ -33,7 +52,7 @@ import com.proformatique.android.xivoclient.xlets.XletIdentity;
 
 public class XletsContainerTabActivity extends TabActivity {
 	
-	private static final String LOG_TAG = "XiVO " + XletsContainerTabActivity.class.getSimpleName();
+	private static final String LOG_TAG = "XiVO XletsContainer";
 	
 	/**
 	 * TODO : Move xletsList and xletsList loading to InitialListLoader 
@@ -46,13 +65,41 @@ public class XletsContainerTabActivity extends TabActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.xlets_container);
 		
+		LoginActivity.startInCallScreenKiller(this);
+		
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		
 		if (settings.getBoolean("use_fullscreen", false)) {
 			this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 					WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		}
-		displayInit();
+		if (Connection.getInstance().isConnected() != true) {
+			Log.e(LOG_TAG, "Activity started without a connection");
+			finish();
+		} else {
+			displayInit();
+		}
+	}
+	
+	/**
+	 * Create a dynamic menu depending on the current phone state
+	 * 
+	 * @param menu
+	 * @return
+	 */
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		menu.clear();
+		
+		MenuInflater inflater = getMenuInflater();
+		if (onThePhone() == true) {
+			Log.d(LOG_TAG, "Currently calling");
+			inflater.inflate(R.menu.menu_settings_calling, menu);
+		} else {
+			inflater.inflate(R.menu.menu_settings_connected, menu);
+		}
+		
+		return super.onPrepareOptionsMenu(menu);
 	}
 	
 	private void displayInit() {
@@ -207,10 +254,12 @@ public class XletsContainerTabActivity extends TabActivity {
 		}
 	}
 	
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.menu_settings_connected, menu);
-		return true;
+	/**
+	 * Returns true if a call is going on
+	 * @return
+	 */
+	private boolean onThePhone() {
+		return InitialListLoader.getInstance().getThisChannelId() != null;
 	}
 	
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -228,9 +277,33 @@ public class XletsContainerTabActivity extends TabActivity {
 		case R.id.menu_about:
 			menuAbout();
 			return true;
+		case R.id.menu_blind_transfer:
+			blindTransfer();
+			return true;
+		case R.id.menu_attended_transfer:
+			attendedTransfer();
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+	
+	/**
+	 * Attended transfer has been clicked
+	 */
+	private void attendedTransfer() {
+		Log.d(LOG_TAG, "Attended transfer clicked");
+		Intent i = new Intent(this, AttendedTransferActivity.class);
+		startActivity(i);
+	}
+	
+	/**
+	 * Blind transfer has been clicked
+	 */
+	private void blindTransfer() {
+		Log.d(LOG_TAG, "Blind transfer clicked");
+		Intent i = new Intent(this, BlindTransferActivity.class);
+		startActivity(i);
 	}
 	
 	private void menuAbout() {
@@ -239,12 +312,14 @@ public class XletsContainerTabActivity extends TabActivity {
 	}
 	
 	private void menuDisconnect() {
+		LoginActivity.stopInCallScreenKiller(this);
 		Connection.getInstance(getApplicationContext()).disconnect();
 		unregisterReceiver(receiver);
 		XletsContainerTabActivity.this.finish();
 	}
 	
 	private void menuExit() {
+		LoginActivity.stopInCallScreenKiller(this);
 		Connection.getInstance(getApplicationContext()).disconnect();
 		setResult(Constants.CODE_EXIT);
 		finish();
@@ -279,6 +354,8 @@ public class XletsContainerTabActivity extends TabActivity {
 	
 	@Override
 	protected void onDestroy() {
+		Log.i(LOG_TAG, "onDestroy");
+		LoginActivity.stopInCallScreenKiller(this);
 		try {
 			unregisterReceiver(receiver);
 		} catch (Exception e) {

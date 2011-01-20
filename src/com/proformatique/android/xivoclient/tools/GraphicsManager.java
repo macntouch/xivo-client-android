@@ -1,3 +1,22 @@
+/* XiVO Client Android
+ * Copyright (C) 2010-2011, Proformatique
+ *
+ * This file is part of XiVO Client Android.
+ *
+ * XiVO Client Android is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * XiVO Client Android is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.proformatique.android.xivoclient.tools;
 
 import android.content.Context;
@@ -59,7 +78,7 @@ public class GraphicsManager {
 
 	public static void setIconStateDisplay(Context context, ImageView icon, 
 			String color) {
-		Log.d( LOG_TAG, "Color State Presence : "+ color);
+		//Log.d( LOG_TAG, "Color State Presence : "+ color);
 		  /**
 		   * Conversion of bad color strings
 		   */
@@ -81,7 +100,7 @@ public class GraphicsManager {
 
 	public static void setIconPhoneDisplay(Context context, ImageView icon, 
 			String color) {
-		Log.d( LOG_TAG, "Color Phone : "+ color);
+		//Log.d( LOG_TAG, "Color Phone : "+ color);
 		  /**
 		   * Conversion of bad color strings
 		   */
@@ -102,23 +121,23 @@ public class GraphicsManager {
 	}
 
 	private static Drawable getDrawableCopy(Context context, int idRes) {
-		  /**
-		   * Tricky tip to avoid colors being duplicated :
-		   * get a copy of the drawable and apply it on the ImageView
-		   */
-		  Log.d( LOG_TAG, "Hack : Copy drawable");
-
-		  Resources res = context.getResources();
-		  Drawable drawable = res.getDrawable(idRes);
-		  drawable.setColorFilter(null);
-
-		  Bitmap iconBitmap = Bitmap.createBitmap(30, 30, Bitmap.Config.ARGB_4444);
-		  drawable.setBounds(0, 0, 30, 30); 
-		  drawable.draw(new Canvas(iconBitmap));
-		  Drawable dr2 = (new BitmapDrawable(res, iconBitmap)).getCurrent();
+		/**
+		 * Tricky tip to avoid colors being duplicated :
+		 * get a copy of the drawable and apply it on the ImageView
+		 */
+		//Log.d( LOG_TAG, "Hack : Copy drawable");
 		
-		  return dr2;
-		  
+		Resources res = context.getResources();
+		Drawable drawable = res.getDrawable(idRes);
+		drawable.setColorFilter(null);
+		
+		Bitmap iconBitmap = Bitmap.createBitmap(30, 30, Bitmap.Config.ARGB_4444);
+		drawable.setBounds(0, 0, 30, 30); 
+		drawable.draw(new Canvas(iconBitmap));
+		Drawable dr2 = (new BitmapDrawable(res, iconBitmap)).getCurrent();
+		
+		return dr2;
+		
 	}
 
 

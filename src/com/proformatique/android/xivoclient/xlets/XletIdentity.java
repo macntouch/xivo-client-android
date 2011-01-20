@@ -1,3 +1,22 @@
+/* XiVO Client Android
+ * Copyright (C) 2010-2011, Proformatique
+ *
+ * This file is part of XiVO Client Android.
+ *
+ * XiVO Client Android is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * XiVO Client Android is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.proformatique.android.xivoclient.xlets;
 
 import java.util.HashMap;
@@ -27,20 +46,17 @@ public class XletIdentity{
 		
 		TextView userName = (TextView) activity.findViewById(R.id.user_identity);
 		
-		InitialListLoader init = InitialListLoader.getInstance();
-		List<HashMap<String, String>> usersList = null;
-		String xivoId = null;
-		if (init != null) {
-			usersList = init.getUsersList();
-			xivoId = init.getXivoId();
-			
-			if (usersList != null) {
-				for (HashMap<String, String> hashMap : usersList) {
-					if (hashMap.get("xivo_userid") != null && hashMap.get("xivo_userid").equals(xivoId)){
-						userName.setText(hashMap.get("fullname")+" ("+hashMap.get("phonenum")+")");
-						break;
-					}
-				}
+		List<HashMap<String, String>> usersList = InitialListLoader.getInstance().getUsersList();
+		String xivoId=InitialListLoader.getInstance().getXivoId();
+
+		for (HashMap<String, String> hashMap : usersList) {
+			if (hashMap.get("xivo_userid").equals(xivoId)){
+				String name = hashMap.get("fullname");
+				String num = hashMap.get("phonenum");
+				InitialListLoader.getInstance().setXivoUserName(name);
+				InitialListLoader.getInstance().setXivoPhoneNum(num);
+				userName.setText(name + " (" + num + ")");
+				break;
 			}
 		}
 		

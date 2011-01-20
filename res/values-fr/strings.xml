@@ -26,7 +26,9 @@
     <string name="gui_settings">Apparence</string>
     <string name="context">Contexte</string>
     <string name="use_fullscreen">Mode plein écran</string>
-    <string name="include_device_contacts">Include les contacts de l\'appareil</string>
+    <string name="include_device_contacts">Inclure les contacts de l\'appareil</string>
+    <string name="attended_transfer_title">Transfert indirect</string>
+    <string name="blind_transfer_title">Transfert direct</string>
 
     <!-- Messages strings -->
     <string name="connection_failed">Connexion en échec</string>
@@ -65,5 +67,6 @@
     <string name="xlet_search_desc">Contacts</string>
     
     <string name="search_hint">Recherche</string>
-
+    <string name="cancel_label">Annulé</string>
+    <string name="call_canceled">Appel annulé</string>
 </resources>

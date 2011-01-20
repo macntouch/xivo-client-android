@@ -27,6 +27,8 @@
     <string name="context">Context</string>
     <string name="use_fullscreen">Enable fullscreen mode</string>
     <string name="include_device_contacts">Include contacts from this device</string>
+    <string name="attended_transfer_title">Attended transfer</string>
+    <string name="blind_transfer_title">Blind transfer</string>
 
     <!-- Messages strings -->
     <string name="connection_failed">Connection failed</string>
@@ -41,11 +43,13 @@
     <string name="loading">Please wait while loading ...</string>
     <string name="calling_title">Xivo call</string>
     <string name="calling">Sending a call to number %s ...</string>
+    <string name="transfering">Transfering the call to %s ...</string>
     <string name="call_ok">The call has been transmitted</string>
     <string name="call_no_phone_number">Impossible call : no phone number available</string>
     <string name="notif_xivo">Xivo is online and working, click here</string>
     <string name="notif_xivo_title">Xivo online</string>
     <string name="forced_disconnect">Forced disconnection</string>
+    <string name="no_phone_error">This contact does not have a phone number</string>
    
     <!-- Others -->
     <string name="context_action">Action</string>
@@ -68,5 +72,11 @@
     <string name="xlet_search_desc">Contacts</string>
     
     <string name="search_hint">Search</string>
-
+    <string name="cancel_label">Cancel</string>
+    <string name="call_canceled">Call canceled</string>
+    <string name="transfer_canceled">Transfer canceled</string>
+    <string name="transfer_hint">Destination</string>
+    <string name="transfer_prompt">Enter the number you want to transfer to</string>
+    <string name="label_cancel_btn">Cancel</string>
+    <string name="unknown_contact_name">Unknown</string>
 </resources>

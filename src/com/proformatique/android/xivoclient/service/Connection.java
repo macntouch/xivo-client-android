@@ -1,3 +1,22 @@
+/* XiVO Client Android
+ * Copyright (C) 2010-2011, Proformatique
+ *
+ * This file is part of XiVO Client Android.
+ *
+ * XiVO Client Android is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * XiVO Client Android is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.proformatique.android.xivoclient.service;
 
 import java.io.DataInputStream;
@@ -152,15 +171,20 @@ public class Connection {
 		try {
 			Log.d( LOG_TAG, "Client: " + jLogin.toString());
 			PrintStream output = new PrintStream(networkConnection.getOutputStream());
+			if (output == null)
+				return Constants.NO_NETWORK_AVAILABLE;
 			output.println(jLogin.toString());
 		} catch (IOException e) {
 			return Constants.NO_NETWORK_AVAILABLE;
 		}
 		
 		ReadLineObject = readJsonObjectCTI();
+		if (ReadLineObject == null)
+			return Constants.LOGIN_KO;
 		
 		try {
-			if (ReadLineObject != null && ReadLineObject.getString("class").equals(Constants.XIVO_LOGIN_OK)){
+			if (ReadLineObject.has("class") && ReadLineObject.getString("class")
+					.equals(Constants.XIVO_LOGIN_OK)){
 				
 				/**
 				 * Second step : check that password is allowed on server
@@ -172,13 +196,17 @@ public class Connection {
 				 */
 				if (codePassword > 0) {
 					ReadLineObject = readJsonObjectCTI();
-					if (ReadLineObject.getString("class").equals(Constants.XIVO_PASSWORD_OK))
+					if (ReadLineObject != null
+							&& ReadLineObject.has("class")
+							&& ReadLineObject.getString("class").equals(Constants.XIVO_PASSWORD_OK))
 					{
 						int codeCapas = sendCapasCTI();
 						if (codeCapas > 0) {
 							ReadLineObject = readJsonObjectCTI();
 							
-							if (ReadLineObject != null && ReadLineObject.getString("class").equals(Constants.XIVO_LOGIN_CAPAS_OK)){
+							if (ReadLineObject != null && ReadLineObject.has("class")
+									&& ReadLineObject.getString("class")
+									.equals(Constants.XIVO_LOGIN_CAPAS_OK)){
 								jCapa = ReadLineObject;
 								InitialListLoader.getInstance().setXivoId(jCapa.getString("xivo_userid"));
 								InitialListLoader.getInstance().setAstId(jCapa.getString("astid"));
@@ -221,17 +249,21 @@ public class Connection {
 		}
 		
 		try {
-			if (ReadLineObject != null && (ReadLineObject.getString("errorstring").equals(Constants.XIVO_LOGIN_PASSWORD) ||
-					ReadLineObject.getString("errorstring").equals(Constants.XIVO_LOGIN_UNKNOWN_USER))) {
-				return Constants.LOGIN_PASSWORD_ERROR;
-			}
-			else if (ReadLineObject != null && ReadLineObject.getString("errorstring").length() >= Constants.XIVO_CTI_VERSION_NOT_SUPPORTED.length()
-					&& ReadLineObject.getString("errorstring").subSequence(0, Constants.XIVO_CTI_VERSION_NOT_SUPPORTED.length())
-					.equals(Constants.XIVO_CTI_VERSION_NOT_SUPPORTED)) {
-				return Constants.CTI_SERVER_NOT_SUPPORTED;
-			}
-			else if (ReadLineObject != null && ReadLineObject.getString("errorstring").equals(Constants.XIVO_VERSION_NOT_COMPATIBLE)) {
-				return Constants.VERSION_MISMATCH;
+			if (ReadLineObject.has("errorstring")) {
+				if (ReadLineObject.getString("errorstring").equals(Constants.XIVO_LOGIN_PASSWORD) ||
+						ReadLineObject.getString("errorstring").equals(Constants.XIVO_LOGIN_UNKNOWN_USER)) {
+					return Constants.LOGIN_PASSWORD_ERROR;
+				}
+				else if (ReadLineObject.getString("errorstring").length() >= Constants.XIVO_CTI_VERSION_NOT_SUPPORTED.length()
+						&& ReadLineObject.getString("errorstring").subSequence(0, Constants.XIVO_CTI_VERSION_NOT_SUPPORTED.length())
+						.equals(Constants.XIVO_CTI_VERSION_NOT_SUPPORTED)) {
+					return Constants.CTI_SERVER_NOT_SUPPORTED;
+				}
+				else if (ReadLineObject.getString("errorstring").equals(Constants.XIVO_VERSION_NOT_COMPATIBLE)) {
+					return Constants.VERSION_MISMATCH;
+				}
+			} else if (ReadLineObject.has("class") && ReadLineObject.getString("class").equals("disconn")){
+				return Constants.FORCED_DISCONNECT;
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -354,16 +386,20 @@ public class Connection {
 		JSONObject ReadLineObject;
 		
 		try {
-			while ((responseLine = input.readLine()) != null) {
-				try {
-					ReadLineObject = new JSONObject(responseLine);
-					Log.d( LOG_TAG, "Server: " + responseLine);
-					
-					if (ReadLineObject.get("class").equals(ctiClass))
-						return ReadLineObject;
-				}
-				catch (Exception e) {
-					e.printStackTrace();
+			if (input != null) {
+				while ((responseLine = input.readLine()) != null) {
+					try {
+						ReadLineObject = new JSONObject(responseLine);
+						Log.d( LOG_TAG, "Server: " + responseLine);
+						
+						if (ReadLineObject != null
+								&& ReadLineObject.has("class")
+								&& ReadLineObject.get("class").equals(ctiClass))
+							return ReadLineObject;
+					}
+					catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		} catch (IOException e) {
@@ -382,8 +418,9 @@ public class Connection {
 		
 		while (networkConnection.isConnected()) {
 			responseLine = input.readLine();
-			Log.d( LOG_TAG, "Server from ReadData: " + responseLine);
+			Log.d( LOG_TAG, "Server from ReadData:");
 			JSONObject jsonString = new JSONObject(responseLine);
+			Log.d(LOG_TAG, "jsonString: " + jsonString.toString());
 			return jsonString;
 		}
 		
@@ -400,10 +437,23 @@ public class Connection {
 				networkConnection.shutdownOutput();
 				networkConnection.close();
 			}
-			if (xivoNotif != null) {
+			if (xivoNotif != null)
 				xivoNotif.removeNotif();
-				return Constants.NO_NETWORK_AVAILABLE;
+			
+			if (callingActivity != null) {
+				EditText eLogin = (EditText) callingActivity.findViewById(R.id.login); 
+				EditText ePassword = (EditText) callingActivity.findViewById(R.id.password);
+				TextView eLoginV = (TextView) callingActivity.findViewById(R.id.login_text); 
+				TextView ePasswordV = (TextView) callingActivity.findViewById(R.id.password_text);
+				TextView eStatus = (TextView) callingActivity.findViewById(R.id.connect_status); 
+				
+				eLogin.setVisibility(View.VISIBLE);
+				ePassword.setVisibility(View.VISIBLE);
+				eLoginV.setVisibility(View.VISIBLE);
+				ePasswordV.setVisibility(View.VISIBLE);
+				eStatus.setVisibility(View.INVISIBLE);
 			}
+			
 		} catch (IOException e) {
 			return Constants.NO_NETWORK_AVAILABLE;
 		}

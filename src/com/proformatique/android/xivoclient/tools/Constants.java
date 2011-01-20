@@ -1,4 +1,25 @@
+/* XiVO Client Android
+ * Copyright (C) 2010-2011, Proformatique
+ *
+ * This file is part of XiVO Client Android.
+ *
+ * XiVO Client Android is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * XiVO Client Android is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.proformatique.android.xivoclient.tools;
+
+import com.proformatique.android.xivoclient.R;
 
 public final class Constants {
 
@@ -46,6 +67,7 @@ public final class Constants {
 	public static final String XIVO_LOGIN_UNKNOWN_USER = "user_not_found";
 	public static final int XIVO_NOTIF = 375942;
 	public static final int ANDROID_CONTACT_HASH_SIZE = 6;
+	public static final int CONTACT_PICKER_RESULT = 1001;
 	
 	/**
 	 * Intent actions
@@ -60,6 +82,8 @@ public final class Constants {
 	public static final String ACTION_REFRESH_USER_LIST = "xivo.intent.action.USER_SEARCH";
 	public static final String ACTION_FORCED_DISCONNECT = "xivo.intent.action.FORCED_DISCONNECT";
 	public static final String ACTION_DISCONNECT_REQUEST = "xivo.intent.action.DISCONNECT_REQUEST";
+	public static final String ACTION_HANGUP = "xivo.intent.action.HANGUP";
+	public static final String ACTION_OFFHOOK = "xivo.intent.action.OFFHOOK";
 	
 	/**
 	 * XivoService connection status
@@ -68,4 +92,11 @@ public final class Constants {
 	public static final int XIVO_CONNECTED = 1 << 0;
 	public static final int LOGIN_MISSING = 1 << 1;
 	
+	/**
+	 * List view arrays
+	 */
+	public static final String[] USERS_LIST_FROM_STRINGS = {"fullname","phonenum","stateid","stateid_longname", "stateid_color",
+		"hintstatus_code", "hintstatus_longname", "hintstatus_color"};
+	public static final int[] USERS_LIST_TO_RESSOURCES = {R.id.fullname, R.id.phonenum, R.id.stateid, R.id.longname_state, 0,
+		R.id.phoneStateCode, R.id.phone_longname_state, R.id.phoneStateColor} ;
 }

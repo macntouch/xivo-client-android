@@ -9,7 +9,8 @@
     <EditTextPreference
             android:key="server_port"
             android:title="@string/server_port" 
-            android:defaultValue="5003"/>
+            android:defaultValue="5003"
+            android:inputType="number"/>
     <EditTextPreference
             android:key="context"
             android:title="@string/context" 
@@ -32,6 +33,7 @@
             android:title="@string/mobile_number" 
             android:defaultValue=""
             android:dependency="use_mobile_number"
+            android:inputType="phone"
             />
   </PreferenceCategory>
   <PreferenceCategory android:title="@string/gui_settings">
@@ -39,9 +41,5 @@
   		android:key="use_fullscreen"
   		android:title="@string/use_fullscreen"
   		android:defaultValue="false"/>
-  	<CheckBoxPreference
-  		android:key="include_device_contacts"
-  		android:title="@string/include_device_contacts"
-  		android:defaultValue="true"/>
   </PreferenceCategory>
 </PreferenceScreen> 
