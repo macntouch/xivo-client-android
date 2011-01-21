@@ -67,6 +67,7 @@ public class Connection {
 	private boolean connected = false;
 	private boolean newConnection = true;
 	private XivoNotification xivoNotif;
+	private long bytesReceived = 0;
 	
 	private static Connection instance;
 	
@@ -114,12 +115,13 @@ public class Connection {
 		
 		try {
 			networkConnection = new Socket(serverAdress, serverPort);
+			bytesReceived = 0;
 			
 			inputBuffer = new BufferedReader(
 					new InputStreamReader(networkConnection.getInputStream()));
 			String responseLine;
 			
-			while ((responseLine = inputBuffer.readLine()) != null) {
+			while ((responseLine = getNextLine()) != null) {
 				if (responseLine.contains("XiVO CTI Server")) {
 					return loginCTI();
 				}
@@ -292,7 +294,7 @@ public class Connection {
 		JSONObject ReadLineObject;
 		
 		try {
-			while ((responseLine = inputBuffer.readLine()) != null) {
+			while ((responseLine = getNextLine()) != null) {
 				try {
 					ReadLineObject = new JSONObject(responseLine);
 					Log.d( LOG_TAG, "Server: " + responseLine);
@@ -313,6 +315,25 @@ public class Connection {
 		}
 		return null;
 		
+	}
+	
+	/**
+	 * Same thing as inputBuffer.readLine() but updates the sum of received bytes
+	 * @return
+	 * @throws IOException
+	 */
+	private String getNextLine() throws IOException {
+		if (inputBuffer == null)
+			return null;
+		
+		String line = inputBuffer.readLine();
+		if (line != null) {
+			long len = line.getBytes().length;
+			bytesReceived += len;
+			Log.d(LOG_TAG, "Received data, len: " + len + " Total: " + bytesReceived);
+		}
+		
+		return line;
 	}
 	
 	private int passwordCTI(JSONObject jsonSessionRead) throws JSONException {
@@ -386,7 +407,7 @@ public class Connection {
 		
 		try {
 			if (inputBuffer != null) {
-				while ((responseLine = inputBuffer.readLine()) != null) {
+				while ((responseLine = getNextLine()) != null) {
 					try {
 						ReadLineObject = new JSONObject(responseLine);
 						Log.d( LOG_TAG, "Server: " + responseLine);
@@ -416,7 +437,7 @@ public class Connection {
 		}
 		
 		while (networkConnection.isConnected()) {
-			responseLine = inputBuffer.readLine();
+			responseLine = getNextLine();
 			Log.d( LOG_TAG, "Server from ReadData:");
 			JSONObject jsonString = new JSONObject(responseLine);
 			Log.d(LOG_TAG, "jsonString: " + jsonString.toString());
@@ -505,6 +526,10 @@ public class Connection {
 	
 	public void setNewConnection(boolean newConnection) {
 		this.newConnection = newConnection;
+	}
+	
+	public long getReceivedBytes() {
+		return bytesReceived;
 	}
 
 }
