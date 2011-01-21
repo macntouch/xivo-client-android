@@ -243,7 +243,10 @@ public class XletDialer extends XivoActivity {
 		JSONObject details = new JSONObject();
 		String source = "chan:" + InitialListLoader.getInstance().getUserId() + ":";
 		if (SettingsActivity.getUseMobile(this))
-			source += InitialListLoader.getInstance().getPeersPeerChannelId();
+			if (InitialListLoader.getInstance().getPeersPeerChannelId() != null)
+				source += InitialListLoader.getInstance().getPeersPeerChannelId();
+			else
+				source += InitialListLoader.getInstance().getPeerChannelId();
 		else
 			source += InitialListLoader.getInstance().getThisChannelId();
 		try {
@@ -359,6 +362,7 @@ public class XletDialer extends XivoActivity {
 	protected void onPause() {
 		if (dialog != null)
 			dialog.dismiss();
+			phoneNumber.setEnabled(true);
 		super.onPause();
 	}
 	
