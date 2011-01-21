@@ -19,8 +19,9 @@
 
 package com.proformatique.android.xivoclient;
 
-import java.io.DataInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -58,7 +59,7 @@ public class Connection {
 	private Boolean saveLogin;
 	private Activity callingActivity;
 	private SharedPreferences settings;
-	private DataInputStream input;
+	private BufferedReader inputBuffer;
 	private String responseLine;
 	private String sessionId;
 	private JSONObject jCapa;
@@ -114,10 +115,11 @@ public class Connection {
 		try {
 			networkConnection = new Socket(serverAdress, serverPort);
 			
-			input = new DataInputStream(networkConnection.getInputStream());
+			inputBuffer = new BufferedReader(
+					new InputStreamReader(networkConnection.getInputStream()));
 			String responseLine;
 			
-			while ((responseLine = input.readLine()) != null) {
+			while ((responseLine = inputBuffer.readLine()) != null) {
 				if (responseLine.contains("XiVO CTI Server")) {
 					return loginCTI();
 				}
@@ -290,7 +292,7 @@ public class Connection {
 		JSONObject ReadLineObject;
 		
 		try {
-			while ((responseLine = input.readLine()) != null) {
+			while ((responseLine = inputBuffer.readLine()) != null) {
 				try {
 					ReadLineObject = new JSONObject(responseLine);
 					Log.d( LOG_TAG, "Server: " + responseLine);
@@ -303,6 +305,10 @@ public class Connection {
 				}
 			}
 		} catch (IOException e) {
+			if (e.getMessage().equals("The connection was reset")) {
+				disconnect();
+				Log.e(LOG_TAG, e.getMessage() + " disconnecting the client");
+			}
 			e.printStackTrace();
 		}
 		return null;
@@ -379,8 +385,8 @@ public class Connection {
 		JSONObject ReadLineObject;
 		
 		try {
-			if (input != null) {
-				while ((responseLine = input.readLine()) != null) {
+			if (inputBuffer != null) {
+				while ((responseLine = inputBuffer.readLine()) != null) {
 					try {
 						ReadLineObject = new JSONObject(responseLine);
 						Log.d( LOG_TAG, "Server: " + responseLine);
@@ -410,7 +416,7 @@ public class Connection {
 		}
 		
 		while (networkConnection.isConnected()) {
-			responseLine = input.readLine();
+			responseLine = inputBuffer.readLine();
 			Log.d( LOG_TAG, "Server from ReadData:");
 			JSONObject jsonString = new JSONObject(responseLine);
 			Log.d(LOG_TAG, "jsonString: " + jsonString.toString());
@@ -466,7 +472,8 @@ public class Connection {
 			JSONObject jObj = params[0];
 			try {
 				Log.d( LOG_TAG, "Sending jObj: " + jObj.toString());
-				PrintStream output = new PrintStream(Connection.getInstance().networkConnection.getOutputStream());
+				PrintStream output = new PrintStream(
+						Connection.getInstance().networkConnection.getOutputStream());
 				output.println(jObj.toString());
 				
 				return Constants.OK;
