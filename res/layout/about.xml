@@ -27,7 +27,13 @@ android:layout_marginTop="10dp"></TextView>
 <TextView android:layout_width="wrap_content"
 android:layout_height="wrap_content"
 android:text="@string/credits_part2"></TextView>
-
+<TextView android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:text="@string/bandwidth_in_label"/>
+<TextView android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:id="@+id/bandwidth_received"
+	android:text="0"/>
 <TextView android:layout_width="wrap_content"
 android:layout_height="wrap_content"
 android:text="@string/gpl"

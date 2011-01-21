@@ -21,13 +21,21 @@ package com.proformatique.android.xivoclient;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.widget.TextView;
 
 public class AboutActivity extends Activity {
-
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		setContentView(R.layout.about);
 		super.onCreate(savedInstanceState);
+		setContentView(R.layout.about);
+		
+		TextView bandwidth = (TextView) findViewById(R.id.bandwidth_received);
+		if (Connection.getInstance().isConnected())
+			bandwidth.setText(Long.toString(Connection.getInstance().getReceivedBytes()));
+		else
+			bandwidth.setText("0");
+		
 	}
 
 }

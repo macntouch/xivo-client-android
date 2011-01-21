@@ -79,4 +79,6 @@
     <string name="transfer_prompt">Enter the number you want to transfer to</string>
     <string name="label_cancel_btn">Cancel</string>
     <string name="unknown_contact_name">Unknown</string>
+    
+    <string name="bandwidth_in_label">Bytes received for this connection</string>
 </resources>
