@@ -117,6 +117,10 @@ public class XletDialer extends XivoActivity {
 			return null;
 		}
 		
+		@Override
+		protected void onPostExecute(Integer res) {
+			setPhoneOffHook(false);
+		}
 	}
 	
 	/**
@@ -241,14 +245,20 @@ public class XletDialer extends XivoActivity {
 	public JSONObject createJsonHangupObject() {
 		JSONObject j = new JSONObject();
 		JSONObject details = new JSONObject();
-		String source = "chan:" + InitialListLoader.getInstance().getUserId() + ":";
-		if (SettingsActivity.getUseMobile(this))
-			if (InitialListLoader.getInstance().getPeersPeerChannelId() != null)
-				source += InitialListLoader.getInstance().getPeersPeerChannelId();
-			else
-				source += InitialListLoader.getInstance().getPeerChannelId();
-		else
-			source += InitialListLoader.getInstance().getThisChannelId();
+		InitialListLoader l = InitialListLoader.getInstance();
+		String source = "chan:" + l.getUserId() + ":";
+		if (SettingsActivity.getUseMobile(this)) {
+			if (l.getPeersPeerChannelId() != null
+					&& l.getPeersPeerChannelId().startsWith("Local") == false) {
+				source += l.getPeersPeerChannelId();
+			} else if (l.getThisChannelId() != null) {
+				source += l.getThisChannelId();
+			} else {
+				source += l.getPeerChannelId();
+			}
+		} else {
+			source += l.getThisChannelId();
+		}
 		try {
 			details.accumulate("command", "hangup");
 			details.accumulate("channelids", source);

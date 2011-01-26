@@ -506,14 +506,15 @@ public class JsonLoopListener {
 		String status = comm.getString("status");
 		String thisChannel = comm.has("thischannel") ? comm.getString("thischannel") : null;
 		String peerChannel = comm.has("peerchannel") ? comm.getString("peerchannel") : null;
+		String calleridnum = comm.has("calleridnum") ? comm.getString("calleridnum")  : null;
 		int linenum = comm.has("linenum") ? comm.getInt("linenum") : 0;
 		
-		if (linenum == 1 && peerChannel != null && peerChannel.contains(mobileNumber)
+		if (linenum == 1 && calleridnum != null && calleridnum.equals(mobileNumber)
 				&& status.equals("ringing")) {
 			sendOnThePhoneIntent();
 			InitialListLoader l = InitialListLoader.getInstance();
-			l.setThisChannelId(peerChannel);
 			l.setPeerChannelId(thisChannel);
+			l.setPeersPeerChannelId(peerChannel);
 		} else if (linenum == 2 && status.equals("linked-caller") && thisChannel != null 
 				&& thisChannel.equals(InitialListLoader.getInstance().getPeerChannelId())) {
 			sendOnThePhoneIntent();
