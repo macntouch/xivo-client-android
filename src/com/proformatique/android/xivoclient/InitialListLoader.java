@@ -73,6 +73,7 @@ public class InitialListLoader {
 	private String xivoUserName;
 	private String xivoPhoneNum;
 	private String peersPeerChannelId;
+	private int[] mwi = new int[3];		// 0 = warning, 1 = nb old messages, 2 = nb new messages
 	
 	private static InitialListLoader instance;
 	
@@ -137,7 +138,9 @@ public class InitialListLoader {
 							/**
 							 * Feed the useful fields to store in the list
 							 */
-							map.put("xivo_userid", jObjCurrent.getString("xivo_userid"));
+							String xivoId = jObjCurrent.getString("xivo_userid");
+							String userId = jObjCurrent.getString("astid") + "/" + xivoId;
+							map.put("xivo_userid", xivoId);
 							map.put("fullname", jObjCurrent.getString("fullname"));
 							map.put("phonenum", jObjCurrent.getString("phonenum"));
 							map.put("stateid", jObjCurrentState.getString("stateid"));
@@ -145,6 +148,14 @@ public class InitialListLoader {
 							map.put("stateid_color", jObjCurrentState.getString("color"));
 							map.put("techlist", jObjCurrent.getJSONArray("techlist").getString(0));
 							usersList.add(map);
+							// Save voice mail status if it's mine
+							if (userId.equals(InitialListLoader.getInstance().getUserId())
+									&& jObjCurrent.has("mwi")) {
+								JSONArray mwi = jObjCurrent.getJSONArray("mwi");
+								for (int j = 0; j < mwi.length(); j++) {
+									this.mwi[j] = mwi.getInt(j);
+								}
+							}
 							
 							Log.d( LOG_TAG, "map : " + map.toString());
 						}
@@ -499,5 +510,13 @@ public class InitialListLoader {
 		Log.d(LOG_TAG, "This channel = " + thisChannelId);
 		Log.d(LOG_TAG, "Peer channel = " + peerChannelId);
 		Log.d(LOG_TAG, "Peer's peer channel = " + peersPeerChannelId);
+	}
+	
+	/**
+	 * Check if the user has a voicemail warning.
+	 * @return
+	 */
+	public boolean hasNewVoicemail() {
+		return mwi[0] != 0;
 	}
 }
