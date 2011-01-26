@@ -520,7 +520,8 @@ public class JsonLoopListener {
 			sendOnThePhoneIntent();
 			InitialListLoader.getInstance().setPeersPeerChannelId(peerChannel);
 		} else if ((status.equals("unlinked-caller") || status.equals("hangup"))
-				&& (peerChannel != null && peerChannel.contains(mobileNumber))) {
+				&& (peerChannel != null && peerChannel.contains(mobileNumber)
+				|| calleridnum != null && calleridnum.equals(mobileNumber))) {
 			resetChannels();
 		}
 	}
