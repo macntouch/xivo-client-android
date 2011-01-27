@@ -86,6 +86,7 @@ public final class Constants {
 	public static final String ACTION_FORCED_DISCONNECT = "xivo.intent.action.FORCED_DISCONNECT";
 	public static final String ACTION_HANGUP = "xivo.intent.action.HANGUP";
 	public static final String ACTION_OFFHOOK = "xivo.intent.action.OFFHOOK";
+	public static final String ACTION_MWI_UPDATE = "xivo.intent.action.MWI_UPDATE";
 	
 	/**
 	 * List view arrays

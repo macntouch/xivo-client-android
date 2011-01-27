@@ -33,6 +33,8 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import com.proformatique.android.xivoclient.tools.Constants;
 
@@ -518,5 +520,21 @@ public class InitialListLoader {
 	 */
 	public boolean hasNewVoicemail() {
 		return mwi[0] != 0;
+	}
+	
+	/**
+	 * Updates the status of our voicemail
+	 * @param warning
+	 * @param old
+	 * @param newmail
+	 */
+	public void setMwi(Context context, int warning, int old, int newmail) {
+		mwi[0] = warning;
+		mwi[1] = old;
+		mwi[2] = newmail;
+		Intent iVoiceMailUpdate = new Intent();
+		iVoiceMailUpdate.setAction(Constants.ACTION_MWI_UPDATE);
+		iVoiceMailUpdate.putExtra("mwi", this.mwi);
+		context.sendBroadcast(iVoiceMailUpdate);
 	}
 }

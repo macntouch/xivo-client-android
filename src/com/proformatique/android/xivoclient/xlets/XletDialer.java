@@ -30,6 +30,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -38,6 +39,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.proformatique.android.xivoclient.Connection;
 import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
@@ -53,6 +55,7 @@ public class XletDialer extends XivoActivity {
 	IncomingReceiver receiver;
 	Dialog dialog;
 	private boolean offHook;
+	private final int VM_DISABLED_FILTER = 0xff555555;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -71,8 +74,20 @@ public class XletDialer extends XivoActivity {
 		filter.addAction(Constants.ACTION_XLET_DIAL_CALL);
 		filter.addAction(Constants.ACTION_HANGUP);
 		filter.addAction(Constants.ACTION_OFFHOOK);
+		filter.addAction(Constants.ACTION_MWI_UPDATE);
 		registerReceiver(receiver, new IntentFilter(filter));
 		
+		newVoiceMail(InitialListLoader.getInstance().hasNewVoicemail());
+	}
+	
+	private void newVoiceMail(boolean status) {
+		ImageButton vm_button = (ImageButton) findViewById(R.id.voicemailButton);
+		vm_button.setEnabled(true);
+		if (status) {
+			vm_button.setColorFilter(null);
+		} else {
+			vm_button.setColorFilter(VM_DISABLED_FILTER, PorterDuff.Mode.SRC_ATOP);
+		}
 	}
 	
 	public void clickOnCall(View v) {
@@ -97,6 +112,9 @@ public class XletDialer extends XivoActivity {
 		} else {
 			((ImageButton)findViewById(R.id.dialButton)).setImageDrawable(getResources()
 					.getDrawable(R.drawable.ic_dial_action_call));
+			((EditText)findViewById(R.id.number)).setEnabled(true);
+			if (dialog != null)
+				dialog.dismiss();
 		}
 	}
 	
@@ -307,6 +325,10 @@ public class XletDialer extends XivoActivity {
 				phoneNumber.setEnabled(true);
 				if (dialog != null)
 					dialog.dismiss();
+			} else if (intent.getAction().equals(Constants.ACTION_MWI_UPDATE)) {
+				Log.d(LOG_TAG, "MWI update received");
+				int[] mwi = intent.getExtras().getIntArray("mwi");
+				newVoiceMail(mwi[0] == 1);
 			}
 		}
 	}
@@ -366,6 +388,21 @@ public class XletDialer extends XivoActivity {
 	private void keyPressed(int keyCode) {
 		KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
 		phoneNumber.onKeyDown(keyCode, event);
+	}
+	
+	public void clickVoiceMail(View v) {
+		if (SettingsActivity.getUseMobile(this)) {
+			Toast.makeText(this, "Not available when using your mobile number.", Toast.LENGTH_LONG).show();
+		} else {
+			((EditText) findViewById(R.id.number)).setText("*98");
+			new CallJsonTask().execute();
+		}
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		newVoiceMail(InitialListLoader.getInstance().hasNewVoicemail());
 	}
 	
 	@Override
