@@ -99,6 +99,8 @@ public class SettingsActivity extends PreferenceActivity{
 					}
 				} else if (key.equals(USE_MOBILE_OPTION)) {
 					JsonLoopListener.setUseMobile(getUseMobile(getApplicationContext()));
+					if (getUseMobile(getApplicationContext()))
+						JsonLoopListener.setMobileNumber(getMobileNumber(getApplicationContext()));
 				} else if (key.equals(MOBILE_PHONE_NUMBER)) {
 					JsonLoopListener.setMobileNumber(getMobileNumber(getApplicationContext()));
 				}

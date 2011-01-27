@@ -43,6 +43,9 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
+import com.proformatique.android.xivoclient.AttendedTransferActivity;
+import com.proformatique.android.xivoclient.BlindTransferActivity;
+import com.proformatique.android.xivoclient.InitialListLoader;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.service.InitialListLoader;
@@ -82,11 +85,19 @@ public class XletHisto extends XivoActivity {
 		switch (v.getId()){
 		case R.id.history_list:
 			{
-				AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)menuInfo;
+				AdapterView.AdapterContextMenuInfo info =
+					(AdapterView.AdapterContextMenuInfo)menuInfo;
 				menu.setHeaderTitle(getString(R.string.context_action));
-				String callAction = getString(R.string.context_action_call_short, 
-						xletList.get(info.position).get("fullname"));
-				menu.add(0, 1, 0, callAction);
+				if (InitialListLoader.getInstance().getThisChannelId() == null) {
+					String callAction = getString(R.string.context_action_call_short, 
+							xletList.get(info.position).get("fullname"));
+					menu.add(0, 1, 0, callAction);
+				} else {
+					menu.add(Constants.TRANSFER_MENU, Constants.ATXFER_ITEM_INDEX, 0, 
+							getString(R.string.attended_transfer_title));
+					menu.add(Constants.TRANSFER_MENU, Constants.TRANSFER_ITEM_INDEX, 0, 
+							getString(R.string.blind_transfer_title));
+				}
 			}
 		}
 		super.onCreateContextMenu(menu, v, menuInfo);
@@ -95,58 +106,61 @@ public class XletHisto extends XivoActivity {
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-		@SuppressWarnings("unused")
 		int menuItemIndex = item.getItemId();
 		String fullname = xletList.get(info.position).get("fullname");
 		String phoneString = "";
 		try {
 			@SuppressWarnings("unused")
-			int phoneInt = Integer.parseInt(fullname);
+			long phoneInt = Long.parseLong(fullname); 
 			phoneString = fullname;
 		} catch (Exception e) {
 			Pattern p = Pattern.compile(".*?<([^>]+)>",Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 			Matcher m = p.matcher(fullname);
 			if (m.find()) phoneString=m.group(1);
 		}
-
-		if (!phoneString.equals(""))
-			clickLine(phoneString);
-		else	Toast.makeText(XletHisto.this, R.string.call_no_phone_number
-						, Toast.LENGTH_LONG).show();
-
+		
+		if (!phoneString.equals("")) {
+			if (InitialListLoader.getInstance().getThisChannelId() == null){
+				Intent iCall = new Intent();
+				iCall.setAction(Constants.ACTION_XLET_DIAL_CALL);
+				iCall.putExtra("numToCall", phoneString);
+				sendBroadcast(iCall);
+			} else {
+				switch (menuItemIndex) {
+				case Constants.ATXFER_ITEM_INDEX:
+					Intent iAtxfer = new Intent(XletHisto.this, AttendedTransferActivity.class);
+					iAtxfer.putExtra("num", phoneString);
+					startActivity(iAtxfer);
+					break;
+				case Constants.TRANSFER_ITEM_INDEX:
+					Intent iBlindTransfer = new Intent(XletHisto.this, BlindTransferActivity.class);
+					iBlindTransfer.putExtra("num", phoneString);
+					startActivity(iBlindTransfer);
+					break;
+				}
+			}
+		}
+		else
+			Toast.makeText(XletHisto.this, R.string.call_no_phone_number, Toast.LENGTH_LONG).show();
+		
 		return super.onContextItemSelected(item);
 	}
-
-	/**
-	 * Perform a call via Dial Activity
-	 * 
-	 * @param v
-	 */
-	public void clickLine(String numToCall){
-		
-    	Intent defineIntent = new Intent();
-    	defineIntent.setAction(Constants.ACTION_XLET_DIAL_CALL);
-    	defineIntent.putExtra("numToCall", numToCall);
-		
-	    XletHisto.this.sendBroadcast(defineIntent);
-	}
-
-
+	
 	private void initList() {
 		xletList = InitialListLoader.getInstance().getHistoryList();
-
+		
 		xletAdapter = new AlternativeAdapter(
 				this,
 				xletList,
 				R.layout.xlet_history_items,
 				new String[] { "fullname","ts","duration" },
 				new int[] { R.id.history_fullname, R.id.history_date, R.id.history_duration} );
-
+		
 		lv= (ListView)findViewById(R.id.history_list);
 		lv.setAdapter(xletAdapter);
 		
 	}	
-
+	
 	/**
 	 * BroadcastReceiver, intercept Intents with action ACTION_LOAD_HISTORY_LIST
 	 * to perform an reload of the displayed list

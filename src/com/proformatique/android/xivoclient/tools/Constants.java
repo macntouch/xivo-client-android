@@ -68,6 +68,9 @@ public final class Constants {
 	public static final int XIVO_NOTIF = 375942;
 	public static final int ANDROID_CONTACT_HASH_SIZE = 6;
 	public static final int CONTACT_PICKER_RESULT = 1001;
+	public static final int TRANSFER_MENU = 1;
+	public static final int ATXFER_ITEM_INDEX = 1;
+	public static final int TRANSFER_ITEM_INDEX = 2;
 	
 	/**
 	 * Intent actions
@@ -84,6 +87,7 @@ public final class Constants {
 	public static final String ACTION_DISCONNECT_REQUEST = "xivo.intent.action.DISCONNECT_REQUEST";
 	public static final String ACTION_HANGUP = "xivo.intent.action.HANGUP";
 	public static final String ACTION_OFFHOOK = "xivo.intent.action.OFFHOOK";
+	public static final String ACTION_MWI_UPDATE = "xivo.intent.action.MWI_UPDATE";
 	
 	/**
 	 * XivoService connection status

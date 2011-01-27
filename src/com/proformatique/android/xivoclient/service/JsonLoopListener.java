@@ -255,9 +255,17 @@ public class JsonLoopListener {
 							updateUserList(InitialListLoader.getInstance().getUsersList(), map, "presence");
 							
 							handler.sendEmptyMessage(1);
-						}
-						
-						if (classRec.equals("phones")) {
+						} else if (classRec.equals("users")) {
+							
+							String subclass = jObjCurrent.has("subclass") == true ?
+									jObjCurrent.getString("subclass") : null;
+							
+							// Check if it's voicemail update
+							if (subclass != null && subclass.equals("mwi")) {
+								updateVoicemail(jObjCurrent.getJSONArray("user"),
+										jObjCurrent.getJSONArray("payload"));
+							}
+						} else if (classRec.equals("phones")) {
 							HashMap<String, String> map = new HashMap<String, String>();
 							
 							if (jObjCurrent.has("status")) {
@@ -418,6 +426,26 @@ public class JsonLoopListener {
 		thread.start();
 	}
 	
+	/**
+	 * Update the voicemail status
+	 * @param user
+	 * @param mwi
+	 */
+	protected void updateVoicemail(JSONArray user, JSONArray mwi) {
+		InitialListLoader l = InitialListLoader.getInstance();
+		try {
+			if (user.getString(0).equals(l.getAstId())
+					&& user.getString(1).equals(l.getXivoId())) {
+				Log.i(LOG_TAG, "Updating my voicemail");
+				l.setMwi(context, mwi.getInt(0), mwi.getInt(1), mwi.getInt(2));
+			}
+		} catch (JSONException e) {
+			Log.e(LOG_TAG, "MWI update without a user defined.");
+			e.printStackTrace();
+		}
+		
+	}
+
 	protected void updateUserList(List<HashMap<String,String>> usersList, HashMap<String,String> map, String typeMaj) {
 		int len = usersList.size();
 		for (int i = 0; i<len; i++){
@@ -507,20 +535,22 @@ public class JsonLoopListener {
 		String status = comm.getString("status");
 		String thisChannel = comm.has("thischannel") ? comm.getString("thischannel") : null;
 		String peerChannel = comm.has("peerchannel") ? comm.getString("peerchannel") : null;
+		String calleridnum = comm.has("calleridnum") ? comm.getString("calleridnum")  : null;
 		int linenum = comm.has("linenum") ? comm.getInt("linenum") : 0;
 		
-		if (linenum == 1 && peerChannel != null && peerChannel.contains(mobileNumber)
+		if (linenum == 1 && calleridnum != null && calleridnum.equals(mobileNumber)
 				&& status.equals("ringing")) {
 			sendOnThePhoneIntent();
 			InitialListLoader l = InitialListLoader.getInstance();
-			l.setThisChannelId(peerChannel);
 			l.setPeerChannelId(thisChannel);
+			l.setPeersPeerChannelId(peerChannel);
 		} else if (linenum == 2 && status.equals("linked-caller") && thisChannel != null 
 				&& thisChannel.equals(InitialListLoader.getInstance().getPeerChannelId())) {
 			sendOnThePhoneIntent();
 			InitialListLoader.getInstance().setPeersPeerChannelId(peerChannel);
 		} else if ((status.equals("unlinked-caller") || status.equals("hangup"))
-				&& (peerChannel != null && peerChannel.contains(mobileNumber))) {
+				&& (peerChannel != null && peerChannel.contains(mobileNumber)
+				|| calleridnum != null && calleridnum.equals(mobileNumber))) {
 			resetChannels();
 		}
 	}

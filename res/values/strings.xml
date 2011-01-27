@@ -79,4 +79,13 @@
     <string name="transfer_prompt">Enter the number you want to transfer to</string>
     <string name="label_cancel_btn">Cancel</string>
     <string name="unknown_contact_name">Unknown</string>
+    
+    <string name="bandwidth_in_label">Received:</string>
+    
+    <!-- Units -->
+    <string name="unit_byte">Byte</string>
+    <string name="unit_kb">KB</string>
+    <string name="unit_mb">MB</string>
+    <string name="unit_gb">GB</string>
+    <string name="unit_tb">TB</string>
 </resources>

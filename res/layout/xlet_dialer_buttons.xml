@@ -47,7 +47,8 @@
         android:state_enabled="false"
         android:background="@drawable/btn_dial_action_left_disable"
         android:tint="#ff555555"
-        android:src="@drawable/ic_dial_action_voice_mail" />
+        android:src="@drawable/ic_dial_action_voice_mail"
+        android:onClick="clickVoiceMail"/>
 
     <!-- Onscreen "Dial" button, used on all platforms by
          default. Its usage can be disabled using resources (see

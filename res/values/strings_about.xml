@@ -2,7 +2,7 @@
 <resources>
     <string name="credits">Xivo client</string>
     <string name="credits_part0">by Avencall</string>
-    <string name="credits_part1">Author : Clement Quaquin (Linagora)</string>
+    <string name="credits_part1">Authors :\nClement Quaquin (Linagora)\nPascal Cadotte-Michaud (Proformatique)</string>
     <string name="credits_part2">Date : 2010</string>
     <string name="gpl">GNU GENERAL PUBLIC LICENSE</string>
     <string name="gpl_part1">Version 3, 29 June 2007

@@ -19,8 +19,9 @@
 
 package com.proformatique.android.xivoclient.service;
 
-import java.io.DataInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -56,7 +57,7 @@ public class Connection {
 	private Boolean saveLogin;
 	private Context context;
 	private SharedPreferences settings;
-	private DataInputStream input;
+	private BufferedReader inputBuffer;
 	private String responseLine;
 	private String sessionId;
 	private JSONObject jCapa;
@@ -64,6 +65,7 @@ public class Connection {
 	private boolean connected = false;
 	private boolean newConnection = true;
 	private XivoNotification xivoNotif;
+	private long bytesReceived = 0;
 	
 	private static Connection instance;
 	
@@ -120,11 +122,13 @@ public class Connection {
 		
 		try {
 			networkConnection = new Socket(serverAdress, serverPort);
+			bytesReceived = 0;
 			
-			input = new DataInputStream(networkConnection.getInputStream());
+			inputBuffer = new BufferedReader(
+					new InputStreamReader(networkConnection.getInputStream()));
 			String responseLine;
 			
-			while ((responseLine = input.readLine()) != null) {
+			while ((responseLine = getNextLine()) != null) {
 				if (responseLine.contains("XiVO CTI Server")) {
 					return loginCTI();
 				}
@@ -297,7 +301,7 @@ public class Connection {
 		JSONObject ReadLineObject;
 		
 		try {
-			while ((responseLine = input.readLine()) != null) {
+			while ((responseLine = getNextLine()) != null) {
 				try {
 					ReadLineObject = new JSONObject(responseLine);
 					Log.d( LOG_TAG, "Server: " + responseLine);
@@ -310,10 +314,33 @@ public class Connection {
 				}
 			}
 		} catch (IOException e) {
+			if (e.getMessage().equals("The connection was reset")) {
+				disconnect();
+				Log.e(LOG_TAG, e.getMessage() + " disconnecting the client");
+			}
 			e.printStackTrace();
 		}
 		return null;
 		
+	}
+	
+	/**
+	 * Same thing as inputBuffer.readLine() but updates the sum of received bytes
+	 * @return
+	 * @throws IOException
+	 */
+	private String getNextLine() throws IOException {
+		if (inputBuffer == null)
+			return null;
+		
+		String line = inputBuffer.readLine();
+		if (line != null) {
+			long len = line.getBytes().length;
+			bytesReceived += len;
+			Log.d(LOG_TAG, "Received data, len: " + len + " Total: " + bytesReceived);
+		}
+		
+		return line;
 	}
 	
 	private int passwordCTI(JSONObject jsonSessionRead) throws JSONException {
@@ -386,8 +413,8 @@ public class Connection {
 		JSONObject ReadLineObject;
 		
 		try {
-			if (input != null) {
-				while ((responseLine = input.readLine()) != null) {
+			if (inputBuffer != null) {
+				while ((responseLine = getNextLine()) != null) {
 					try {
 						ReadLineObject = new JSONObject(responseLine);
 						Log.d( LOG_TAG, "Server: " + responseLine);
@@ -417,7 +444,7 @@ public class Connection {
 		}
 		
 		while (networkConnection.isConnected()) {
-			responseLine = input.readLine();
+			responseLine = getNextLine();
 			Log.d( LOG_TAG, "Server from ReadData:");
 			JSONObject jsonString = new JSONObject(responseLine);
 			Log.d(LOG_TAG, "jsonString: " + jsonString.toString());
@@ -473,7 +500,8 @@ public class Connection {
 			JSONObject jObj = params[0];
 			try {
 				Log.d( LOG_TAG, "Sending jObj: " + jObj.toString());
-				PrintStream output = new PrintStream(Connection.getInstance(context).networkConnection.getOutputStream());
+				PrintStream output = new PrintStream(
+						Connection.getInstance().networkConnection.getOutputStream());
 				output.println(jObj.toString());
 				
 				return Constants.OK;
@@ -510,4 +538,7 @@ public class Connection {
 		this.newConnection = newConnection;
 	}
 	
+	public long getReceivedBytes() {
+		return bytesReceived;
+	}
 }

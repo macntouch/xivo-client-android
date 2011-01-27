@@ -33,8 +33,8 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import com.proformatique.android.xivoclient.tools.Constants;
 
@@ -76,6 +76,7 @@ public class InitialListLoader {
 	private String xivoPhoneNum;
 	private String peersPeerChannelId;
 	private Context context;
+	private int[] mwi = new int[3];		// 0 = warning, 1 = nb old messages, 2 = nb new messages
 	
 	private static InitialListLoader instance;
 	
@@ -141,7 +142,9 @@ public class InitialListLoader {
 							/**
 							 * Feed the useful fields to store in the list
 							 */
-							map.put("xivo_userid", jObjCurrent.getString("xivo_userid"));
+							String xivoId = jObjCurrent.getString("xivo_userid");
+							String userId = jObjCurrent.getString("astid") + "/" + xivoId;
+							map.put("xivo_userid", xivoId);
 							map.put("fullname", jObjCurrent.getString("fullname"));
 							map.put("phonenum", jObjCurrent.getString("phonenum"));
 							map.put("stateid", jObjCurrentState.getString("stateid"));
@@ -149,6 +152,14 @@ public class InitialListLoader {
 							map.put("stateid_color", jObjCurrentState.getString("color"));
 							map.put("techlist", jObjCurrent.getJSONArray("techlist").getString(0));
 							usersList.add(map);
+							// Save voice mail status if it's mine
+							if (userId.equals(InitialListLoader.getInstance().getUserId())
+									&& jObjCurrent.has("mwi")) {
+								JSONArray mwi = jObjCurrent.getJSONArray("mwi");
+								for (int j = 0; j < mwi.length(); j++) {
+									this.mwi[j] = mwi.getInt(j);
+								}
+							}
 							
 							Log.d( LOG_TAG, "map : " + map.toString());
 						}
@@ -503,5 +514,29 @@ public class InitialListLoader {
 		Log.d(LOG_TAG, "This channel = " + thisChannelId);
 		Log.d(LOG_TAG, "Peer channel = " + peerChannelId);
 		Log.d(LOG_TAG, "Peer's peer channel = " + peersPeerChannelId);
+	}
+	
+	/**
+	 * Check if the user has a voicemail warning.
+	 * @return
+	 */
+	public boolean hasNewVoicemail() {
+		return mwi[0] != 0;
+	}
+	
+	/**
+	 * Updates the status of our voicemail
+	 * @param warning
+	 * @param old
+	 * @param newmail
+	 */
+	public void setMwi(Context context, int warning, int old, int newmail) {
+		mwi[0] = warning;
+		mwi[1] = old;
+		mwi[2] = newmail;
+		Intent iVoiceMailUpdate = new Intent();
+		iVoiceMailUpdate.setAction(Constants.ACTION_MWI_UPDATE);
+		iVoiceMailUpdate.putExtra("mwi", this.mwi);
+		context.sendBroadcast(iVoiceMailUpdate);
 	}
 }
