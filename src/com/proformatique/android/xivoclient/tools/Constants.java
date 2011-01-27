@@ -34,6 +34,8 @@ public final class Constants {
 	public static final int CTI_SERVER_NOT_SUPPORTED = -6;
 	public static final int LOGIN_PASSWORD_ERROR = -7;
 	public static final int FORCED_DISCONNECT = -8;
+	public static final int NO_LOGIN_PASSWORD = -9;
+	public static final int CONNECTION_FAILED = -10;
 	public static final int LOGIN_KO = 0;
 	public static final int OK = 1;
 	public static final int CONNECTION_OK = 2;
@@ -103,4 +105,12 @@ public final class Constants {
 		"hintstatus_code", "hintstatus_longname", "hintstatus_color"};
 	public static final int[] USERS_LIST_TO_RESSOURCES = {R.id.fullname, R.id.phonenum, R.id.stateid, R.id.longname_state, 0,
 		R.id.phoneStateCode, R.id.phone_longname_state, R.id.phoneStateColor} ;
+	
+	/**
+	 * Preferences
+	 */
+	public static final String AUTO_START_SERVICE = "xivo.preference.auto_start_service";
+	public static final String PREF_USER_NAME = "login";
+	public static final String PREF_PASSWORD = "password";
+	
 }
