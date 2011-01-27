@@ -19,6 +19,8 @@
 
 package com.proformatique.android.xivoclient;
 
+import com.proformatique.android.xivoclient.service.Connection;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.widget.TextView;
@@ -40,8 +42,8 @@ public class AboutActivity extends Activity {
 		
 		long received = 0L;
 		
-		if (Connection.getInstance().isConnected())
-			received = Connection.getInstance().getReceivedBytes();
+		if (Connection.getInstance(this).isConnected())
+			received = Connection.getInstance(this).getReceivedBytes();
 		
 		if (received == 0) {
 			bandwidth.setText(Long.toString(received));

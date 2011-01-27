@@ -501,7 +501,7 @@ public class Connection {
 			try {
 				Log.d( LOG_TAG, "Sending jObj: " + jObj.toString());
 				PrintStream output = new PrintStream(
-						Connection.getInstance().networkConnection.getOutputStream());
+						Connection.getInstance(Connection.this.context).networkConnection.getOutputStream());
 				output.println(jObj.toString());
 				
 				return Constants.OK;
