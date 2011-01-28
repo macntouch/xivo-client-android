@@ -30,11 +30,16 @@ public class ServiceDriver extends Activity {
     private static final String PACK = "com.proformatique.android.xivoclient";
     private static final String TAG = "Service driver";
     private ProgressDialog dialog = null;
+    private boolean connecting = false;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.driver);
+        
+        final ConnectTask ct = (ConnectTask) getLastNonConfigurationInstance();
+        if (ct != null)
+            connectTask = ct;
     }
     
     public void onStartClicked(View v) {
@@ -124,6 +129,7 @@ public class ServiceDriver extends Activity {
             dialog.setCancelable(false);
             dialog.setMessage("Connection...");
             dialog.show();
+            connecting = true;
         }
         
         @Override
@@ -138,6 +144,7 @@ public class ServiceDriver extends Activity {
         
         @Override
         protected void onPostExecute(Integer result) {
+            connecting = false;
             if (dialog != null)
                 dialog.dismiss();
             switch(result) {
@@ -157,4 +164,11 @@ public class ServiceDriver extends Activity {
             }
         }
     }
+    
+    @Override
+    public Object onRetainNonConfigurationInstance() {
+        final ConnectTask ct = connectTask;
+        return ct;
+    }
+    
 }
