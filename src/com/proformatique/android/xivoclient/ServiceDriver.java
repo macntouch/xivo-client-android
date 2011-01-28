@@ -78,21 +78,15 @@ public class ServiceDriver extends Activity {
             }
             connectTask = new ConnectTask();
             connectTask.execute();
-            new Thread(new Runnable() {
-                
-                @Override
-                public void run() {
-                    try {
-                        connectTask.get(CONNECTION_TIMEOUT, TimeUnit.SECONDS);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    } catch (TimeoutException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
+            try {
+                connectTask.get(CONNECTION_TIMEOUT, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (TimeoutException e) {
+                e.printStackTrace();
+            }
         }
     }
     
@@ -129,21 +123,15 @@ public class ServiceDriver extends Activity {
             }
             authenticationTask = new AuthenticationTask();
             authenticationTask.execute();
-            new Thread(new Runnable() {
-                
-                @Override
-                public void run() {
-                    try {
-                        authenticationTask.get(AUTHENTICATION_TIMEOUT, TimeUnit.SECONDS);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    } catch (TimeoutException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
+            try {
+                authenticationTask.get(AUTHENTICATION_TIMEOUT, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (TimeoutException e) {
+                e.printStackTrace();
+            }
         }
     }
     
