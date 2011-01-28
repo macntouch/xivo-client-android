@@ -23,6 +23,18 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"/>
     <Button
+        android:id="@+id/btn_disconnect"
+        android:text="Disconnect"
+        android:onClick="onDisconnectClicked"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"/>
+    <Button
+        android:id="@+id/btn_authenticate"
+        android:text="Authenticate"
+        android:onClick="onAuthenticateClicked"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"/>
+    <Button
         android:id="@+id/btn_release"
         android:text="Release"
         android:onClick="onReleaseClicked"

@@ -36,10 +36,12 @@ public final class Constants {
 	public static final int FORCED_DISCONNECT = -8;
 	public static final int NO_LOGIN_PASSWORD = -9;
 	public static final int CONNECTION_FAILED = -10;
+	public static final int ALGORITH_NOT_AVAILABLE = -11;
 	public static final int LOGIN_KO = 0;
 	public static final int OK = 1;
 	public static final int CONNECTION_OK = 2;
 	public static final int CANCEL = 3;
+	public static final int AUTHENTICATION_OK = 4;
 	
 	/**
 	 * ActivityForResult requestCodes and codeResults
