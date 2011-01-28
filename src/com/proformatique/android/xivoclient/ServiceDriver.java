@@ -297,7 +297,7 @@ public class ServiceDriver extends Activity {
     public void onRestoreInstanceState(Bundle state) {
         super.onRestoreInstanceState(state);
         Log.d(TAG, "Restoring instance state");
-        // TODO: Add tests for the network connection
+        // TODO: Add tests for the network connection and authentication
         if (state.getBoolean("binded"))
             bindXivoConnectionService();
     }

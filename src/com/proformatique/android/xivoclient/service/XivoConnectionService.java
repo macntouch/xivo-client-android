@@ -260,7 +260,8 @@ public class XivoConnectionService extends Service {
         return Constants.OK;
     }
     
-    private void feedStatusList(String status, JSONObject jNames, JSONObject jAllowed) throws JSONException{
+    private void feedStatusList(String status, JSONObject jNames, JSONObject jAllowed)
+        throws JSONException{
         
         if (jAllowed.getBoolean(status)){
             HashMap<String, String> map = new HashMap<String, String>();
@@ -388,6 +389,7 @@ public class XivoConnectionService extends Service {
                     return Constants.VERSION_MISMATCH;
                 }
             } else if (jsonObject.has("class") && jsonObject.getString("class").equals("disconn")) {
+                lostConnectionEvent();
                 return Constants.FORCED_DISCONNECT;
             }
         } catch (JSONException e) {
@@ -428,6 +430,8 @@ public class XivoConnectionService extends Service {
      * Handles a connection lost
      */
     private void lostConnectionEvent() {
+        resetState();
+        disconnectFromServer();
         // TODO: Send an intent to warn activities about the connection lost
         // TODO: try to reconnect
         authenticationComplete = false;
