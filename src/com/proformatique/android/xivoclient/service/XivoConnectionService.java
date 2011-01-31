@@ -161,7 +161,8 @@ public class XivoConnectionService extends Service {
     private int connectToServer() {
         int port = Integer.parseInt(prefs.getString("server_port", "5003"));
         String host = prefs.getString("server_adress", "");
-        
+        if (thread != null && thread.isAlive())
+            thread.interrupt();
         try {
             Log.d(TAG, "Connecting to " + host + " " + port);
             networkConnection = new Socket(host, port);
@@ -198,6 +199,7 @@ public class XivoConnectionService extends Service {
         }
         authenticationComplete = false;
         cancel = true;
+        thread.interrupt();
         return Constants.OK;
     }
     
