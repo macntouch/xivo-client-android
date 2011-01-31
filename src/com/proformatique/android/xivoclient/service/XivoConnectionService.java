@@ -209,7 +209,7 @@ public class XivoConnectionService extends Service {
      */
     private int loginCTI() {
         String releaseOS = android.os.Build.VERSION.RELEASE;
-        String login = getSharedPreferences("login_settings", 0).getString("login", "");
+        String login = prefs.getString("login", "");
         int res;
         Log.d(TAG, "release OS: " + releaseOS);
         
@@ -613,7 +613,7 @@ public class XivoConnectionService extends Service {
     private int sendPasswordCTI() {
         byte[] sDigest = null;
         JSONObject jsonPasswordAuthent = new JSONObject();
-        String password = getSharedPreferences("login_settings", 0).getString("password", "");
+        String password = prefs.getString("password", "");
         int res;
         
         /**

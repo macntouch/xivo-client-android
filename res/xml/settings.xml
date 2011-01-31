@@ -12,6 +12,13 @@
             android:defaultValue="5003"
             android:inputType="number"/>
     <EditTextPreference
+        android:key="login"
+        android:title="@string/login"/>
+    <EditTextPreference
+        android:key="password"
+        android:title="@string/password"
+        android:inputType="textPassword"/>
+    <EditTextPreference
             android:key="context"
             android:title="@string/context" 
             android:defaultValue="default"/>

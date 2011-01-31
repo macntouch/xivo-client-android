@@ -299,4 +299,12 @@ public class ServiceDriver extends XivoActivity {
         if (state.getBoolean("binded"))
             bindXivoConnectionService();
     }
+    
+    @Override
+    public void onDestroy() {
+        if (con != null) {
+            releaseXivoConnectionService();
+        }
+        super.onDestroy();
+    }
 }
