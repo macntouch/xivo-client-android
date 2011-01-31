@@ -61,6 +61,7 @@ public class XivoConnectionService extends Service {
     private List<HashMap<String, String>> statusList = null;
     private List<HashMap<String, String>> usersList = null;
     private int[] mwi = new int[3];
+    private JSONArray capalist = null;
     
     // Messages from the loop to the handler
     private final static int NO_MESSAGE = 0;
@@ -70,6 +71,8 @@ public class XivoConnectionService extends Service {
     private final static int JSON_EXCEPTION = 4;
     private static final int USERS_LIST_COMPLETE = 5;
     private static final int PHONES_LOADED = 6;
+    private static final int PRESENCE_UPDATE = 7;
+    private static final int MY_STATUS_UPDATE = 8;
     
     /**
      * Implementation of the methods between the service and the activities
@@ -315,6 +318,9 @@ public class XivoConnectionService extends Service {
                 return parseGroups(line);
             else if (classRec.equals("disconn"))
                 return DISCONNECT;
+            // Sheets are ignored at the moment
+            else if (classRec.equals("sheet"))
+                return NO_MESSAGE;
             else {
                 Log.d(TAG, "Unknown classrec: " + classRec);
                 return UNKNOWN;
@@ -496,7 +502,19 @@ public class XivoConnectionService extends Service {
     
     private int parsePresence(JSONObject line) {
         Log.d(TAG, "Parsing presences: " + line.toString());
-        return NO_MESSAGE;
+        HashMap<String, String> map = new HashMap<String, String>();
+        JSONObject jState = null;
+        try {
+            jState = line.getJSONObject("capapresence").getJSONObject("state");
+            map.put("xivo_userid", line.getString("xivo_userid"));
+            map.put("stateid", jState.getString("stateid"));
+            map.put("stateid_longname", jState.getString("longname"));
+            map.put("stateid_color", jState.getString("color"));
+        } catch (JSONException e) {
+            Log.d(TAG, "Exception while retrieving presence");
+            return NO_MESSAGE;
+        }
+        return updateUserList(map, "presence");
     }
     
     private int parseGroups(JSONObject line) {
@@ -510,11 +528,17 @@ public class XivoConnectionService extends Service {
      */
     private int sendCapasCTI() {
         JSONObject jsonCapas = new JSONObject();
-        
+        String capaid = null;
+        try {
+            capaid = capalist.getString(0);
+        } catch (JSONException e1) {
+            Log.d(TAG, "Error while parsing capaid, using client");
+            capaid = "client";
+        }
         try {
             jsonCapas.accumulate("class", "login_capas");
             jsonCapas.accumulate("agentlogin", "now");
-            jsonCapas.accumulate("capaid", "client");
+            jsonCapas.accumulate("capaid", capaid);
             jsonCapas.accumulate("lastconnwins", "false");
             jsonCapas.accumulate("loginkind", "agent");
             jsonCapas.accumulate("phonenumber", "101");
@@ -641,6 +665,7 @@ public class XivoConnectionService extends Service {
         try {
             if (ctiAnswer != null & ctiAnswer.has("class") &&
                     ctiAnswer.getString("class").equals(Constants.XIVO_PASSWORD_OK)) {
+                capalist = ctiAnswer.getJSONArray("capalist");
                 return Constants.OK;
             } else {
                 return parseLoginError(ctiAnswer);
@@ -717,6 +742,36 @@ public class XivoConnectionService extends Service {
         return Constants.LOGIN_KO;
     }
     
+    private int updateUserList(HashMap<String, String> map, String type) {
+        int len = usersList != null ? usersList.size() : 0;
+        for (int i = 0; i < len; i++) {
+            HashMap<String, String> usersMap = usersList.get(i);
+            if (usersMap.containsKey("xivo_userid") && usersMap.get("xivo_userid")
+                    .equals(map.get("xivo_userid"))) {
+                if (type.equals("presence")) {
+                    usersMap.put("stateid", map.get("stateid"));
+                    usersMap.put("stateid_longname", map.get("stateid_longname"));
+                    usersMap.put("stateid_color", map.get("stateid_color"));
+                    usersList.set(i, usersMap);
+                } else if (type.equals("phone")) {
+                    usersMap.put("hintstatus_color", map.get("hintstatus_color"));
+                    usersMap.put("hintstatus_code", map.get("hintstatus_code"));
+                    usersMap.put("hintstatus_longname", map.get("hintstatus_longname"));
+                    usersList.set(i, usersMap);
+                    if (map.get("xivo_userid").equals(userId)){
+                        capaPresenceState.put("hintstatus_color", map.get("hintstatus_color"));
+                        capaPresenceState.put("hintstatus_code", map.get("hintstatus_code"));
+                        capaPresenceState.put("hintstatus_longname",
+                                map.get("hintstatus_longname"));
+                        return MY_STATUS_UPDATE;
+                    } 
+                }
+                return PRESENCE_UPDATE;
+            }
+        }
+        return NO_MESSAGE;
+    }
+    
     /**
      * Perform a read action on the stream from CTI server
      * @return JSON object retrieved
@@ -737,7 +792,7 @@ public class XivoConnectionService extends Service {
                 }
             }
         } catch (IOException e) {
-            if (networkConnection.isConnected() == false) {
+            if (networkConnection != null && networkConnection.isConnected() == false) {
                 lostConnectionEvent();
             }
             e.printStackTrace();
