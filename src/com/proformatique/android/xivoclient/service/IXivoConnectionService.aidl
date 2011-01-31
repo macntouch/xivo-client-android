@@ -6,4 +6,5 @@ interface IXivoConnectionService {
     boolean isConnected();
     int authenticate();
     boolean isAuthenticated();
+    void loadData();
 }

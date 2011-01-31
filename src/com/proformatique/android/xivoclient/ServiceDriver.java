@@ -64,6 +64,16 @@ public class ServiceDriver extends Activity {
         releaseXivoConnectionService();
     }
     
+    public void onLoadDataClicked(View v) {
+        try {
+            if (xivoConnectionService != null && xivoConnectionService.isConnected()) {
+                xivoConnectionService.loadData();
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+    
     public void onConnectClicked(View v) {
         if (con == null) {
             Toast.makeText(this, "Service not binded", Toast.LENGTH_LONG).show();
