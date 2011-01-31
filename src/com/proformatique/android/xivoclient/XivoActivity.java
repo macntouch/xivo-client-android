@@ -30,6 +30,9 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -62,6 +65,56 @@ public class XivoActivity extends Activity {
 			this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 					WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		}
+	}
+    
+    public boolean onOptionsItemSelected(MenuItem item) {
+        /**
+         *  Handle item selection
+         */
+        switch (item.getItemId()) {
+        case R.id.menu_settings:
+            menuSettings();
+            return true;
+        case R.id.menu_exit:
+			LoginActivity.stopInCallScreenKiller(this);
+			menuExit();
+			return true;
+		case R.id.menu_about:
+			menuAbout();
+			return true;
+		case R.id.menu_disconnect:
+			menuDisconnect();
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
+    
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.menu_settings, menu);
+		MenuItem mi = menu.findItem(R.id.menu_disconnect);
+		mi.setVisible(true);
+		
+		return true;
+	}
+    
+	private void menuDisconnect() {
+		Toast.makeText(this, "Not implemented", Toast.LENGTH_LONG).show();
+	}
+	
+	private void menuAbout() {
+		Intent defineIntent = new Intent(this, AboutActivity.class);
+		startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
+	}
+	
+	private void menuExit() {
+		Toast.makeText(this, "Not implemented", Toast.LENGTH_LONG).show();
+	}
+	
+	private void menuSettings() {
+		Intent defineIntent = new Intent(this, SettingsActivity.class);
+		startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
 	}
 	
 	public class ForcedDisconnectReceiver extends BroadcastReceiver {

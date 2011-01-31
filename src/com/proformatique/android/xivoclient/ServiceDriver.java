@@ -8,7 +8,6 @@ import com.proformatique.android.xivoclient.service.IXivoConnectionService;
 import com.proformatique.android.xivoclient.service.XivoConnectionService;
 import com.proformatique.android.xivoclient.tools.Constants;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -19,10 +18,11 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-public class ServiceDriver extends Activity {
+public class ServiceDriver extends XivoActivity {
     
     private XivoConnectionServiceConnection con = null;
     private IXivoConnectionService xivoConnectionService = null;

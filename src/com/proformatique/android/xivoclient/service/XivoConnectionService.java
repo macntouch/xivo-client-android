@@ -265,6 +265,9 @@ public class XivoConnectionService extends Service {
                     break;
                 case NO_MESSAGE:
                     break;
+                case JSON_EXCEPTION:
+                    Log.d(TAG, "JSON error while receiving a message from the CTI server");
+                    break;
                 default:
                     Log.d(TAG, "handling an unknown message: " + msg.what);
                     break;
@@ -338,7 +341,7 @@ public class XivoConnectionService extends Service {
             return NO_MESSAGE;
         JSONObject payloads = null;
         try {
-            payloads = line.getJSONObject("Payload");
+            payloads = line.getJSONObject("payload");
         } catch (JSONException e) {
             Log.e(TAG, "Could not retrieve the payload from the phone message");
             return JSON_EXCEPTION;
