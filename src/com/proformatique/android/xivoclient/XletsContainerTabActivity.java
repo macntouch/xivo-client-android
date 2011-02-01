@@ -65,7 +65,7 @@ public class XletsContainerTabActivity extends TabActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.xlets_container);
 		
-		LoginActivity.startInCallScreenKiller(this);
+		HomeActivity.startInCallScreenKiller(this);
 		
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		
@@ -312,14 +312,14 @@ public class XletsContainerTabActivity extends TabActivity {
 	}
 	
 	private void menuDisconnect() {
-		LoginActivity.stopInCallScreenKiller(this);
+		HomeActivity.stopInCallScreenKiller(this);
 		Connection.getInstance(getApplicationContext()).disconnect();
 		unregisterReceiver(receiver);
 		XletsContainerTabActivity.this.finish();
 	}
 	
 	private void menuExit() {
-		LoginActivity.stopInCallScreenKiller(this);
+		HomeActivity.stopInCallScreenKiller(this);
 		Connection.getInstance(getApplicationContext()).disconnect();
 		setResult(Constants.CODE_EXIT);
 		finish();
@@ -355,7 +355,7 @@ public class XletsContainerTabActivity extends TabActivity {
 	@Override
 	protected void onDestroy() {
 		Log.i(LOG_TAG, "onDestroy");
-		LoginActivity.stopInCallScreenKiller(this);
+		HomeActivity.stopInCallScreenKiller(this);
 		try {
 			unregisterReceiver(receiver);
 		} catch (Exception e) {

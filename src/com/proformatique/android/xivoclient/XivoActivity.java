@@ -51,7 +51,7 @@ public class XivoActivity extends Activity {
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.login);
+		//setContentView(R.layout.login);
 		
 		receiver = new ForcedDisconnectReceiver();
 		
@@ -76,7 +76,7 @@ public class XivoActivity extends Activity {
             menuSettings();
             return true;
         case R.id.menu_exit:
-			LoginActivity.stopInCallScreenKiller(this);
+			HomeActivity.stopInCallScreenKiller(this);
 			menuExit();
 			return true;
 		case R.id.menu_about:

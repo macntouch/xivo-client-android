@@ -39,13 +39,9 @@ public class ServiceDriver extends XivoActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.driver);
-    }
-    
-    public void onStartClicked(View v) {
-        Intent iStartXivoService = new Intent();
-        iStartXivoService.setClassName(PACK, XivoConnectionService.class.getName());
-        startService(iStartXivoService);
-        Toast.makeText(this, "Starting XiVO connection service", Toast.LENGTH_LONG).show();
+        
+        startXivoConnectionService();
+        bindXivoConnectionService();
     }
     
     public void onStopClicked(View v) {
@@ -53,10 +49,6 @@ public class ServiceDriver extends XivoActivity {
         iStopService.setClassName(PACK, XivoConnectionService.class.getName());
         stopService(iStopService);
         Toast.makeText(this, "XiVO connection service stopping", Toast.LENGTH_LONG).show();
-    }
-    
-    public void onBindClicked(View v) {
-        bindXivoConnectionService();
     }
     
     public void onReleaseClicked(View v) {
@@ -74,29 +66,7 @@ public class ServiceDriver extends XivoActivity {
     }
     
     public void onConnectClicked(View v) {
-        if (con == null) {
-            Toast.makeText(this, "Service not binded", Toast.LENGTH_LONG).show();
-        } else {
-            try {
-                if (xivoConnectionService != null && xivoConnectionService.isConnected()) {
-                    Toast.makeText(this, "Already connected", Toast.LENGTH_LONG).show();
-                    return;
-                }
-            } catch (RemoteException e1) {
-                Log.d(TAG, "Could not check connection status");
-            }
-            connectTask = new ConnectTask();
-            connectTask.execute();
-            try {
-                connectTask.get(CONNECTION_TIMEOUT, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            } catch (TimeoutException e) {
-                e.printStackTrace();
-            }
-        }
+        connectXivoConnectionService();
     }
     
     public void onDisconnectClicked(View v) {
@@ -142,6 +112,39 @@ public class ServiceDriver extends XivoActivity {
                 e.printStackTrace();
             }
         }
+    }
+    
+    private void connectXivoConnectionService() {
+        if (con == null) {
+            Log.d(TAG, "Service not binded, cannot connect");
+        } else {
+            try {
+                if (xivoConnectionService != null && xivoConnectionService.isConnected()) {
+                    Log.d(TAG, "Already connected");
+                    return;
+                }
+            } catch (RemoteException e1) {
+                Log.d(TAG, "Could not check connection status");
+            }
+            connectTask = new ConnectTask();
+            connectTask.execute();
+            try {
+                connectTask.get(CONNECTION_TIMEOUT, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (TimeoutException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    private void startXivoConnectionService() {
+    	Intent iStartXivoService = new Intent();
+        iStartXivoService.setClassName(PACK, XivoConnectionService.class.getName());
+        startService(iStartXivoService);
+        Log.d(TAG, "Starting XiVO connection service");
     }
     
     private void bindXivoConnectionService() {

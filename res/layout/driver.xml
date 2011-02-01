@@ -5,18 +5,6 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
     <Button
-        android:id="@+id/btn_start"
-        android:text="Start"
-        android:onClick="onStartClicked"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"/>
-    <Button
-        android:id="@+id/btn_bind"
-        android:text="Bind"
-        android:onClick="onBindClicked"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"/>
-    <Button
         android:id="@+id/btn_connect"
         android:text="Connect"
         android:onClick="onConnectClicked"
