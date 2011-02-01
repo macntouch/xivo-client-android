@@ -39,6 +39,7 @@ public class InCallScreenKiller extends Service {
 	private TelephonyManager telephonyManager;
 	private PhoneStateListener phoneStateListener;
 	private final static String LOG_TAG = "InCallScreenKiller";
+	private final static int MAX_EXTEN = 7;
 	
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -58,7 +59,10 @@ public class InCallScreenKiller extends Service {
 			@Override
 			public void onCallStateChanged(int state, String incomingNumber) {
 				Log.d(LOG_TAG, "onCallStateChanged called");
-				if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
+				if (state == TelephonyManager.CALL_STATE_OFFHOOK
+						&& SettingsActivity.getUseMobile(getApplicationContext())
+						&& InitialListLoader.getInstance().getCalledNumber() != null
+						&& InitialListLoader.getInstance().getCalledNumber().length() < MAX_EXTEN) {
 					Intent i = new Intent(getApplicationContext(), XletsContainerTabActivity.class);
 					i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 					try {

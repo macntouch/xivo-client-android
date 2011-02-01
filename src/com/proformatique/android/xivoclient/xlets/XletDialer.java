@@ -235,7 +235,7 @@ public class XletDialer extends XivoActivity {
 		else if (phoneNumberSrc.equals(""))
 			phoneSrc = "user:special:me";
 		else phoneSrc = "ext:"+phoneNumberSrc;
-		
+		InitialListLoader.getInstance().setCalledNumber(phoneNumberDest);
 		try {
 			jObj.accumulate("direction", Constants.XIVO_SERVER);
 			jObj.accumulate("class",inputClass);

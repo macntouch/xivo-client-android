@@ -76,6 +76,7 @@ public class InitialListLoader {
 	private String xivoPhoneNum;
 	private String peersPeerChannelId;
 	private int[] mwi = new int[3];		// 0 = warning, 1 = nb old messages, 2 = nb new messages
+	private String calledNumber = null;
 	
 	private static InitialListLoader instance;
 	
@@ -536,5 +537,13 @@ public class InitialListLoader {
 		iVoiceMailUpdate.setAction(Constants.ACTION_MWI_UPDATE);
 		iVoiceMailUpdate.putExtra("mwi", this.mwi);
 		context.sendBroadcast(iVoiceMailUpdate);
+	}
+	
+	public void setCalledNumber(String number) {
+		this.calledNumber  = number.trim();
+	}
+	
+	public String getCalledNumber() {
+		return calledNumber;
 	}
 }

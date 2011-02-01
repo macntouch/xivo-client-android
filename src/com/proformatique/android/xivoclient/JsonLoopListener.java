@@ -536,21 +536,27 @@ public class JsonLoopListener {
 		String peerChannel = comm.has("peerchannel") ? comm.getString("peerchannel") : null;
 		String calleridnum = comm.has("calleridnum") ? comm.getString("calleridnum")  : null;
 		int linenum = comm.has("linenum") ? comm.getInt("linenum") : 0;
+		InitialListLoader l = InitialListLoader.getInstance();
 		
-		if (linenum == 1 && calleridnum != null && calleridnum.equals(mobileNumber)
+		if (linenum == 1 && calleridnum != null && calleridnum.trim().contains(mobileNumber.trim())
 				&& status.equals("ringing")) {
 			sendOnThePhoneIntent();
-			InitialListLoader l = InitialListLoader.getInstance();
 			l.setPeerChannelId(thisChannel);
 			l.setPeersPeerChannelId(peerChannel);
 		} else if (linenum == 2 && status.equals("linked-caller") && thisChannel != null 
-				&& thisChannel.equals(InitialListLoader.getInstance().getPeerChannelId())) {
+				&& thisChannel.equals(l.getPeerChannelId())) {
 			sendOnThePhoneIntent();
-			InitialListLoader.getInstance().setPeersPeerChannelId(peerChannel);
+			l.setPeersPeerChannelId(peerChannel);
 		} else if ((status.equals("unlinked-caller") || status.equals("hangup"))
 				&& (peerChannel != null && peerChannel.contains(mobileNumber)
-				|| calleridnum != null && calleridnum.equals(mobileNumber))) {
+				|| (calleridnum != null && calleridnum.equals(mobileNumber))
+				|| (peerChannel != null && peerChannel.equals(l.getPeersPeerChannelId())))) {
 			resetChannels();
+		} else if (l.getCalledNumber() != null && linenum == 1 && calleridnum != null &&
+				calleridnum.trim().contains(l.getCalledNumber())) {
+			sendOnThePhoneIntent();
+			l.setPeerChannelId(thisChannel);
+			l.setPeersPeerChannelId(peerChannel);
 		}
 	}
 	
