@@ -136,8 +136,8 @@ public class XletContactSearch extends XivoActivity {
 				Map<String, String> contact = getPickedContact(data);
 				if (contact != null) {
 					setContactPhoneList(contact);
-					if (InitialListLoader.getInstance().getThisChannelId()
-							== null) {
+					if (InitialListLoader.getInstance().getThisChannelId() == null
+							&& InitialListLoader.getInstance().getPeersPeerChannelId() == null) {
 						callContact(contact);
 					} else {
 						transferContact(contact);
@@ -266,7 +266,8 @@ public class XletContactSearch extends XivoActivity {
 	 */
 	protected void callNumberForResult(int i) {
 		if (i == pickedContactPhoneList.length - 1) {
-			Toast.makeText(getApplicationContext(), getString(R.string.call_canceled), Toast.LENGTH_LONG).show();
+			Toast.makeText(getApplicationContext(), getString(R.string.call_canceled),
+					Toast.LENGTH_LONG).show();
 		} else {
 			String[] number = pickedContactPhoneList[i].split(" ");
 			dialNumber(number[1]);
@@ -293,31 +294,37 @@ public class XletContactSearch extends XivoActivity {
 	 * @param string
 	 */
 	private void promptForTransfer(final String number) {
-		new AlertDialog.Builder(this)
-		.setTitle(number)
-		.setItems(new String[] {
-				getString(R.string.attended_transfer_title),
-				getString(R.string.blind_transfer_title,
-				getString(R.string.cancel_label))},
-			new DialogInterface.OnClickListener() {
-				
-				@Override
-				public void onClick(DialogInterface dialog, int i) {
-					switch (i) {
-					case 0:
-						atxferNumber(number);
-						break;
-					case 1:
-						transferNumber(number);
-						break;
-					default:
-						Toast.makeText(getApplicationContext(),
-								getString(R.string.transfer_canceled),
-								Toast.LENGTH_LONG).show();
-						break;
+		InitialListLoader l = InitialListLoader.getInstance();
+		if (l.getThisChannelId() == null && l.getPeersPeerChannelId() != null
+				&& l.getPeersPeerChannelId().contains("Local")) {
+			transferNumber(number);
+		} else {
+			new AlertDialog.Builder(this)
+			.setTitle(number)
+			.setItems(new String[] {
+					getString(R.string.attended_transfer_title),
+					getString(R.string.blind_transfer_title,
+					getString(R.string.cancel_label))},
+				new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface dialog, int i) {
+						switch (i) {
+						case 0:
+							atxferNumber(number);
+							break;
+						case 1:
+							transferNumber(number);
+							break;
+						default:
+							Toast.makeText(getApplicationContext(),
+									getString(R.string.transfer_canceled),
+									Toast.LENGTH_LONG).show();
+							break;
+						}
 					}
-				}
-			}).show();
+				}).show();
+		}
 	}
 	
 	protected void onResume() {
@@ -336,14 +343,20 @@ public class XletContactSearch extends XivoActivity {
 					(AdapterView.AdapterContextMenuInfo)menuInfo;
 				menu.setHeaderTitle(getString(R.string.context_action));
 				// Normal menu (Not currently on the phone)
-				if (InitialListLoader.getInstance().getThisChannelId() == null) {
+				if (InitialListLoader.getInstance().getThisChannelId() == null
+						&& InitialListLoader.getInstance().getPeersPeerChannelId() == null) {
 					String callAction = getString(R.string.context_action_call, 
 							filteredUsersList.get(info.position).get("fullname"), 
 							filteredUsersList.get(info.position).get("phonenum"));
 					menu.add(CALL_MENU, CALL_ITEM_INDEX, 0, callAction);
 				} else { // On the phone menu
-					menu.add(Constants.TRANSFER_MENU, Constants.ATXFER_ITEM_INDEX, 0, 
-							getString(R.string.attended_transfer_title));
+					if (!(InitialListLoader.getInstance().getThisChannelId() == null
+							&& InitialListLoader.getInstance().getPeersPeerChannelId() != null
+							&& InitialListLoader.getInstance().getPeersPeerChannelId()
+							.contains("Local"))) {
+						menu.add(Constants.TRANSFER_MENU, Constants.ATXFER_ITEM_INDEX, 0, 
+								getString(R.string.attended_transfer_title));
+					}
 					menu.add(Constants.TRANSFER_MENU, Constants.TRANSFER_ITEM_INDEX, 0, 
 							getString(R.string.blind_transfer_title));
 				}

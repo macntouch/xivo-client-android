@@ -91,7 +91,12 @@ public class XletsContainerTabActivity extends TabActivity {
 		MenuInflater inflater = getMenuInflater();
 		if (onThePhone() == true) {
 			Log.d(LOG_TAG, "Currently calling");
-			inflater.inflate(R.menu.menu_settings_calling, menu);
+			InitialListLoader l = InitialListLoader.getInstance();
+			if (l.getThisChannelId() == null && l.getPeersPeerChannelId() != null && 
+					l.getPeersPeerChannelId().contains("Local"))
+				inflater.inflate(R.menu.menu_settings_calling_noatxfer, menu);
+			else
+				inflater.inflate(R.menu.menu_settings_calling, menu);
 		} else {
 			inflater.inflate(R.menu.menu_settings_connected, menu);
 		}
@@ -250,7 +255,8 @@ public class XletsContainerTabActivity extends TabActivity {
 	 * @return
 	 */
 	private boolean onThePhone() {
-		return InitialListLoader.getInstance().getThisChannelId() != null;
+		return InitialListLoader.getInstance().getThisChannelId() != null ||
+			InitialListLoader.getInstance().getPeersPeerChannelId() != null;
 	}
 	
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -333,9 +339,12 @@ public class XletsContainerTabActivity extends TabActivity {
 			switch (resultCode){
 			case Constants.OK:
 				Bundle extraData = data.getExtras();
-				InitialListLoader.getInstance().putCapaPresenceState("stateid", extraData.getString("stateid"));
-				InitialListLoader.getInstance().putCapaPresenceState("longname", extraData.getString("longname"));
-				InitialListLoader.getInstance().putCapaPresenceState("color", extraData.getString("color"));
+				InitialListLoader.getInstance().putCapaPresenceState("stateid",
+						extraData.getString("stateid"));
+				InitialListLoader.getInstance().putCapaPresenceState("longname",
+						extraData.getString("longname"));
+				InitialListLoader.getInstance().putCapaPresenceState("color",
+						extraData.getString("color"));
 				
 				xletIdentity.changeCurrentState();
 			}
