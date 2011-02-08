@@ -101,7 +101,12 @@ public class Connection {
 		this.callingActivity = callingActivity;
 		this.settings = PreferenceManager.getDefaultSharedPreferences(callingActivity);
 		this.serverAdress = this.settings.getString("server_adress", "");
-		this.serverPort = Integer.parseInt(this.settings.getString("server_port", "5003"));
+		try {
+			this.serverPort = Integer.parseInt(
+					this.settings.getString("server_port", Constants.DEFAULT_PORT));
+		} catch (NumberFormatException e) {
+			this.serverPort = Integer.parseInt(Constants.DEFAULT_PORT);
+		}
 		this.saveLogin = this.settings.getBoolean("save_login", true);
 		this.newConnection = true;
 	}
