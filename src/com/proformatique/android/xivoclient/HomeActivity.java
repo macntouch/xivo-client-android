@@ -19,24 +19,15 @@
 
 package com.proformatique.android.xivoclient;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.NetworkInfo.State;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.Looper;
-import android.preference.PreferenceManager;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -47,119 +38,62 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.proformatique.android.xivoclient.service.Connection;
-import com.proformatique.android.xivoclient.service.IXivoService;
-import com.proformatique.android.xivoclient.service.InitialListLoader;
-import com.proformatique.android.xivoclient.service.XivoService;
+import com.proformatique.android.xivoclient.service.IXivoConnectionService;
+import com.proformatique.android.xivoclient.service.XivoConnectionService;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 public class HomeActivity extends XivoActivity {
 	
 	/**
-	 * Creating distinct preferences to avoid multiple references 
-	 * of the same data (login/password) in settings screen
+	 * Constants
 	 */
-	private SharedPreferences settings;
-	private SharedPreferences loginSettings;
-	ProgressDialog dialog;
-	private IXivoService xivoService;
-	private boolean serviceStarted = false;
-	private RemoteServiceConnection conn = null;
-	public boolean xivoServiceReady = false;
-	ConnectTask connectTask;
-	LoadingTask loadingTask;
-	private static final String LOG_TAG = "LOGIN_ACTIVITY";
+	private static final String LOG_TAG = "XiVO Home";
+	private static final String PACK = "com.proformatique.android.xivoclient";
 	
-	private ProgressDialog progressDialog;
+	/**
+	 * UI
+	 */
+	private ProgressDialog dialog;
 	
+	/**
+	 * Service
+	 */
+	private XivoConnectionServiceConnection con = null;
+	private IXivoConnectionService xivoConnectionService = null;
+	private ConnectTask connectTask = null;
+	private AuthenticationTask authenticationTask = null;
+	private BindingTask bindingTask = null;
+	
+	/**
+	 * Activity life cycle
+	 */
+	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.i(LOG_TAG, "onCreate");
 		setContentView(R.layout.home_activity);
-		
-		if (XivoService.isRunning(getApplicationContext()))
-			Log.i(LOG_TAG, "XiVO service is running");
-		else {
-			Log.i(LOG_TAG, "XiVO service is not running");
-			startXivoService();
-		}
-		bindXivoService();
-		
-		settings = PreferenceManager.getDefaultSharedPreferences(this);
-		loginSettings = this.getSharedPreferences("login_settings", 0);
-		
-		/**
-		 * Set the default saved login/password into corresponding fields 
-		 * if parameter "save_login" is on
-		 */
-		if (settings.getBoolean("save_login", true)){
-			
-			String login = loginSettings.getString("login","");
-			String password = loginSettings.getString("password","");
-			
-			EditText eLogin = (EditText) findViewById(R.id.login);
-			eLogin.setText(login);
-			
-			EditText ePassword = (EditText) findViewById(R.id.password);
-			ePassword.setText(password);
-		}
 	}
 	
 	@Override
 	public void onResume() {
 		super.onResume();
 		Log.i(LOG_TAG, "onResume");
+		startXivoConnectionService();
+		bindXivoConnectionService();
+		startInCallScreenKiller(this);
+	}
+	
+	@Override
+	protected void onDestroy() {
+		Log.d( LOG_TAG, "DESTROY");
+		releaseXivoConnectionService();
+		stopInCallScreenKiller(this);
+		super.onDestroy();
 	}
 	
 	/**
-	 * Starts the client
-	 * This should be called once the service is started and connected
+	 * Menu
 	 */
-	private void startClient() {
-		displayElements(false);
-		Intent defineIntent = new Intent(HomeActivity.this, XletsContainerTabActivity.class);
-		HomeActivity.this.startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
-	}
-	
-	private void bindXivoService() {
-		if (conn == null) {
-			conn = new RemoteServiceConnection();
-			Intent i = new Intent();
-			i.setClassName("com.proformatique.android.xivoclient", "com.proformatique.android.xivoclient.service.XivoService");
-			bindService(i, conn, Context.BIND_AUTO_CREATE);
-			Log.d(LOG_TAG, "Service binded");
-		} else {
-			Log.d(LOG_TAG, "Service already bound");
-		}
-	}
-	
-	private void startXivoService() {
-		if (serviceStarted == false) {
-			Intent i = new Intent();
-			i.setClassName("com.proformatique.android.xivoclient", "com.proformatique.android.xivoclient.service.XivoService");
-			if (!(XivoService.isRunning(getApplicationContext()))) {
-				startService(i);
-			}
-			serviceStarted = true;
-			Log.d(LOG_TAG, "XiVO service started");
-		} else {
-			Log.d(LOG_TAG, "XiVO service already started");
-		}
-	}
-	
-	public static void startInCallScreenKiller(Context context) {
-		Intent inCallScreenKillerIntent = new Intent();
-		inCallScreenKillerIntent.setClassName(context.getPackageName(), InCallScreenKiller.class.getName());
-		context.startService(inCallScreenKillerIntent);
-		Log.d(LOG_TAG, "InCallScreenKiller started");
-	}
-	
-	public static void stopInCallScreenKiller(Context context) {
-		Intent inCallScreenKillerIntent = new Intent();
-		inCallScreenKillerIntent.setClassName(context.getPackageName(), InCallScreenKiller.class.getName());
-		context.stopService(inCallScreenKillerIntent);
-		Log.d(LOG_TAG, "InCallScreenKilled stopped");
-	}
-	
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.menu_settings, menu);
@@ -193,14 +127,14 @@ public class HomeActivity extends XivoActivity {
 	}
 	
 	private void menuDisconnect() {
-        HomeActivity.stopInCallScreenKiller(this);
-        if (Connection.getInstance(HomeActivity.this).isConnected())
-            Connection.getInstance(HomeActivity.this).disconnect();
-		Log.i(LOG_TAG, "Menu disconnect clicked");
-		displayElements(true);
-		Intent iDisconnectIntent = new Intent();
-		iDisconnectIntent.setAction(Constants.ACTION_DISCONNECT_REQUEST);
-		getApplicationContext().sendBroadcast(iDisconnectIntent);
+		if (xivoConnectionService != null) {
+			try {
+				xivoConnectionService.disconnect();
+			} catch (RemoteException e) {
+				Toast.makeText(this, getString(R.string.remote_exception),
+						Toast.LENGTH_LONG).show();
+			}
+		}
 	}
 	
 	private void menuAbout() {
@@ -210,8 +144,6 @@ public class HomeActivity extends XivoActivity {
 	
 	private void menuExit() {
 		Log.i(LOG_TAG, "Menu exit clicked");
-		if (Connection.getInstance(getApplicationContext()).isConnected())
-			Connection.getInstance(getApplicationContext()).disconnect();
 		finish();
 	}
 	
@@ -220,69 +152,38 @@ public class HomeActivity extends XivoActivity {
 		startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
 	}
 	
+	/**
+	 * Starts a connection task and wait until it's connected
+	 */
+	private void waitForConnection() {
+		connectTask = new ConnectTask();
+		connectTask.execute();
+	}
+	
+	/**
+	 * Starts an authentication task and wait until it's authenticated
+	 */
+	private void waitForAuthentication() {
+		authenticationTask = new AuthenticationTask();
+		authenticationTask.execute();
+	}
+	
+	/**
+	 * Starts the client
+	 * This should be called once the service is started and connected
+	 */
+	private void startClient() {
+		displayElements(false);
+		Intent defineIntent = new Intent(HomeActivity.this, XletsContainerTabActivity.class);
+		HomeActivity.this.startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
+	}
+	
 	public void clickOnButtonOk(View v) {
-		/*saveLoginPassword();
-		startXivoService();
-		bindXivoService();
-		
-		if (xivoServiceReady == true)
-			startClient();*/
 		if (Connection.getInstance(HomeActivity.this).isConnected()) {
 			Intent defineIntent = new Intent(HomeActivity.this, XletsContainerTabActivity.class);
 			startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
 		} else {
-			connectTask = new ConnectTask();
-			connectTask.execute();
-			loadingTask = new LoadingTask();
 			
-			/**
-			 * Timeout Connection : 10 seconds
-			 */
-			new Thread(new Runnable() {
-				public void run() {
-					Looper.prepare();
-					try {
-						connectTask.get(10, TimeUnit.SECONDS);
-					} catch (InterruptedException e) {
-						Connection.getInstance(HomeActivity.this).disconnect();
-					} catch (ExecutionException e) {
-						Connection.getInstance(HomeActivity.this).disconnect();
-					} catch (TimeoutException e) {
-						Connection.getInstance(HomeActivity.this).disconnect();
-					}
-					loadingTask.execute();
-					try {
-						loadingTask.get(60, TimeUnit.SECONDS);
-					} catch (TimeoutException e) {
-						Log.d(LOG_TAG, e.toString());
-					} catch (InterruptedException e) {
-						Log.d(LOG_TAG, e.toString());
-					} catch (ExecutionException e) {
-						Log.d(LOG_TAG, e.toString());
-					}
-				};
-			}).start();
-			
-		}
-	}
-	
-	private void saveLoginPassword() {
-		
-		String savedLogin = loginSettings.getString("login","");
-		String savedPassword = loginSettings.getString("password","");
-		SharedPreferences.Editor editor = loginSettings.edit();
-		
-		EditText eLogin = (EditText) findViewById(R.id.login);
-		EditText ePassword = (EditText) findViewById(R.id.password);
-		
-		if (! eLogin.getText().toString().equals(savedLogin)){
-			editor.putString("login", eLogin.getText().toString());
-			editor.commit();
-		}
-		
-		if (! ePassword.getText().toString().equals(savedPassword)){
-			editor.putString("password", ePassword.getText().toString());
-			editor.commit();
 		}
 	}
 	
@@ -308,101 +209,6 @@ public class HomeActivity extends XivoActivity {
 		}
 	}
 	
-	private class LoadingTask extends AsyncTask<Void, Integer, Integer> {
-		
-		@Override
-		protected Integer doInBackground(Void... params) {
-			Log.d(LOG_TAG, "LoadingTask doInBackground");
-			InitialListLoader.getInstance().startLoading();
-			return 0;
-		}
-		
-		@Override
-		protected void onPostExecute(Integer result) {
-			Log.d(LOG_TAG, "LoadingTask onPostExecute");
-			Intent defineIntent = new Intent(HomeActivity.this, XletsContainerTabActivity.class);
-			HomeActivity.this.startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
-			progressDialog.dismiss();
-		}
-	}
-	
-	/**
-	 * Creating a AsyncTask to execute connection process
-	 * @author cquaquin
-	 */
-	private class ConnectTask extends AsyncTask<Void, Integer, Integer> {
-		
-		@Override
-		protected void onPreExecute() {
-			progressDialog = new ProgressDialog(HomeActivity.this);
-			progressDialog.setCancelable(false);
-			progressDialog.setMessage("Connecting");
-			progressDialog.show();
-		}
-		
-		@Override
-		protected Integer doInBackground(Void... params) {
-			EditText eLogin = (EditText) HomeActivity.this.findViewById(R.id.login); 
-			EditText ePassword = (EditText) HomeActivity.this.findViewById(R.id.password); 
-			
-			 /**
-			 * Checking that web connection exists
-			 */
-			ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-			NetworkInfo netInfo = cm.getActiveNetworkInfo();
-			
-			if (!(netInfo == null)) {
-				if (netInfo.getState().compareTo(State.CONNECTED)==0) {
-					
-					Connection connection = Connection.getInstance(eLogin.getText().toString(),
-							ePassword.getText().toString(), HomeActivity.this);
-					
-					//InitialListLoader.init();
-					
-					return  connection.initialize();
-				} else return Constants.NO_NETWORK_AVAILABLE;
-			} else return Constants.NO_NETWORK_AVAILABLE;
-		}
-		
-		protected void onPostExecute(Integer result) {
-			Log.d(LOG_TAG, "Connect Task onPostExecute");
-			progressDialog.dismiss();
-			if (result == Constants.NO_NETWORK_AVAILABLE){
-				Toast.makeText(HomeActivity.this, R.string.no_web_connection, Toast.LENGTH_LONG).show();
-			}
-			else if (result == Constants.LOGIN_PASSWORD_ERROR) {
-				Toast.makeText(HomeActivity.this, R.string.bad_login_password, Toast.LENGTH_LONG).show();
-			}
-			else if (result == Constants.BAD_HOST){
-				Toast.makeText(HomeActivity.this, R.string.bad_host, Toast.LENGTH_LONG).show();
-			}
-			else if (result == Constants.NOT_CTI_SERVER){
-				Toast.makeText(HomeActivity.this, R.string.not_cti_server, Toast.LENGTH_LONG).show();
-			}
-			else if (result == Constants.VERSION_MISMATCH) {
-				Toast.makeText(HomeActivity.this, R.string.version_mismatch, Toast.LENGTH_LONG).show();
-			}
-			else if (result == Constants.CTI_SERVER_NOT_SUPPORTED) {
-				Toast.makeText(HomeActivity.this, R.string.cti_not_supported
-						, Toast.LENGTH_LONG).show();
-			}
-			else if (result < 1){
-				Toast.makeText(HomeActivity.this, R.string.connection_failed
-						, Toast.LENGTH_LONG).show();
-			}
-			else if(result >= 1){
-				if (Connection.getInstance(HomeActivity.this).getSaveLogin()){
-					saveLoginPassword();
-				}
-				displayElements(false);
-				progressDialog = new ProgressDialog(HomeActivity.this);
-				progressDialog.setCancelable(false);
-				progressDialog.setMessage("Loading...");
-				progressDialog.show();
-			}
-		}
-	}
-
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
@@ -416,43 +222,241 @@ public class HomeActivity extends XivoActivity {
 		}
 	}
 	
-	@Override
-	protected void onDestroy() {
-		Log.d( LOG_TAG, "DESTROY");
-		HomeActivity.stopInCallScreenKiller(this);
-		if (Connection.getInstance(HomeActivity.this) != null && Connection.getInstance(HomeActivity.this).isConnected()) {
-			Connection.getInstance(HomeActivity.this).disconnect();
-		}
-		releaseXivoService();
-		super.onDestroy();
+	/**
+	 * XivoConnectionService life cycle
+	 */
+	
+	/**
+	 * Starts the XivoConnectionService
+	 * If the service is not started it will get destroyed when our application is destroyed
+	 */
+	private void startXivoConnectionService() {
+		Intent iStartXivoService = new Intent();
+		iStartXivoService.setClassName(PACK, XivoConnectionService.class.getName());
+		startService(iStartXivoService);
+		Log.d(LOG_TAG, "Starting XiVO connection service");
 	}
 	
-	private void releaseXivoService() {
-		if (conn != null) {
-			unbindService(conn);
-			conn = null;
-			Log.d(LOG_TAG, "Service released");
+	/**
+	 * Binds the XivoConnection service
+	 */
+	private void bindXivoConnectionService() {
+		bindingTask = new BindingTask();
+		bindingTask.execute();
+	}
+	
+	/**
+	 * Releases the service before leaving
+	 */
+	private void releaseXivoConnectionService() {
+		if (con != null) {
+			unbindService(con);
+			con = null;
+			Log.d(LOG_TAG, "XiVO connection service released");
 		} else {
-			Log.d(LOG_TAG, "Service not bounded");
+			Log.d(LOG_TAG, "XiVO connection service not binded");
 		}
 	}
 	
-	class RemoteServiceConnection implements ServiceConnection {
+	private class XivoConnectionServiceConnection implements ServiceConnection {
 		
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
-			xivoService = IXivoService.Stub.asInterface((IBinder)service);
+			xivoConnectionService = IXivoConnectionService.Stub.asInterface((IBinder)service);
+			if (xivoConnectionService == null)
+				Log.e(LOG_TAG, "xivoConnectionService is null");
+			else
+				Log.i(LOG_TAG, "xivoConnectionService is not null");
 			Log.d(LOG_TAG, "onServiceConnected");
-			xivoServiceReady  = true;
-			startClient();
 		}
 		
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
-			xivoService = null;
-			xivoServiceReady = false;
 			Log.d(LOG_TAG, "onServiceDisconnected");
 		}
+	};
+	
+	/**
+	 * InCallScreenKiller service lifecycle
+	 */
+	public static void startInCallScreenKiller(Context context) {
+		Intent inCallScreenKillerIntent = new Intent();
+		inCallScreenKillerIntent.setClassName(PACK, InCallScreenKiller.class.getName());
+		context.startService(inCallScreenKillerIntent);
+		Log.d(LOG_TAG, "InCallScreenKiller started");
+	}
+	
+	public static void stopInCallScreenKiller(Context context) {
+		Intent inCallScreenKillerIntent = new Intent();
+		inCallScreenKillerIntent.setClassName(PACK, InCallScreenKiller.class.getName());
+		context.stopService(inCallScreenKillerIntent);
+		Log.d(LOG_TAG, "InCallScreenKilled stopped");
+	}
+	
+	/**
+	 * Tasks
+	 */
+	
+	/**
+	 * Binds to the service
+	 */
+	private class BindingTask extends AsyncTask<Void, Void, Integer> {
+		private int OK = 0;
+		private int FAIL = -1;
 		
+		@Override
+		protected void onPreExecute() {
+			Log.d(LOG_TAG, "Binding started");
+		}
+		
+		@Override
+		protected Integer doInBackground(Void... params) {
+			if (con == null) {
+				con = new XivoConnectionServiceConnection();
+				Intent iServiceBinder = new Intent();
+				iServiceBinder.setClassName(PACK, XivoConnectionService.class.getName());
+				bindService(iServiceBinder, con, Context.BIND_AUTO_CREATE);
+				Log.d(LOG_TAG, "XiVO connection service binded");
+			} else {
+				Log.d(LOG_TAG, "XiVO connection already binded");
+			}
+			if (con != null)
+				return OK;
+			else
+				return FAIL;
+		}
+		
+		@Override
+		protected void onPostExecute(Integer result) {
+			Log.d(LOG_TAG, "Binding finished");
+			waitForConnection();
+		}
+	}
+	
+	/**
+	 * Ask to the XivoConnectionService to connect and wait for the result
+	 */
+	private class ConnectTask extends AsyncTask<Void, Void, Integer> {
+		
+		public ConnectTask() {
+			if (dialog == null)
+				dialog = new ProgressDialog(HomeActivity.this);
+			dialog.setCancelable(true);
+			dialog.setMessage(getString(R.string.connection));
+		}
+		
+		@Override
+		protected void onPreExecute() {
+			dialog.show();
+		}
+		
+		@Override
+		protected Integer doInBackground(Void... params) {
+			try {
+				if (xivoConnectionService != null && xivoConnectionService.isConnected())
+					return Constants.CONNECTION_OK;
+				return xivoConnectionService.connect();
+			} catch (RemoteException e) {
+				return Constants.REMOTE_EXCEPTION;
+			}
+		}
+		
+		@Override
+		protected void onPostExecute(Integer result) {
+			if (dialog != null) {
+				dialog.dismiss();
+				dialog = null;
+			}
+			switch (result) {	
+			case Constants.CONNECTION_OK:
+				waitForAuthentication();
+				break;
+			case Constants.REMOTE_EXCEPTION:
+				Toast.makeText(HomeActivity.this, getString(R.string.remote_exception),
+						Toast.LENGTH_LONG).show();
+				break;
+			case Constants.NOT_CTI_SERVER:
+				Toast.makeText(HomeActivity.this, getString(R.string.not_cti_server),
+						Toast.LENGTH_LONG).show();
+				break;
+			case Constants.BAD_HOST:
+				Toast.makeText(HomeActivity.this, getString(R.string.bad_host),
+						Toast.LENGTH_LONG).show();
+				break;
+			default:
+				Toast.makeText(HomeActivity.this, getString(R.string.connection_failed),
+						Toast.LENGTH_LONG).show();
+				break;
+			}
+		}
+	}
+	
+	private class AuthenticationTask extends AsyncTask<Void, Void, Integer> {
+		
+		public AuthenticationTask() {
+			if (dialog == null)
+				dialog = new ProgressDialog(HomeActivity.this);
+			dialog.setCancelable(true);
+			dialog.setMessage(getString(R.string.authenticating));
+		}
+		
+		@Override
+		protected void onPreExecute() {
+			dialog.show();
+		}
+		
+		@Override
+		protected Integer doInBackground(Void... params) {
+			try {
+				if (xivoConnectionService != null && xivoConnectionService.isAuthenticated())
+					return Constants.AUTHENTICATION_OK;
+				return xivoConnectionService.authenticate();
+			} catch (RemoteException e) {
+				return Constants.REMOTE_EXCEPTION;
+			}
+		}
+		
+		@Override
+		protected void onPostExecute(Integer result) {
+			if (dialog != null) {
+				dialog.dismiss();
+				dialog = null;
+			}
+			switch(result) {
+			case Constants.OK:
+			case Constants.AUTHENTICATION_OK:
+				Log.i(LOG_TAG, "Authenticated");
+				break;
+			case Constants.JSON_POPULATE_ERROR:
+				Toast.makeText(HomeActivity.this, getString(R.string.json_exception),
+						Toast.LENGTH_LONG).show();
+				break;
+			case Constants.FORCED_DISCONNECT:
+				Toast.makeText(HomeActivity.this, getString(R.string.forced_disconnect),
+						Toast.LENGTH_LONG).show();
+				break;
+			case Constants.LOGIN_PASSWORD_ERROR:
+				Toast.makeText(HomeActivity.this, getString(R.string.bad_login_password),
+						Toast.LENGTH_LONG).show();
+				break;
+			case Constants.CTI_SERVER_NOT_SUPPORTED:
+				Toast.makeText(HomeActivity.this, getString(R.string.cti_not_supported),
+						Toast.LENGTH_LONG).show();
+				break;
+			case Constants.VERSION_MISMATCH:
+				Toast.makeText(HomeActivity.this, getString(R.string.version_mismatch),
+						Toast.LENGTH_LONG).show();
+				break;
+			case Constants.ALGORITH_NOT_AVAILABLE:
+				Toast.makeText(HomeActivity.this, getString(R.string.algo_exception),
+						Toast.LENGTH_LONG).show();
+				break;
+			default:
+				Log.e(LOG_TAG, "Unhandled result " + result);
+				Toast.makeText(HomeActivity.this, getString(R.string.login_ko),
+						Toast.LENGTH_LONG).show();
+				break;
+			}
+		}
 	}
 }
