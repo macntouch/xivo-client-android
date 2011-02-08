@@ -24,10 +24,9 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-        </activity>-->
-                 <!-- 
+        </activity>--> 
         <service android:name=".InCallScreenKiller"></service>
-		<service
+		<!--<service
 			android:name=".service.XivoService"
 			android:process=":remote">
 			<intent-filter>
