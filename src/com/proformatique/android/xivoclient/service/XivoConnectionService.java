@@ -79,8 +79,6 @@ public class XivoConnectionService extends Service {
      */
     private final IXivoConnectionService.Stub binder = new IXivoConnectionService.Stub() {
         
-        private boolean loadDataCalledState = false;
-        
         @Override
         public int connect() throws RemoteException {
             return connectToServer();
@@ -109,15 +107,12 @@ public class XivoConnectionService extends Service {
         @Override
         public void loadData() throws RemoteException {
             XivoConnectionService.this.loadList("users");
-            loadDataCalledState = true;
         }
         
         @Override
         public boolean loadDataCalled() throws RemoteException {
-            return loadDataCalledState;
+            return usersList != null;
         }
-        
-        
     };
     
     /**
@@ -648,6 +643,7 @@ public class XivoConnectionService extends Service {
         xivoNotif = null;
         statusList = null;
         usersList = null;
+        
     }
     
     private int sendPasswordCTI() {
@@ -848,6 +844,8 @@ public class XivoConnectionService extends Service {
     private int sendLine(String line) {
         PrintStream output;
         try {
+            if (networkConnection == null)
+                return Constants.NO_NETWORK_AVAILABLE;
             output = new PrintStream(networkConnection.getOutputStream());
         } catch (IOException e) {
             return Constants.NO_NETWORK_AVAILABLE;

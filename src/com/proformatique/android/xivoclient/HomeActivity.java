@@ -33,12 +33,15 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.EditText;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.proformatique.android.xivoclient.service.Connection;
 import com.proformatique.android.xivoclient.service.IXivoConnectionService;
 import com.proformatique.android.xivoclient.service.XivoConnectionService;
 import com.proformatique.android.xivoclient.tools.Constants;
@@ -55,6 +58,7 @@ public class HomeActivity extends XivoActivity {
 	 * UI
 	 */
 	private ProgressDialog dialog;
+	private GridView grid;
 	
 	/**
 	 * Service
@@ -73,7 +77,10 @@ public class HomeActivity extends XivoActivity {
 		super.onCreate(savedInstanceState);
 		Log.i(LOG_TAG, "onCreate");
 		setContentView(R.layout.home_activity);
-		registerButtons();	// Set onClickListeners for the XivoActivity
+		super.registerButtons();	// Set onClickListeners for the XivoActivity
+		
+		grid = (GridView) findViewById(R.id.grid);
+		grid.setAdapter(new ImageAdapter(this));
 	}
 	
 	@Override
@@ -176,37 +183,6 @@ public class HomeActivity extends XivoActivity {
 		Toast.makeText(this, getString(R.string.binding_error), Toast.LENGTH_LONG).show();
 		Log.e(LOG_TAG, "Failed to bind to the service");
 		finish();
-	}
-	
-	public void clickOnButtonOk(View v) {
-		if (Connection.getInstance(HomeActivity.this).isConnected()) {
-			Intent defineIntent = new Intent(HomeActivity.this, XletsContainerTabActivity.class);
-			startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
-		} else {
-			
-		}
-	}
-	
-	public void displayElements(boolean display){
-		EditText eLogin = (EditText) HomeActivity.this.findViewById(R.id.login); 
-		EditText ePassword = (EditText) HomeActivity.this.findViewById(R.id.password);
-		TextView eLoginV = (TextView) HomeActivity.this.findViewById(R.id.login_text); 
-		TextView ePasswordV = (TextView) HomeActivity.this.findViewById(R.id.password_text);
-		TextView eStatus = (TextView) HomeActivity.this.findViewById(R.id.connect_status); 
-		
-		if (display){
-			eLogin.setVisibility(View.VISIBLE);
-			ePassword.setVisibility(View.VISIBLE);
-			eLoginV.setVisibility(View.VISIBLE);
-			ePasswordV.setVisibility(View.VISIBLE);
-			eStatus.setVisibility(View.INVISIBLE);
-		} else {
-			eLogin.setVisibility(View.INVISIBLE);
-			ePassword.setVisibility(View.INVISIBLE);
-			eLoginV.setVisibility(View.INVISIBLE);
-			ePasswordV.setVisibility(View.INVISIBLE);
-			eStatus.setVisibility(View.VISIBLE);
-		}
 	}
 	
 	/**
@@ -366,6 +342,10 @@ public class HomeActivity extends XivoActivity {
 				Toast.makeText(HomeActivity.this, getString(R.string.bad_host),
 						Toast.LENGTH_LONG).show();
 				break;
+			case Constants.NO_NETWORK_AVAILABLE:
+				Toast.makeText(HomeActivity.this, getString(R.string.no_web_connection),
+						Toast.LENGTH_LONG).show();
+				break;
 			default:
 				Toast.makeText(HomeActivity.this, getString(R.string.connection_failed),
 						Toast.LENGTH_LONG).show();
@@ -440,6 +420,45 @@ public class HomeActivity extends XivoActivity {
 						Toast.LENGTH_LONG).show();
 				break;
 			}
+		}
+	}
+	
+	private class ImageAdapter extends BaseAdapter {
+		Context context;
+		
+		public ImageAdapter(Context context) {
+			this.context = context;
+		}
+		
+		@Override
+		public int getCount() {
+			return 6;
+		}
+		
+		@Override
+		public Object getItem(int position) {
+			return null;
+		}
+		
+		@Override
+		public long getItemId(int position) {
+			return 0;
+		}
+		
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			View v;
+			if (convertView == null) {
+				LayoutInflater li = getLayoutInflater();
+				v = li.inflate(R.layout.icon, null);
+				TextView tv = (TextView) v.findViewById(R.id.icon_text);
+				tv.setText("Profile: " + position);
+				ImageView iv = (ImageView) v.findViewById(R.id.icon_image);
+				iv.setImageResource(R.drawable.icon);
+			} else {
+				v = convertView;
+			}
+			return v;
 		}
 	}
 }
