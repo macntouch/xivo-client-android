@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="com.proformatique.android.xivoclient"
-      android:versionCode="1"
-      android:versionName="1.0">
-	<uses-permission android:name="android.permission.INTERNET" />
-	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-	<uses-permission android:name="android.permission.READ_PHONE_STATE" />
-	<uses-permission android:name="android.permission.READ_CONTACTS"></uses-permission>
-	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"></uses-permission>
+    package="com.proformatique.android.xivoclient"
+    android:versionCode="1"
+    android:versionName="1.0">
+    <!--  Permissions -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS"></uses-permission>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"></uses-permission>
 	<!--
   <supports-screens
           android:largeScreens="true"
@@ -15,8 +16,8 @@
           android:smallScreens="true"
           android:anyDensity="true" />-->
     <application android:icon="@drawable/icon" 
-                 android:label="@string/app_name"
-                 android:theme="@android:style/Theme.NoTitleBar">
+        android:label="@string/app_name"
+        android:theme="@android:style/Theme.NoTitleBar">
         <!--<activity
             android:name=".ServiceDriver"
             android:label="XiVO service driver">
@@ -25,7 +26,6 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>--> 
-        <service android:name=".InCallScreenKiller"></service>
 		<!--<service
 			android:name=".service.XivoService"
 			android:process=":remote">
@@ -115,7 +115,10 @@
 	        android:theme="@android:style/Theme.Dialog"
         	android:screenOrientation="portrait"
         	android:configChanges="keyboardHidden|orientation"/>-->
+        <!-- Services -->
         <service android:name=".service.XivoConnectionService"/>
+        <service android:name=".InCallScreenKiller"></service>
+        <!-- Receivers -->
         <receiver android:name=".service.XivoServiceStarter"
             android:process="com.proformatique.android.xivoclient">
             <intent-filter>
@@ -123,6 +126,9 @@
                 <category android:name="android.intent.category.HOME" />
             </intent-filter>
         </receiver>
+        <!-- Providers -->
+        <provider android:name=".service.CapaxletsProvider"
+            android:authorities="com.proformatique.android.xivoclient"/>
     </application>
     <uses-sdk android:minSdkVersion="7"/>
 </manifest> 
