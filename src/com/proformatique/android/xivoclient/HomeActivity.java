@@ -33,9 +33,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -76,6 +73,7 @@ public class HomeActivity extends XivoActivity {
 		super.onCreate(savedInstanceState);
 		Log.i(LOG_TAG, "onCreate");
 		setContentView(R.layout.home_activity);
+		registerButtons();	// Set onClickListeners for the XivoActivity
 	}
 	
 	@Override
@@ -93,67 +91,6 @@ public class HomeActivity extends XivoActivity {
 		releaseXivoConnectionService();
 		stopInCallScreenKiller(this);
 		super.onDestroy();
-	}
-	
-	/**
-	 * Menu
-	 */
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.menu_settings, menu);
-		MenuItem mi = menu.findItem(R.id.menu_disconnect);
-		mi.setVisible(true);
-		
-		return true;
-	}
-	
-	public boolean onOptionsItemSelected(MenuItem item) {
-		/**
-		 *  Handle item selection
-		 */
-		switch (item.getItemId()) {
-		case R.id.menu_settings:
-			menuSettings();
-			return true;
-		case R.id.menu_exit:
-			HomeActivity.stopInCallScreenKiller(this);
-			menuExit();
-			return true;
-		case R.id.menu_about:
-			menuAbout();
-			return true;
-		case R.id.menu_disconnect:
-			menuDisconnect();
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
-		}
-	}
-	
-	private void menuDisconnect() {
-		if (xivoConnectionService != null) {
-			try {
-				xivoConnectionService.disconnect();
-			} catch (RemoteException e) {
-				Toast.makeText(this, getString(R.string.remote_exception),
-						Toast.LENGTH_LONG).show();
-			}
-		}
-	}
-	
-	private void menuAbout() {
-		Intent defineIntent = new Intent(this, AboutActivity.class);
-		startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
-	}
-	
-	private void menuExit() {
-		Log.i(LOG_TAG, "Menu exit clicked");
-		finish();
-	}
-	
-	private void menuSettings() {
-		Intent defineIntent = new Intent(this, SettingsActivity.class);
-		startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
 	}
 	
 	/**

@@ -22,18 +22,17 @@ package com.proformatique.android.xivoclient;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
+import android.view.View.OnClickListener;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 /**
@@ -43,21 +42,17 @@ import android.widget.Toast;
  * @author Pascal Cadotte-Michaud
  *
  */
-public class XivoActivity extends Activity {
+public class XivoActivity extends Activity implements OnClickListener {
 	
 	private SharedPreferences settings;
-	private String LOG_TAG = "XivoActivity";
-	private ForcedDisconnectReceiver receiver;
+	private ImageView statusButton;
 	
+	/*
+	 * Activity lifecycle
+	 */
+	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		//setContentView(R.layout.login);
-		
-		receiver = new ForcedDisconnectReceiver();
-		
-		IntentFilter filter = new IntentFilter();
-		filter.addAction(Constants.ACTION_FORCED_DISCONNECT);
-		registerReceiver(receiver, new IntentFilter(filter));
 		
 		settings = PreferenceManager.getDefaultSharedPreferences(this);
 		
@@ -66,16 +61,43 @@ public class XivoActivity extends Activity {
 					WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		}
 	}
-    
-    public boolean onOptionsItemSelected(MenuItem item) {
-        /**
-         *  Handle item selection
-         */
-        switch (item.getItemId()) {
-        case R.id.menu_settings:
-            menuSettings();
-            return true;
-        case R.id.menu_exit:
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+	}
+	
+	/*
+	 * GUI
+	 */
+	protected void registerButtons() {
+		statusButton = (ImageView) findViewById(R.id.statusContact);
+		statusButton.setOnClickListener(this);
+	}
+	
+	@Override
+	public void onClick(View v) {
+		switch (v.getId()) {
+		case R.id.statusContact:
+			Toast.makeText(this, "Status button clicked", Toast.LENGTH_LONG).show();
+			break;
+		default:
+			break;
+		}
+	}
+	
+	/*
+	 * Menus
+	 */
+	public boolean onOptionsItemSelected(MenuItem item) {
+		/**
+		 *  Handle item selection
+		 */
+		switch (item.getItemId()) {
+		case R.id.menu_settings:
+			menuSettings();
+			return true;
+		case R.id.menu_exit:
 			HomeActivity.stopInCallScreenKiller(this);
 			menuExit();
 			return true;
@@ -89,7 +111,7 @@ public class XivoActivity extends Activity {
 			return super.onOptionsItemSelected(item);
 		}
 	}
-    
+	
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.menu_settings, menu);
@@ -98,7 +120,7 @@ public class XivoActivity extends Activity {
 		
 		return true;
 	}
-    
+	
 	private void menuDisconnect() {
 		Toast.makeText(this, "Not implemented", Toast.LENGTH_LONG).show();
 	}
@@ -115,21 +137,5 @@ public class XivoActivity extends Activity {
 	private void menuSettings() {
 		Intent defineIntent = new Intent(this, SettingsActivity.class);
 		startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
-	}
-	
-	public class ForcedDisconnectReceiver extends BroadcastReceiver {
-		
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			if (intent.getAction().equals(Constants.ACTION_FORCED_DISCONNECT)) {
-				Log.d(LOG_TAG, "Received broadcast: Forced disconnect");
-				Toast.makeText(XivoActivity.this, R.string.forced_disconnect, Toast.LENGTH_LONG).show();
-			}
-		}
-	}
-	
-	protected void onDestroy() {
-		unregisterReceiver(receiver);
-		super.onDestroy();
 	}
 }
