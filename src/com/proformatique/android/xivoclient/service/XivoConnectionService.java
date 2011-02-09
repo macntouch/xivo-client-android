@@ -162,7 +162,13 @@ public class XivoConnectionService extends Service {
      * @return connection status
      */
     private int connectToServer() {
-        int port = Integer.parseInt(prefs.getString("server_port", "5003"));
+        int port = Constants.XIVO_DEFAULT_PORT;
+        try {
+            port = Integer.parseInt(prefs.getString("server_port",
+                    Integer.toString(Constants.XIVO_DEFAULT_PORT)));
+        } catch (NumberFormatException e) {
+            Log.d(TAG, "Port number cannot be parsed to int, using default port");
+        }
         String host = prefs.getString("server_adress", "");
         if (thread != null && thread.isAlive())
             thread.interrupt();

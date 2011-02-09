@@ -70,6 +70,7 @@ public final class Constants {
 	public static final String XIVO_CTI_VERSION_NOT_SUPPORTED = "wrong_client_os_identifier:android-";
 	public static final String XIVO_LOGIN_PASSWORD = "login_password";
 	public static final String XIVO_LOGIN_UNKNOWN_USER = "user_not_found";
+	public static final int XIVO_DEFAULT_PORT = 5003;
 	public static final int XIVO_NOTIF = 375942;
 	public static final int ANDROID_CONTACT_HASH_SIZE = 6;
 	public static final int CONTACT_PICKER_RESULT = 1001;
