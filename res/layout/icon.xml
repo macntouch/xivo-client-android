@@ -16,5 +16,6 @@
         android:layout_height="wrap_content"
         android:text="..."
         android:gravity="center_horizontal"
-        android:textColorHighlight="#656565"/>
+        android:textColorHighlight="#656565"
+        android:textColor="@color/black"/>
 </LinearLayout>

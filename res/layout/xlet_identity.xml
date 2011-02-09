@@ -5,7 +5,8 @@
     android:id="@+id/identityFrame"
     android:orientation="horizontal"
     android:clickable="true"
-    android:background="@color/header_bg">
+    android:background="@color/header_bg"
+    android:paddingTop="5dp">
 <ImageView android:id="@+id/statusContact"
     android:layout_width="50dp" 
     android:layout_height="50dp"
