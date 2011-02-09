@@ -36,17 +36,19 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
 
 import com.proformatique.android.xivoclient.service.IXivoConnectionService;
 import com.proformatique.android.xivoclient.service.XivoConnectionService;
 import com.proformatique.android.xivoclient.tools.Constants;
 
-public class HomeActivity extends XivoActivity {
+public class HomeActivity extends XivoActivity implements OnItemClickListener {
 	
 	/**
 	 * Constants
@@ -79,8 +81,10 @@ public class HomeActivity extends XivoActivity {
 		setContentView(R.layout.home_activity);
 		super.registerButtons();	// Set onClickListeners for the XivoActivity
 		
+		
 		grid = (GridView) findViewById(R.id.grid);
-		grid.setAdapter(new ImageAdapter(this));
+		grid.setAdapter(new ImageAdapter());
+		grid.setOnItemClickListener(this);
 	}
 	
 	@Override
@@ -100,6 +104,10 @@ public class HomeActivity extends XivoActivity {
 		super.onDestroy();
 	}
 	
+	public void onClick(View v) {
+		Log.d(LOG_TAG, "onClick");
+	}
+	
 	/**
 	 * Makes sure the service is authenticated and that data are loaded
 	 */
@@ -109,6 +117,7 @@ public class HomeActivity extends XivoActivity {
 			waitForAuthentication();
 			startLoading();
 		} else {
+			Log.d(LOG_TAG, "launchCTIConnection == null");
 			dieOnBindFail();
 		}
 	}
@@ -283,6 +292,10 @@ public class HomeActivity extends XivoActivity {
 			} else {
 				Log.d(LOG_TAG, "XiVO connection already binded");
 			}
+			
+			// wait until it's connected...
+			while (con == null || xivoConnectionService == null);
+			
 			return xivoConnectionService == null ? FAIL : OK;
 		}
 		
@@ -424,15 +437,10 @@ public class HomeActivity extends XivoActivity {
 	}
 	
 	private class ImageAdapter extends BaseAdapter {
-		Context context;
-		
-		public ImageAdapter(Context context) {
-			this.context = context;
-		}
 		
 		@Override
 		public int getCount() {
-			return 6;
+			return 20;
 		}
 		
 		@Override
@@ -451,14 +459,55 @@ public class HomeActivity extends XivoActivity {
 			if (convertView == null) {
 				LayoutInflater li = getLayoutInflater();
 				v = li.inflate(R.layout.icon, null);
-				TextView tv = (TextView) v.findViewById(R.id.icon_text);
-				tv.setText("Profile: " + position);
-				ImageView iv = (ImageView) v.findViewById(R.id.icon_image);
-				iv.setImageResource(R.drawable.icon);
 			} else {
 				v = convertView;
 			}
+			TextView tv = (TextView) v.findViewById(R.id.icon_text);
+			ImageView iv = (ImageView) v.findViewById(R.id.icon_image);
+			switch (position) {
+			case 0:
+				// Dialer
+				tv.setText(getString(R.string.dialer_btn_lbl));
+				iv.setImageResource(R.drawable.ic_menu_call);
+				break;
+			case 1:
+				// User List
+				tv.setText(getString(R.string.userslist_btn_lbl));
+				iv.setImageResource(R.drawable.ic_menu_friendslist);
+				break;
+			case 2:
+				// History
+				tv.setText(getString(R.string.history_btn_lbl));
+				iv.setImageResource(R.drawable.ic_menu_recent_history);
+				break;
+			case 3:
+				// Services
+				tv.setText(getString(R.string.service_btn_lbl));
+				iv.setImageResource(R.drawable.ic_menu_manage);
+				break;
+			default:
+				tv.setText("...");
+				iv.setImageResource(R.drawable.icon);
+				break;
+			}
 			return v;
+		}
+	}
+	
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		switch(position) {
+		case 0:
+			Toast.makeText(this, "clicked first", Toast.LENGTH_SHORT).show();
+			break;
+		case 1:
+			Toast.makeText(this, "clicked second", Toast.LENGTH_SHORT).show();
+			break;
+		case 2:
+		case 3:
+		default:
+			Toast.makeText(this, getString(R.string.unhandled_click), Toast.LENGTH_LONG).show();
+			break;
 		}
 	}
 }
