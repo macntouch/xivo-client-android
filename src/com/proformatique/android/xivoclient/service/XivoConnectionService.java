@@ -24,6 +24,7 @@ import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.JSONMessageFactory;
 
 import android.app.Service;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -588,6 +589,10 @@ public class XivoConnectionService extends Service {
             astId = jCapa.getString("astid");
             userId = astId + "/" + xivoId;
             
+            if (jCapa.has("capaxlets")) {
+                parseCapaxlets(jCapa.getJSONArray("capaxlets"));
+            }
+            
             JSONObject jCapaPresence = jCapa.getJSONObject("capapresence");
             JSONObject jCapaPresenceState = jCapaPresence.getJSONObject("state");
             JSONObject jCapaPresenceStateNames = jCapaPresence.getJSONObject("names");
@@ -611,6 +616,26 @@ public class XivoConnectionService extends Service {
             return Constants.JSON_POPULATE_ERROR;
         }
         return Constants.OK;
+    }
+    
+    /**
+     * Parses the incoming capaxlets message to add it to the DB
+     * @param xlets
+     */
+    private void parseCapaxlets(JSONArray xlets) {
+        Log.d(TAG, "Parsing capaxlets");
+        // Remove old entries
+        getContentResolver().delete(CapaxletsProvider.CONTENT_URI, null, null);
+        ContentValues values = new ContentValues();
+        for (int i = 0; i < xlets.length(); i++) {
+            try {
+                values.put(CapaxletsProvider.XLET, xlets.getString(i));
+                getContentResolver().insert(CapaxletsProvider.CONTENT_URI, values);
+                values.clear();
+            } catch (JSONException e) {
+                Log.d(TAG, "Could not parse capaxlets");
+            }
+        }
     }
     
     private void feedStatusList(String status, JSONObject jNames, JSONObject jAllowed)
