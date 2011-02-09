@@ -79,6 +79,8 @@ public class XivoConnectionService extends Service {
      */
     private final IXivoConnectionService.Stub binder = new IXivoConnectionService.Stub() {
         
+        private boolean loadDataCalledState = false;
+        
         @Override
         public int connect() throws RemoteException {
             return connectToServer();
@@ -107,7 +109,15 @@ public class XivoConnectionService extends Service {
         @Override
         public void loadData() throws RemoteException {
             XivoConnectionService.this.loadList("users");
+            loadDataCalledState = true;
         }
+        
+        @Override
+        public boolean loadDataCalled() throws RemoteException {
+            return loadDataCalledState;
+        }
+        
+        
     };
     
     /**

@@ -19,6 +19,10 @@
 
 package com.proformatique.android.xivoclient;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -153,29 +157,88 @@ public class HomeActivity extends XivoActivity {
 	}
 	
 	/**
+	 * Makes sure the service is authenticated and that data are loaded
+	 */
+	private void launchCTIConnection() {
+		if (xivoConnectionService != null) {
+			waitForConnection();
+			waitForAuthentication();
+			startLoading();
+		} else {
+			dieOnBindFail();
+		}
+	}
+	
+	/**
 	 * Starts a connection task and wait until it's connected
 	 */
 	private void waitForConnection() {
+		try {
+			if (xivoConnectionService.isConnected())
+				return;
+		} catch (RemoteException e) {
+			dieOnBindFail();
+		}
 		connectTask = new ConnectTask();
 		connectTask.execute();
+		try {
+			connectTask.get(10, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
 	 * Starts an authentication task and wait until it's authenticated
 	 */
 	private void waitForAuthentication() {
+		try {
+			if (xivoConnectionService.isAuthenticated())
+				return;
+		} catch (RemoteException e) {
+			dieOnBindFail();
+		}
 		authenticationTask = new AuthenticationTask();
 		authenticationTask.execute();
+		try {
+			authenticationTask.get(10, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
-	 * Starts the client
-	 * This should be called once the service is started and connected
+	 * Check if the service received lists from the CTI server
+	 * Gets the list if they are not available
 	 */
-	private void startClient() {
-		displayElements(false);
-		Intent defineIntent = new Intent(HomeActivity.this, XletsContainerTabActivity.class);
-		HomeActivity.this.startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
+	private void startLoading() {
+		try {
+			if (xivoConnectionService.loadDataCalled()) {
+				Log.d(LOG_TAG, "Data already loaded");
+				return;
+			}
+			xivoConnectionService.loadData();
+		} catch (RemoteException e) {
+			dieOnBindFail();
+		}
+	}
+	
+	/**
+	 * Kills the app and display a message when the binding to the service cannot be astablished
+	 * ___This should NOT happen___
+	 */
+	private void dieOnBindFail() {
+		Toast.makeText(this, getString(R.string.binding_error), Toast.LENGTH_LONG).show();
+		Log.e(LOG_TAG, "Failed to bind to the service");
+		finish();
 	}
 	
 	public void clickOnButtonOk(View v) {
@@ -206,19 +269,6 @@ public class HomeActivity extends XivoActivity {
 			eLoginV.setVisibility(View.INVISIBLE);
 			ePasswordV.setVisibility(View.INVISIBLE);
 			eStatus.setVisibility(View.VISIBLE);
-		}
-	}
-	
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		
-		if (requestCode == Constants.CODE_LAUNCH) {
-			Log.d( LOG_TAG, "onActivityResult : CODE_LAUNCH");
-			if (resultCode == Constants.CODE_EXIT) {
-				Log.d( LOG_TAG, "onActivityResult : CODE_EXIT");
-				this.finish();
-			}
 		}
 	}
 	
@@ -320,16 +370,13 @@ public class HomeActivity extends XivoActivity {
 			} else {
 				Log.d(LOG_TAG, "XiVO connection already binded");
 			}
-			if (con != null)
-				return OK;
-			else
-				return FAIL;
+			return xivoConnectionService == null ? FAIL : OK;
 		}
 		
 		@Override
 		protected void onPostExecute(Integer result) {
 			Log.d(LOG_TAG, "Binding finished");
-			waitForConnection();
+			launchCTIConnection();
 		}
 	}
 	
@@ -369,7 +416,6 @@ public class HomeActivity extends XivoActivity {
 			}
 			switch (result) {	
 			case Constants.CONNECTION_OK:
-				waitForAuthentication();
 				break;
 			case Constants.REMOTE_EXCEPTION:
 				Toast.makeText(HomeActivity.this, getString(R.string.remote_exception),
