@@ -57,6 +57,7 @@
     <string name="login_ko">Authentication failed</string>
     <string name="binding_error">Failed to bind to the service</string>
     <string name="unhandled_click">Unhandled click</string>
+    <string name="authentication_timeout">Authentication timedout</string>
    
     <!-- Others -->
     <string name="context_action">Action</string>
