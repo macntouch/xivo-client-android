@@ -128,7 +128,9 @@
         </receiver>
         <!-- Providers -->
         <provider android:name=".service.CapaxletsProvider"
-            android:authorities="com.proformatique.android.xivoclient"/>
+            android:authorities="com.proformatique.android.xivoclient.xlet"/>
+        <provider android:name=".service.CapapresenceProvider"
+            android:authorities="com.proformatique.android.xivoclient.presence"/>
     </application>
     <uses-sdk android:minSdkVersion="7"/>
 </manifest> 

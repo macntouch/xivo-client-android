@@ -40,6 +40,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
+import com.proformatique.android.xivoclient.service.CapapresenceProvider;
 import com.proformatique.android.xivoclient.service.CapaxletsProvider;
 import com.proformatique.android.xivoclient.tools.Constants;
 
@@ -145,7 +146,7 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 		 * Retrieves the list of xlets from the content provider
 		 */
 		public void updateAvailableXlets() {
-			Uri allXlets = Uri.parse("content://com.proformatique.android.xivoclient/capaxlets");
+			Uri allXlets = CapaxletsProvider.CONTENT_URI;
 			Cursor c = managedQuery(allXlets, null, null, null, null);
 			availXlets = new ArrayList<String>(c.getCount());
 			if (c.moveToFirst()) {
@@ -218,6 +219,7 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 		case 2:
 		case 3:
 		default:
+			testPresence();
 			Toast.makeText(this, "Nothing yet", Toast.LENGTH_SHORT).show();
 			break;
 		}
@@ -234,5 +236,19 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 			super.onChange(selfChange);
 			xletsAdapter.updateAvailableXlets();
 		}
+	}
+	
+	private void testPresence() {
+		Cursor c = managedQuery(CapapresenceProvider.CONTENT_URI, null, null, null, null);
+		if (c.moveToFirst()) {
+			do {
+				String name = c.getString(c.getColumnIndex(CapapresenceProvider.NAME));
+				String color = c.getString(c.getColumnIndex(CapapresenceProvider.COLOR));
+				String longname = c.getString(c.getColumnIndex(CapapresenceProvider.LONGNAME));
+				int allowed = c.getInt(c.getColumnIndex(CapapresenceProvider.ALLOWED));
+				Log.d(LOG_TAG, "Presence: " + name + " " + longname + " " + color + " " + allowed);
+			} while (c.moveToNext());
+		}
+		handler.post(updateGrid);
 	}
 }

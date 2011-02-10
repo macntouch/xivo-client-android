@@ -1,5 +1,7 @@
 package com.proformatique.android.xivoclient.service;
 
+import com.proformatique.android.xivoclient.tools.Constants;
+
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -13,50 +15,63 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
-public class CapaxletsProvider extends ContentProvider {
+public class CapapresenceProvider extends ContentProvider {
 	
-	private final static String TAG = "CapaxletProvider";
+	private final static String TAG = "PresenceProvider";
 	
-	public final static String PROVIDER_NAME = "com.proformatique.android.xivoclient" + ".xlet";
-	public final static Uri CONTENT_URI = Uri.parse("content://" + PROVIDER_NAME + "/capaxlets");
-	
+	public final static String PROVIDER_NAME = Constants.PACK + ".presence";
+	public final static Uri CONTENT_URI = Uri.parse("content://" + PROVIDER_NAME + "/capapresence");
 	private static final String CONTENT_TYPE
-			= "vnd.android.cursor.dir/vnd.proformatique.xivo.capaxlet";
+		= "vnd.android.cursor.dir/vnd.proformatique.xivo.capapresence";
 	private static final String CONTENT_ITEM_TYPE
-			= "vnd.android.cursor.item/vnd.proformatique.xivo.capaxlet";
+		= "vnd.android.cursor.item/vnd.proformatique.xivo.capapresence";
 	
+	/*
+	 * Columns
+	 */
 	public static final String _ID = "_id";
-	public static final String XLET = "capaxlet";
+	public static final String NAME = "name";
+	public static final String COLOR = "color";
+	public static final String LONGNAME = "longname";
+	public static final String ALLOWED = "allowed";
 	
-	private static final int XLETS = 1;
-	private static final int XLET_ID = 2;
-	
+	/*
+	 * uri matchers
+	 */
+	private static final int PRESENCES = 1;
+	private static final int PRESENCE_ID = 2;
 	private static final UriMatcher uriMatcher;
 	static {
 		uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-		uriMatcher.addURI(PROVIDER_NAME, "capaxlets", XLETS);
-		uriMatcher.addURI(PROVIDER_NAME, "capaxlets/#", XLET_ID);
+		uriMatcher.addURI(PROVIDER_NAME, "capapresence", PRESENCES);
+		uriMatcher.addURI(PROVIDER_NAME, "capapresence/#", PRESENCE_ID);
 	}
 	
-	// Database stuff
-	private SQLiteDatabase capaxletDB;
-	private static final String DATABASE_NAME = "capaxlets";
-	private static final String DATABASE_TABLE = "capaxlets";
+	/*
+	 * DB info
+	 */
+	private SQLiteDatabase capapresenceDB;
+	private static final String DATABASE_NAME = "capapresence";
+	private static final String DATABASE_TABLE = "capapresence";
 	private static final int DATABASE_VERSION = 1;
 	private static final String DATABASE_CREATE =
-		"create table " + DATABASE_TABLE + " (_id integer primary key autoincrement, "
-		+ XLET + " text not null);";
+		"create table " + DATABASE_TABLE + " (" +
+		_ID + " integer primary key autoincrement, " +
+		NAME + " text not null, " +
+		COLOR + " text not null, " +
+		LONGNAME + " text not null, " +
+		ALLOWED + " integer not null);";
 	
 	@Override
 	public int delete(Uri uri, String selection, String[] selectionArgs) {
 		int count = 0;
 		switch(uriMatcher.match(uri)) {
-		case XLETS:
-			count = capaxletDB.delete(DATABASE_TABLE, selection, selectionArgs);
+		case PRESENCES:
+			count = capapresenceDB.delete(DATABASE_TABLE, selection, selectionArgs);
 			break;
-		case XLET_ID:
+		case PRESENCE_ID:
 			String id = uri.getLastPathSegment();
-			count = capaxletDB.delete(DATABASE_TABLE, _ID + " = " + id +
+			count = capapresenceDB.delete(DATABASE_TABLE, _ID + " = " + id +
 					(!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
 					selectionArgs);
 			break;
@@ -70,9 +85,9 @@ public class CapaxletsProvider extends ContentProvider {
 	@Override
 	public String getType(Uri uri) {
 		switch(uriMatcher.match(uri)) {
-		case XLETS:
+		case PRESENCES:
 			return CONTENT_TYPE;
-		case XLET_ID:
+		case PRESENCE_ID:
 			return CONTENT_ITEM_TYPE;
 		default:
 			throw new IllegalArgumentException("Unsupported URI: " + uri);
@@ -81,7 +96,7 @@ public class CapaxletsProvider extends ContentProvider {
 	
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
-		long rowId = capaxletDB.insert(DATABASE_TABLE, "", values);
+		long rowId = capapresenceDB.insert(DATABASE_TABLE, "", values);
 		if (rowId > 0) {
 			Uri _uri = ContentUris.withAppendedId(CONTENT_URI, rowId);
 			getContext().getContentResolver().notifyChange(_uri, null);
@@ -94,8 +109,8 @@ public class CapaxletsProvider extends ContentProvider {
 	@Override
 	public boolean onCreate() {
 		DBHelper dbHelper = new DBHelper(getContext());
-		capaxletDB = dbHelper.getWritableDatabase();
-		return capaxletDB != null;
+		capapresenceDB = dbHelper.getWritableDatabase();
+		return capapresenceDB != null;
 	}
 	
 	@Override
@@ -104,11 +119,11 @@ public class CapaxletsProvider extends ContentProvider {
 		SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
 		sqlBuilder.setTables(DATABASE_TABLE);
 		
-		if (uriMatcher.match(uri) == XLET_ID)
+		if (uriMatcher.match(uri) == PRESENCE_ID)
 			sqlBuilder.appendWhere(_ID + " = " + uri.getLastPathSegment());
 		
 		Cursor c = sqlBuilder.query(
-				capaxletDB, projection, selection, selectionArgs, null, null, null);
+				capapresenceDB, projection, selection, selectionArgs, null, null, null);
 		c.setNotificationUri(getContext().getContentResolver(), uri);
 		return c;
 	}
@@ -118,11 +133,11 @@ public class CapaxletsProvider extends ContentProvider {
 			String[] selectionArgs) {
 		int count = 0;
 		switch (uriMatcher.match(uri)){
-		case XLETS:
-			count = capaxletDB.update(DATABASE_TABLE, values, selection, selectionArgs);
+		case PRESENCES:
+			count = capapresenceDB.update(DATABASE_TABLE, values, selection, selectionArgs);
 			break;
-		case XLET_ID:
-			count = capaxletDB.update(
+		case PRESENCE_ID:
+			count = capapresenceDB.update(
 					DATABASE_TABLE, values, _ID + " = " + uri.getLastPathSegment() + 
 					(!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""), 
 					selectionArgs);

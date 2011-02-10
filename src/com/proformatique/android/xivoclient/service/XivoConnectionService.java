@@ -599,6 +599,10 @@ public class XivoConnectionService extends Service {
                 parseCapaxlets(jCapa.getJSONArray("capaxlets"));
             }
             
+            if (jCapa.has("capapresence")) {
+                parseCapapresence(jCapa.getJSONObject("capapresence"));
+            }
+            
             JSONObject jCapaPresence = jCapa.getJSONObject("capapresence");
             JSONObject jCapaPresenceState = jCapaPresence.getJSONObject("state");
             JSONObject jCapaPresenceStateNames = jCapaPresence.getJSONObject("names");
@@ -622,6 +626,32 @@ public class XivoConnectionService extends Service {
             return Constants.JSON_POPULATE_ERROR;
         }
         return Constants.OK;
+    }
+    
+    /**
+     * Parses the incoming capapresence message and update the DB
+     */
+    @SuppressWarnings("unchecked")
+    private void parseCapapresence(JSONObject jPresence) {
+        Log.d(TAG, "Parsing capapresence");
+        try {
+            ContentValues presence = new ContentValues();
+            for (Iterator<String> keyIter = jPresence.getJSONObject("names").keys();
+                    keyIter.hasNext(); ) {
+                String key = keyIter.next();
+                presence.put("name", key);
+                presence.put("color",
+                        jPresence.getJSONObject("names").getJSONObject(key).getString("color"));
+                presence.put("longname",
+                        jPresence.getJSONObject("names").getJSONObject(key).getString("longname"));
+                int allowed = jPresence.getJSONObject("allowed").getBoolean(key) == true ? 1 : 0;
+                presence.put("allowed", allowed);
+                getContentResolver().insert(CapapresenceProvider.CONTENT_URI, presence);
+                presence.clear();
+            }
+        } catch (JSONException e) {
+            Log.d(TAG, "json exception while parsing presences");
+        }
     }
     
     /**
