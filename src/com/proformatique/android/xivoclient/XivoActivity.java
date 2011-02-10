@@ -19,13 +19,27 @@
 
 package com.proformatique.android.xivoclient;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import com.proformatique.android.xivoclient.service.IXivoConnectionService;
+import com.proformatique.android.xivoclient.service.XivoConnectionService;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -44,8 +58,24 @@ import android.widget.Toast;
  */
 public class XivoActivity extends Activity implements OnClickListener {
 	
+	private final static String TAG = "XivoActivity";
+	
+	/*
+	 * Service
+	 */
+	private BindingTask bindingTask = null;
+	private XivoConnectionServiceConnection con = null;
+	private IXivoConnectionService xivoConnectionService = null;
+	private ConnectTask connectTask = null;
+	private AuthenticationTask authenticationTask = null;
+	
 	private SharedPreferences settings;
+	
+	/*
+	 * UI
+	 */
 	private ImageView statusButton;
+	private ProgressDialog dialog;
 	
 	/*
 	 * Activity lifecycle
@@ -63,7 +93,15 @@ public class XivoActivity extends Activity implements OnClickListener {
 	}
 	
 	@Override
+	protected void onResume() {
+		super.onResume();
+		startXivoConnectionService();
+		bindXivoConnectionService();
+	}
+	
+	@Override
 	protected void onDestroy() {
+		releaseXivoConnectionService();
 		super.onDestroy();
 	}
 	
@@ -137,5 +175,329 @@ public class XivoActivity extends Activity implements OnClickListener {
 	private void menuSettings() {
 		Intent defineIntent = new Intent(this, SettingsActivity.class);
 		startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
+	}
+	
+	/*
+	 * Service
+	 */
+	/**
+	 * Starts the XivoConnectionService
+	 * If the service is not started it will get destroyed when our application is destroyed
+	 */
+	private void startXivoConnectionService() {
+		Intent iStartXivoService = new Intent();
+		iStartXivoService.setClassName(Constants.PACK, XivoConnectionService.class.getName());
+		startService(iStartXivoService);
+		Log.d(TAG, "Starting XiVO connection service");
+	}
+	
+	/**
+	 * Makes sure the service is authenticated and that data are loaded
+	 */
+	private void launchCTIConnection() {
+		if (xivoConnectionService != null) {
+			waitForConnection();
+			waitForAuthentication();
+			startLoading();
+		} else {
+			Log.d(TAG, "launchCTIConnection == null");
+			dieOnBindFail();
+		}
+	}
+	
+	/**
+	 * Releases the service before leaving
+	 */
+	private void releaseXivoConnectionService() {
+		if (con != null) {
+			unbindService(con);
+			con = null;
+			Log.d(TAG, "XiVO connection service released");
+		} else {
+			Log.d(TAG, "XiVO connection service not binded");
+		}
+	}
+	
+	/**
+	 * Starts a connection task and wait until it's connected
+	 */
+	private void waitForConnection() {
+		try {
+			if (xivoConnectionService.isConnected() && xivoConnectionService.isAuthenticated())
+				return;
+		} catch (RemoteException e) {
+			dieOnBindFail();
+		}
+		connectTask = new ConnectTask();
+		connectTask.execute();
+		try {
+			connectTask.get(10, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Starts an authentication task and wait until it's authenticated
+	 */
+	private void waitForAuthentication() {
+		try {
+			if (!(xivoConnectionService.isConnected())) {
+				return;
+			}
+			if (xivoConnectionService.isAuthenticated())
+				return;
+		} catch (RemoteException e) {
+			dieOnBindFail();
+		}
+		authenticationTask = new AuthenticationTask();
+		authenticationTask.execute();
+		try {
+			authenticationTask.get(10, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		} catch (TimeoutException e) {
+			Toast.makeText(this, getString(R.string.authentication_timeout),
+					Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	/**
+	 * Check if the service received lists from the CTI server
+	 * Gets the list if they are not available
+	 */
+	private void startLoading() {
+		try {
+			if (!(xivoConnectionService.isAuthenticated())) {
+				if (xivoConnectionService.loadDataCalled()) {
+					Log.d(TAG, "Data already loaded");
+					return;
+				}
+				xivoConnectionService.loadData();
+			}
+		} catch (RemoteException e) {
+			dieOnBindFail();
+		}
+	}
+	
+	/**
+	 * Binds the XivoConnection service
+	 */
+	private void bindXivoConnectionService() {
+		bindingTask = new BindingTask();
+		bindingTask.execute();
+	}
+	
+	/**
+	 * Establish a binding between the activity and the XivoConnectionService
+	 *
+	 */
+	private class XivoConnectionServiceConnection implements ServiceConnection {
+		
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			xivoConnectionService = IXivoConnectionService.Stub.asInterface((IBinder)service);
+			if (xivoConnectionService == null)
+				Log.e(TAG, "xivoConnectionService is null");
+			else
+				Log.i(TAG, "xivoConnectionService is not null");
+			Log.d(TAG, "onServiceConnected");
+		}
+		
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			Log.d(TAG, "onServiceDisconnected");
+		}
+	};
+	
+	/**
+	 * Binds to the service
+	 */
+	private class BindingTask extends AsyncTask<Void, Void, Integer> {
+		private int OK = 0;
+		private int FAIL = -1;
+		
+		@Override
+		protected void onPreExecute() {
+			Log.d(TAG, "Binding started");
+		}
+		
+		@Override
+		protected Integer doInBackground(Void... params) {
+			if (con == null) {
+				con = new XivoConnectionServiceConnection();
+				Intent iServiceBinder = new Intent();
+				iServiceBinder.setClassName(Constants.PACK, XivoConnectionService.class.getName());
+				bindService(iServiceBinder, con, Context.BIND_AUTO_CREATE);
+				Log.d(TAG, "XiVO connection service binded");
+			} else {
+				Log.d(TAG, "XiVO connection already binded");
+			}
+			
+			// wait until it's connected...
+			while (con == null || xivoConnectionService == null);
+			
+			return xivoConnectionService == null ? FAIL : OK;
+		}
+		
+		@Override
+		protected void onPostExecute(Integer result) {
+			Log.d(TAG, "Binding finished");
+			launchCTIConnection();
+		}
+	}
+	
+	/**
+	 * Kills the app and display a message when the binding to the service cannot be astablished
+	 * ___This should NOT happen___
+	 */
+	private void dieOnBindFail() {
+		Toast.makeText(this, getString(R.string.binding_error), Toast.LENGTH_LONG).show();
+		Log.e(TAG, "Failed to bind to the service");
+		finish();
+	}
+	
+	private class AuthenticationTask extends AsyncTask<Void, Void, Integer> {
+		
+		public AuthenticationTask() {
+			if (dialog == null)
+				dialog = new ProgressDialog(XivoActivity.this);
+			dialog.setCancelable(true);
+			dialog.setMessage(getString(R.string.authenticating));
+		}
+		
+		@Override
+		protected void onPreExecute() {
+			dialog.show();
+		}
+		
+		@Override
+		protected Integer doInBackground(Void... params) {
+			try {
+				if (xivoConnectionService != null && xivoConnectionService.isAuthenticated())
+					return Constants.AUTHENTICATION_OK;
+				return xivoConnectionService.authenticate();
+			} catch (RemoteException e) {
+				return Constants.REMOTE_EXCEPTION;
+			}
+		}
+		
+		@Override
+		protected void onPostExecute(Integer result) {
+			if (dialog != null) {
+				dialog.dismiss();
+				dialog = null;
+			}
+			if (result != Constants.OK && result != Constants.AUTHENTICATION_OK) {
+				try {
+					xivoConnectionService.disconnect();
+				} catch (RemoteException e) {
+					Toast.makeText(XivoActivity.this, getString(R.string.remote_exception),
+							Toast.LENGTH_SHORT).show();
+				}
+			}
+			switch(result) {
+			case Constants.OK:
+			case Constants.AUTHENTICATION_OK:
+				Log.i(TAG, "Authenticated");
+				break;
+			case Constants.JSON_POPULATE_ERROR:
+				Toast.makeText(XivoActivity.this, getString(R.string.login_ko),
+						Toast.LENGTH_LONG).show();
+				break;
+			case Constants.FORCED_DISCONNECT:
+				Toast.makeText(XivoActivity.this, getString(R.string.forced_disconnect),
+						Toast.LENGTH_LONG).show();
+				break;
+			case Constants.LOGIN_PASSWORD_ERROR:
+				Toast.makeText(XivoActivity.this, getString(R.string.bad_login_password),
+						Toast.LENGTH_LONG).show();
+				break;
+			case Constants.CTI_SERVER_NOT_SUPPORTED:
+				Toast.makeText(XivoActivity.this, getString(R.string.cti_not_supported),
+						Toast.LENGTH_LONG).show();
+				break;
+			case Constants.VERSION_MISMATCH:
+				Toast.makeText(XivoActivity.this, getString(R.string.version_mismatch),
+						Toast.LENGTH_LONG).show();
+				break;
+			case Constants.ALGORITH_NOT_AVAILABLE:
+				Toast.makeText(XivoActivity.this, getString(R.string.algo_exception),
+						Toast.LENGTH_LONG).show();
+				break;
+			default:
+				Log.e(TAG, "Unhandled result " + result);
+				Toast.makeText(XivoActivity.this, getString(R.string.login_ko),
+						Toast.LENGTH_LONG).show();
+				break;
+			}
+		}
+	}
+	
+	/**
+	 * Ask to the XivoConnectionService to connect and wait for the result
+	 */
+	private class ConnectTask extends AsyncTask<Void, Void, Integer> {
+		
+		public ConnectTask() {
+			if (dialog == null)
+				dialog = new ProgressDialog(XivoActivity.this);
+			dialog.setCancelable(true);
+			dialog.setMessage(getString(R.string.connection));
+		}
+		
+		@Override
+		protected void onPreExecute() {
+			dialog.show();
+		}
+		
+		@Override
+		protected Integer doInBackground(Void... params) {
+			try {
+				if (xivoConnectionService != null && xivoConnectionService.isConnected())
+					return Constants.CONNECTION_OK;
+				return xivoConnectionService.connect();
+			} catch (RemoteException e) {
+				return Constants.REMOTE_EXCEPTION;
+			}
+		}
+		
+		@Override
+		protected void onPostExecute(Integer result) {
+			if (dialog != null) {
+				dialog.dismiss();
+				dialog = null;
+			}
+			switch (result) {	
+			case Constants.CONNECTION_OK:
+				break;
+			case Constants.REMOTE_EXCEPTION:
+				Toast.makeText(XivoActivity.this, getString(R.string.remote_exception),
+						Toast.LENGTH_LONG).show();
+				break;
+			case Constants.NOT_CTI_SERVER:
+				Toast.makeText(XivoActivity.this, getString(R.string.not_cti_server),
+						Toast.LENGTH_LONG).show();
+				break;
+			case Constants.BAD_HOST:
+				Toast.makeText(XivoActivity.this, getString(R.string.bad_host),
+						Toast.LENGTH_LONG).show();
+				break;
+			case Constants.NO_NETWORK_AVAILABLE:
+				Toast.makeText(XivoActivity.this, getString(R.string.no_web_connection),
+						Toast.LENGTH_LONG).show();
+				break;
+			default:
+				Toast.makeText(XivoActivity.this, getString(R.string.connection_failed),
+						Toast.LENGTH_LONG).show();
+				break;
+			}
+		}
 	}
 }

@@ -57,6 +57,7 @@ public final class Constants {
 	/**
 	 * Application constants
 	 */
+	public static final String PACK = "com.proformatique.android.xivoclient";
 	public static final String XIVO_SERVER= "xivoserver";
 	public static final String XIVO_ASTID= "xivo";
 	public static final String XIVO_CONTEXT= "default";
