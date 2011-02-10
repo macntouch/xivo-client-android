@@ -152,7 +152,7 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 	 */
 	private void waitForConnection() {
 		try {
-			if (xivoConnectionService.isConnected())
+			if (xivoConnectionService.isConnected() && xivoConnectionService.isAuthenticated())
 				return;
 		} catch (RemoteException e) {
 			dieOnBindFail();
@@ -203,11 +203,13 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 	 */
 	private void startLoading() {
 		try {
-			if (xivoConnectionService.loadDataCalled()) {
-				Log.d(LOG_TAG, "Data already loaded");
-				return;
+			if (!(xivoConnectionService.isAuthenticated())) {
+				if (xivoConnectionService.loadDataCalled()) {
+					Log.d(LOG_TAG, "Data already loaded");
+					return;
+				}
+				xivoConnectionService.loadData();
 			}
-			xivoConnectionService.loadData();
 		} catch (RemoteException e) {
 			dieOnBindFail();
 		}
@@ -427,13 +429,21 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 				dialog.dismiss();
 				dialog = null;
 			}
+			if (result != Constants.OK && result != Constants.AUTHENTICATION_OK) {
+				try {
+					xivoConnectionService.disconnect();
+				} catch (RemoteException e) {
+					Toast.makeText(HomeActivity.this, getString(R.string.remote_exception),
+							Toast.LENGTH_SHORT).show();
+				}
+			}
 			switch(result) {
 			case Constants.OK:
 			case Constants.AUTHENTICATION_OK:
 				Log.i(LOG_TAG, "Authenticated");
 				break;
 			case Constants.JSON_POPULATE_ERROR:
-				Toast.makeText(HomeActivity.this, getString(R.string.json_exception),
+				Toast.makeText(HomeActivity.this, getString(R.string.login_ko),
 						Toast.LENGTH_LONG).show();
 				break;
 			case Constants.FORCED_DISCONNECT:

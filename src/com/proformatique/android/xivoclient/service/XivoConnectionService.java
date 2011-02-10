@@ -216,6 +216,7 @@ public class XivoConnectionService extends Service {
                 return Constants.NO_NETWORK_AVAILABLE;
             }
         }
+        resetState();
         authenticationComplete = false;
         cancel = true;
         thread.interrupt();
@@ -302,7 +303,7 @@ public class XivoConnectionService extends Service {
                 JSONObject newLine = null;
                 Log.d(TAG, "Starting the main loop");
                 while (!(cancel)) {
-                    while ((newLine = readJsonObjectCTI()) == null);
+                    while ((newLine = readJsonObjectCTI()) == null && !(cancel));
                     handler.sendEmptyMessage(parseIncomingJson(newLine));
                 }
             };
@@ -748,6 +749,7 @@ public class XivoConnectionService extends Service {
                 sessionId = nextJsonObject.getString("sessionid");
                 return Constants.OK;
             } else {
+                disconnectFromServer();
                 return parseLoginError(nextJsonObject);
             }
         } catch (JSONException e) {
