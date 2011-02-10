@@ -122,7 +122,7 @@ public class XivoActivity extends Activity implements OnClickListener {
 	}
 	
 	private void menuDisconnect() {
-		Toast.makeText(this, "Not implemented", Toast.LENGTH_LONG).show();
+		
 	}
 	
 	private void menuAbout() {
@@ -131,7 +131,7 @@ public class XivoActivity extends Activity implements OnClickListener {
 	}
 	
 	private void menuExit() {
-		Toast.makeText(this, "Not implemented", Toast.LENGTH_LONG).show();
+		finish();
 	}
 	
 	private void menuSettings() {
