@@ -181,7 +181,14 @@ public class XivoConnectionService extends Service {
         try {
             Log.d(TAG, "Connecting to " + host + " " + port);
             networkConnection = new Socket(host, port);
-            bytesReceived = 0L;
+        } catch (UnknownHostException e) {
+            Log.d(TAG, "Unknown host " + host);
+            return Constants.BAD_HOST;
+        } catch (IOException e) {
+            return Constants.BAD_HOST;
+        }
+        bytesReceived = 0L;
+        try {
             inputBuffer = new BufferedReader(
                     new InputStreamReader(networkConnection.getInputStream()));
             
@@ -192,11 +199,8 @@ public class XivoConnectionService extends Service {
                 }
             }
             return Constants.NOT_CTI_SERVER;
-        } catch (UnknownHostException e) {
-            Log.d(TAG, "Unknown host " + host);
-            return Constants.BAD_HOST;
         } catch (IOException e) {
-            return Constants.BAD_HOST;
+            return Constants.NO_NETWORK_AVAILABLE;
         }
     }
     
