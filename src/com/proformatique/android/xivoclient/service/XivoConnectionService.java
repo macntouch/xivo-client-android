@@ -205,7 +205,7 @@ public class XivoConnectionService extends Service {
     }
     
     private int disconnectFromServer() {
-        // TODO: Stop input loop
+        Log.d(TAG, "Disconnecting");
         if (networkConnection != null) {
             try {
                 networkConnection.shutdownOutput();
@@ -219,7 +219,8 @@ public class XivoConnectionService extends Service {
         resetState();
         authenticationComplete = false;
         cancel = true;
-        thread.interrupt();
+        if (thread != null)
+            thread.interrupt();
         return Constants.OK;
     }
     

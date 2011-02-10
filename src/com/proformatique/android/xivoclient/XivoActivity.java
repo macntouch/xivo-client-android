@@ -160,7 +160,7 @@ public class XivoActivity extends Activity implements OnClickListener {
 	}
 	
 	private void menuDisconnect() {
-		
+		disconnect();
 	}
 	
 	private void menuAbout() {
@@ -180,6 +180,17 @@ public class XivoActivity extends Activity implements OnClickListener {
 	/*
 	 * Service
 	 */
+	protected void disconnect() {
+		if (xivoConnectionService != null) {
+			try {
+				xivoConnectionService.disconnect();
+			} catch (RemoteException e) {
+				Toast.makeText(this, getString(R.string.remote_exception)
+						, Toast.LENGTH_SHORT).show();
+			}
+		}
+	}
+	
 	/**
 	 * Starts the XivoConnectionService
 	 * If the service is not started it will get destroyed when our application is destroyed
