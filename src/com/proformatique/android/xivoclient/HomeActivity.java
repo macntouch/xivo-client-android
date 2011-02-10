@@ -19,6 +19,8 @@
 
 package com.proformatique.android.xivoclient;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -28,8 +30,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
@@ -44,6 +49,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
+import com.proformatique.android.xivoclient.service.CapaxletsProvider;
 import com.proformatique.android.xivoclient.service.IXivoConnectionService;
 import com.proformatique.android.xivoclient.service.XivoConnectionService;
 import com.proformatique.android.xivoclient.tools.Constants;
@@ -61,6 +67,7 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 	 */
 	private ProgressDialog dialog;
 	private GridView grid;
+	private Handler handler = new Handler();
 	
 	/**
 	 * Service
@@ -70,6 +77,7 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 	private ConnectTask connectTask = null;
 	private AuthenticationTask authenticationTask = null;
 	private BindingTask bindingTask = null;
+	private XletsAdapter xletsAdapter = null;
 	
 	/**
 	 * Activity life cycle
@@ -81,9 +89,14 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 		setContentView(R.layout.home_activity);
 		super.registerButtons();	// Set onClickListeners for the XivoActivity
 		
-		
+		/*
+		 * Setup the grid, it's adapter, observer and listener
+		 */
 		grid = (GridView) findViewById(R.id.grid);
-		grid.setAdapter(new ImageAdapter());
+		xletsAdapter = new XletsAdapter();
+		getContentResolver().registerContentObserver(CapaxletsProvider.CONTENT_URI, true,
+				new XletObserver());
+		grid.setAdapter(xletsAdapter);
 		grid.setOnItemClickListener(this);
 	}
 	
@@ -94,6 +107,7 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 		startXivoConnectionService();
 		bindXivoConnectionService();
 		startInCallScreenKiller(this);
+		xletsAdapter.notifyDataSetChanged();
 	}
 	
 	@Override
@@ -107,6 +121,17 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 	public void onClick(View v) {
 		Log.d(LOG_TAG, "onClick");
 	}
+	
+	/**
+	 * A runnable to be used from non UI thread to update the Grid
+	 * Use handler.post(upgradeGrid)
+	 */
+	final Runnable updateGrid = new Runnable() {
+		public void run() {
+			if (xletsAdapter != null)
+				xletsAdapter.notifyDataSetChanged();
+		}
+	};
 	
 	/**
 	 * Makes sure the service is authenticated and that data are loaded
@@ -150,6 +175,9 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 	 */
 	private void waitForAuthentication() {
 		try {
+			if (!(xivoConnectionService.isConnected())) {
+				return;
+			}
 			if (xivoConnectionService.isAuthenticated())
 				return;
 		} catch (RemoteException e) {
@@ -164,7 +192,8 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 		} catch (ExecutionException e) {
 			e.printStackTrace();
 		} catch (TimeoutException e) {
-			e.printStackTrace();
+			Toast.makeText(this, getString(R.string.authentication_timeout),
+					Toast.LENGTH_SHORT).show();
 		}
 	}
 	
@@ -436,11 +465,46 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 		}
 	}
 	
-	private class ImageAdapter extends BaseAdapter {
+	private class XletsAdapter extends BaseAdapter {
+		private List<String> availXlets = null;
+		private List<String> implementedXlets = null;
+		
+		public XletsAdapter() {
+			// Add more xlets here
+			implementedXlets = new ArrayList<String>(1);
+			implementedXlets.add("dial");
+			implementedXlets.add("search");
+			implementedXlets.add("history");
+			implementedXlets.add("features");
+			
+			updateAvailableXlets();
+		}
+		
+		/**
+		 * Retrieves the list of xlets from the content provider
+		 */
+		public void updateAvailableXlets() {
+			Uri allXlets = Uri.parse("content://com.proformatique.android.xivoclient/capaxlets");
+			Cursor c = managedQuery(allXlets, null, null, null, null);
+			availXlets = new ArrayList<String>(c.getCount());
+			if (c.moveToFirst()) {
+				do {
+					String incomingXlet = c.getString(c.getColumnIndex(CapaxletsProvider.XLET));
+					int index;
+					if ((index = incomingXlet.indexOf("-")) != -1) {
+						incomingXlet = incomingXlet.substring(0, index);
+					}
+					// Only add xlets that are implemented
+					if (implementedXlets.contains(incomingXlet))
+						availXlets.add(incomingXlet);
+				} while (c.moveToNext());
+			}
+			handler.post(updateGrid);
+		}
 		
 		@Override
 		public int getCount() {
-			return 20;
+			return availXlets == null ? 0 : availXlets.size();
 		}
 		
 		@Override
@@ -464,31 +528,22 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 			}
 			TextView tv = (TextView) v.findViewById(R.id.icon_text);
 			ImageView iv = (ImageView) v.findViewById(R.id.icon_image);
-			switch (position) {
-			case 0:
-				// Dialer
+			
+			if (availXlets.get(position).equals("dial")) {
 				tv.setText(getString(R.string.dialer_btn_lbl));
 				iv.setImageResource(R.drawable.ic_menu_call);
-				break;
-			case 1:
-				// User List
+			} else if (availXlets.get(position).equals("search")) {
 				tv.setText(getString(R.string.userslist_btn_lbl));
 				iv.setImageResource(R.drawable.ic_menu_friendslist);
-				break;
-			case 2:
-				// History
+			} else if (availXlets.get(position).equals("history")) {
 				tv.setText(getString(R.string.history_btn_lbl));
 				iv.setImageResource(R.drawable.ic_menu_recent_history);
-				break;
-			case 3:
-				// Services
+			} else if (availXlets.get(position).equals("features")) {
 				tv.setText(getString(R.string.service_btn_lbl));
 				iv.setImageResource(R.drawable.ic_menu_manage);
-				break;
-			default:
+			} else {
 				tv.setText("...");
 				iv.setImageResource(R.drawable.icon);
-				break;
 			}
 			return v;
 		}
@@ -498,16 +553,25 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		switch(position) {
 		case 0:
-			Toast.makeText(this, "clicked first", Toast.LENGTH_SHORT).show();
-			break;
 		case 1:
-			Toast.makeText(this, "clicked second", Toast.LENGTH_SHORT).show();
-			break;
 		case 2:
 		case 3:
 		default:
-			Toast.makeText(this, getString(R.string.unhandled_click), Toast.LENGTH_LONG).show();
+			Toast.makeText(this, "Nothing yet", Toast.LENGTH_SHORT).show();
 			break;
+		}
+	}
+	
+	private class XletObserver extends android.database.ContentObserver {
+		
+		public XletObserver() {
+			super(null);
+		}
+		
+		@Override
+		public void onChange(boolean selfChange) {
+			super.onChange(selfChange);
+			xletsAdapter.updateAvailableXlets();
 		}
 	}
 }
