@@ -114,6 +114,11 @@ public class XivoConnectionService extends Service {
         public boolean loadDataCalled() throws RemoteException {
             return usersList != null;
         }
+        
+        @Override
+        public long getReceivedBytes() throws RemoteException {
+            return bytesReceived;
+        }
     };
     
     /**

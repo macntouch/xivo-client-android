@@ -8,4 +8,5 @@ interface IXivoConnectionService {
     boolean isAuthenticated();
     void loadData();
     boolean loadDataCalled();
+    long getReceivedBytes();
 }
