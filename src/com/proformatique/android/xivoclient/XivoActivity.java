@@ -230,7 +230,6 @@ public class XivoActivity extends Activity implements OnClickListener {
 		if (xivoConnectionService != null) {
 			waitForConnection();
 			waitForAuthentication();
-			startLoading();
 		} else {
 			Log.d(TAG, "launchCTIConnection == null");
 			dieOnBindFail();
@@ -306,7 +305,7 @@ public class XivoActivity extends Activity implements OnClickListener {
 	 */
 	private void startLoading() {
 		try {
-			if (!(xivoConnectionService.isAuthenticated())) {
+			if (xivoConnectionService.isAuthenticated()) {
 				if (xivoConnectionService.loadDataCalled()) {
 					Log.d(TAG, "Data already loaded");
 					return;
@@ -335,6 +334,7 @@ public class XivoActivity extends Activity implements OnClickListener {
 		GraphicsManager.setIconStateDisplay(this,
 				(ImageView) findViewById(R.id.identity_current_state_image),
 				c.getString(c.getColumnIndex(CapapresenceProvider.COLOR)));
+		c.close();
 	}
 	
 	/**
@@ -457,6 +457,7 @@ public class XivoActivity extends Activity implements OnClickListener {
 			case Constants.OK:
 			case Constants.AUTHENTICATION_OK:
 				Log.i(TAG, "Authenticated");
+				startLoading();
 				break;
 			case Constants.JSON_POPULATE_ERROR:
 				Toast.makeText(XivoActivity.this, getString(R.string.login_ko),

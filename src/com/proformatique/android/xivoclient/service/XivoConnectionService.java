@@ -60,7 +60,6 @@ public class XivoConnectionService extends Service {
     private String userId = null;
     private HashMap<String, String> capaPresenceState = null;
     private XivoNotification xivoNotif = null;
-    private List<HashMap<String, String>> statusList = null;
     private List<HashMap<String, String>> usersList = null;
     private int[] mwi = new int[3];
     private JSONArray capalist = null;
@@ -108,7 +107,8 @@ public class XivoConnectionService extends Service {
         
         @Override
         public void loadData() throws RemoteException {
-            XivoConnectionService.this.loadList("users");
+            Log.d(TAG, "loadData disabled");
+            //XivoConnectionService.this.loadList("users");
         }
         
         @Override
@@ -615,22 +615,9 @@ public class XivoConnectionService extends Service {
                 parseCapapresence(jCapa.getJSONObject("capapresence"));
             }
             
-            JSONObject jCapaPresence = jCapa.getJSONObject("capapresence");
-            JSONObject jCapaPresenceState = jCapaPresence.getJSONObject("state");
-            JSONObject jCapaPresenceStateNames = jCapaPresence.getJSONObject("names");
-            JSONObject jCapaPresenceStateAllowed = jCapaPresence.getJSONObject("allowed");
-            
-            capaPresenceState = new HashMap<String, String>();
-            capaPresenceState.put("color", jCapaPresenceState.getString("color"));
-            capaPresenceState.put("stateid", jCapaPresenceState.getString("stateid"));
-            capaPresenceState.put("longname", jCapaPresenceState.getString("longname"));
-            
-            statusList = new ArrayList<HashMap<String, String>>();
-            feedStatusList("available", jCapaPresenceStateNames, jCapaPresenceStateAllowed);
-            feedStatusList("berightback", jCapaPresenceStateNames, jCapaPresenceStateAllowed);
-            feedStatusList("away", jCapaPresenceStateNames, jCapaPresenceStateAllowed);
-            feedStatusList("donotdisturb", jCapaPresenceStateNames, jCapaPresenceStateAllowed);
-            feedStatusList("outtolunch", jCapaPresenceStateNames, jCapaPresenceStateAllowed);
+            if (jCapa.has("capaservices")) {
+                parseCapaservices(jCapa.getJSONArray("capaservices"));
+            }
             
             xivoNotif = new XivoNotification(getApplicationContext());
             xivoNotif.createNotification();
@@ -638,6 +625,13 @@ public class XivoConnectionService extends Service {
             return Constants.JSON_POPULATE_ERROR;
         }
         return Constants.OK;
+    }
+    
+    /**
+     * Parses capaservices and update the DB
+     */
+    private void parseCapaservices(JSONArray jServices) {
+        Log.d(TAG, "parsing capaservices");
     }
     
     /**
@@ -677,11 +671,11 @@ public class XivoConnectionService extends Service {
                     CapapresenceProvider.NAME + " = '" + current + "'", null, null);
             c.moveToFirst();
             long index = c.getInt(c.getColumnIndex(CapapresenceProvider._ID));
+            c.close();
             Intent i = new Intent();
             i.setAction(Constants.ACTION_MY_STATUS_CHANGE);
             i.putExtra("id", index);
             sendBroadcast(i);
-            
         } catch (JSONException e) {
             Log.d(TAG, "Could not retrieve current state");
         }
@@ -707,24 +701,6 @@ public class XivoConnectionService extends Service {
         }
     }
     
-    private void feedStatusList(String status, JSONObject jNames, JSONObject jAllowed)
-        throws JSONException{
-        
-        if (jAllowed.getBoolean(status)){
-            HashMap<String, String> map = new HashMap<String, String>();
-            
-            JSONObject jCapaPresenceStatus = jNames.getJSONObject(status);
-            map.put("stateid", jCapaPresenceStatus.getString("stateid"));
-            map.put("color", jCapaPresenceStatus.getString("color"));
-            map.put("longname", jCapaPresenceStatus.getString("longname"));
-            
-            statusList.add(map);
-            
-            Log.d(TAG, "StatusList: " + jCapaPresenceStatus.getString("stateid") + " " +
-                    jCapaPresenceStatus.getString("longname"));
-        }
-    }
-    
     /**
      * Reset information about a session
      */
@@ -735,7 +711,6 @@ public class XivoConnectionService extends Service {
         astId = null;
         capaPresenceState = null;
         xivoNotif = null;
-        statusList = null;
         usersList = null;
         
     }
