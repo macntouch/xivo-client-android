@@ -57,7 +57,9 @@ import com.proformatique.android.xivoclient.AttendedTransferActivity;
 import com.proformatique.android.xivoclient.BlindTransferActivity;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
+import com.proformatique.android.xivoclient.service.CapaxletsProvider;
 import com.proformatique.android.xivoclient.service.InitialListLoader;
+import com.proformatique.android.xivoclient.service.UserProvider;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
 
@@ -67,7 +69,6 @@ public class XletContactSearch extends XivoActivity {
 	private static final int CALL_MENU = 0;
 	private static final int CALL_ITEM_INDEX = 0;
 	
-	private List <HashMap<String, String>> filteredUsersList = new ArrayList<HashMap<String, String>>();
 	private List<HashMap<String, String>> contacts = null;
 	private AlternativeAdapter usersAdapter = null;
 	
@@ -83,10 +84,10 @@ public class XletContactSearch extends XivoActivity {
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.xlet_search);
-		contacts = InitialListLoader.getInstance().getUsersList();
+		//contacts = InitialListLoader.getInstance().getUsersList();
 		et = (EditText)findViewById(R.id.SearchEdit);
-		filllist(et.getText().toString());
-		initListView();
+		//filllist(et.getText().toString());
+		//initListView();
 		
 		receiver = new IncomingReceiver();
 		
@@ -99,7 +100,7 @@ public class XletContactSearch extends XivoActivity {
 		filter.addAction(Constants.ACTION_REFRESH_USER_LIST);
 		registerReceiver(receiver, new IntentFilter(filter));
 		
-		registerForContextMenu(lv);
+		registerForContextMenu(findViewById(R.id.users_list));
 		
 		et.addTextChangedListener(
 				new TextWatcher() {
@@ -322,48 +323,22 @@ public class XletContactSearch extends XivoActivity {
 	
 	protected void onResume() {
 		super.onResume();
-		contacts = InitialListLoader.getInstance().getUsersList();
-		filllist(et.getText().toString());
-		initListView();
-	}
-	
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-		switch (v.getId()){
-		case R.id.users_list:
-			{
-				AdapterView.AdapterContextMenuInfo info = 
-					(AdapterView.AdapterContextMenuInfo)menuInfo;
-				menu.setHeaderTitle(getString(R.string.context_action));
-				// Normal menu (Not currently on the phone)
-				if (InitialListLoader.getInstance().getThisChannelId() == null) {
-					String callAction = getString(R.string.context_action_call, 
-							filteredUsersList.get(info.position).get("fullname"), 
-							filteredUsersList.get(info.position).get("phonenum"));
-					menu.add(CALL_MENU, CALL_ITEM_INDEX, 0, callAction);
-				} else { // On the phone menu
-					menu.add(Constants.TRANSFER_MENU, Constants.ATXFER_ITEM_INDEX, 0, 
-							getString(R.string.attended_transfer_title));
-					menu.add(Constants.TRANSFER_MENU, Constants.TRANSFER_ITEM_INDEX, 0, 
-							getString(R.string.blind_transfer_title));
-				}
-				break;
-			}
-		}
-		super.onCreateContextMenu(menu, v, menuInfo);
+		//contacts = InitialListLoader.getInstance().getUsersList();
+		//filllist(et.getText().toString());
+		//nitListView();
 	}
 	
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		Log.d(LOG_TAG, item.getTitle().toString());
 		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-		String phoneNumber = filteredUsersList.get(info.position).get("phonenum");
+		//String phoneNumber = filteredUsersList.get(info.position).get("phonenum");
 		switch (item.getGroupId()) {
 		// Call menu
 		case CALL_MENU:
 			switch (item.getItemId()) {
 			case CALL_ITEM_INDEX:
-				dialNumber(phoneNumber);
+			//	dialNumber(phoneNumber);
 				break;
 			default:
 				break;
@@ -374,11 +349,11 @@ public class XletContactSearch extends XivoActivity {
 			switch (item.getItemId()) {
 			case Constants.ATXFER_ITEM_INDEX:
 				Log.d(LOG_TAG, "Attended transfer selected");
-				atxferNumber(phoneNumber);
+				//atxferNumber(phoneNumber);
 				break;
 			case Constants.TRANSFER_ITEM_INDEX:
 				Log.d(LOG_TAG, "Blind transfer selected");
-				transferNumber(phoneNumber);
+		//		transferNumber(phoneNumber);
 				break;
 			}
 			break;
@@ -435,20 +410,32 @@ public class XletContactSearch extends XivoActivity {
 		public void onReceive(Context context, Intent intent) {
 			if (intent.getAction().equals(Constants.ACTION_LOAD_USER_LIST)) {
 				Log.d( LOG_TAG , "Received Broadcast ");
-				if (usersAdapter != null) {
+				logUserList();
+				/*if (usersAdapter != null) {
 					contacts = InitialListLoader.getInstance().getUsersList();
 					filllist(et.getText().toString());
 					usersAdapter.notifyDataSetChanged();
-				}
+				}*/
 			} else if (intent.getAction().equals(Constants.ACTION_REFRESH_USER_LIST)) {
 				Log.d(LOG_TAG, "Received search Broadcast");
 				if (usersAdapter != null) {
-					filllist(et.getText().toString());
-					initListView();
+					//filllist(et.getText().toString());
+					//initListView();
 					usersAdapter.notifyDataSetChanged();
 				}
 			}
 		}
+	}
+	
+	private void logUserList() {
+		Cursor c = managedQuery(UserProvider.CONTENT_URI, null, null, null, null);
+		if (c.moveToFirst()) {
+			do {
+				String name = c.getString(c.getColumnIndex(UserProvider.FULLNAME));
+				Log.d(LOG_TAG, "User: " + name);
+			} while (c.moveToNext());
+		}
+		c.close();
 	}
 	
 	/**
@@ -456,7 +443,7 @@ public class XletContactSearch extends XivoActivity {
 	 * 
 	 * @param filter -- The search value to look for
 	 */
-	private void filllist(String filter) {
+	/*private void filllist(String filter) {
 		if (filter.equals("") == false) {
 			filteredUsersList = new ArrayList<HashMap<String, String>>();
 			int len = filter.length();
@@ -471,12 +458,12 @@ public class XletContactSearch extends XivoActivity {
 				filteredUsersList.addAll(contacts);
 			}
 		}
-	}
+	}*/
 	
 	/**
 	 * Initialize the ListView for the searched contacts
 	 */
-	private void initListView() {
+	/*private void initListView() {
 		usersAdapter = new AlternativeAdapter(
 				this,
 				filteredUsersList,
@@ -486,7 +473,7 @@ public class XletContactSearch extends XivoActivity {
 		
 		lv= (ListView)findViewById(R.id.users_list);
 		lv.setAdapter(usersAdapter);
-	}
+	}*/
 	
 	/**
 	 * Perform a call via Dial Activity
