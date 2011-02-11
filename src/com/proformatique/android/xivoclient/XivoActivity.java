@@ -105,6 +105,9 @@ public class XivoActivity extends Activity implements OnClickListener {
 		super.onDestroy();
 	}
 	
+	/**
+	 * Called when the binding to the service is completed
+	 */
 	protected void onBindingComplete() {
 		Log.d(TAG, "onBindingComplete");
 		launchCTIConnection();

@@ -43,6 +43,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import com.proformatique.android.xivoclient.service.CapapresenceProvider;
 import com.proformatique.android.xivoclient.service.CapaxletsProvider;
 import com.proformatique.android.xivoclient.tools.Constants;
+import com.proformatique.android.xivoclient.xlets.XletDialer;
 
 public class HomeActivity extends XivoActivity implements OnItemClickListener {
 	
@@ -56,6 +57,12 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 	 */
 	private GridView grid;
 	private Handler handler = new Handler();
+	
+	/*
+	 * xlets
+	 */
+	private List<String> availXlets = null;
+	private List<String> implementedXlets = null;
 	
 	private XletsAdapter xletsAdapter = null;
 	
@@ -128,8 +135,6 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 	}
 	
 	private class XletsAdapter extends BaseAdapter {
-		private List<String> availXlets = null;
-		private List<String> implementedXlets = null;
 		
 		public XletsAdapter() {
 			// Add more xlets here
@@ -213,15 +218,13 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 	
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		switch(position) {
-		case 0:
-		case 1:
-		case 2:
-		case 3:
-		default:
-			testPresence();
-			Toast.makeText(this, "Nothing yet", Toast.LENGTH_SHORT).show();
-			break;
+		String choice = availXlets.get(position);
+		Log.d(LOG_TAG, "Clicked " + choice);
+		if (choice.equals("dial")) {
+			Intent i = new Intent(this, XletDialer.class);
+			startActivity(i);
+		} else {
+			Log.d(LOG_TAG, "Unhandled click");
 		}
 	}
 	
