@@ -20,4 +20,16 @@ public class JSONMessageFactory {
         }
         return obj;
     }
+    
+    public static JSONObject getJsonFeaturesRefresh(String userId) {
+        JSONObject obj = new JSONObject();
+        try {
+            obj.accumulate("direction", Constants.XIVO_SERVER);
+            obj.accumulate("class","featuresget");
+            obj.accumulate("userid", userId);
+        } catch (JSONException e) {
+            return null;
+        }
+        return obj;
+    }
 }

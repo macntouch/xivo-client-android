@@ -108,6 +108,7 @@ public class XivoConnectionService extends Service {
         @Override
         public void loadData() throws RemoteException {
             Log.d(TAG, "loadData disabled");
+            XivoConnectionService.this.refreshFeatures();
             //XivoConnectionService.this.loadList("users");
         }
         
@@ -234,6 +235,12 @@ public class XivoConnectionService extends Service {
         if (thread != null)
             thread.interrupt();
         return Constants.OK;
+    }
+    
+    private void refreshFeatures() {
+        if (thread == null)
+            startLooping(getApplicationContext());
+        sendLine(JSONMessageFactory.getJsonFeaturesRefresh(xivoId).toString());
     }
     
     /**
@@ -632,6 +639,18 @@ public class XivoConnectionService extends Service {
      */
     private void parseCapaservices(JSONArray jServices) {
         Log.d(TAG, "parsing capaservices");
+        // Remove old entries
+        getContentResolver().delete(CapaservicesProvider.CONTENT_URI, null, null);
+        ContentValues values = new ContentValues();
+        for (int i = 0; i < jServices.length(); i++) {
+            try {
+                values.put(CapaservicesProvider.SERVICE, jServices.getString(i));
+                getContentResolver().insert(CapaservicesProvider.CONTENT_URI, values);
+                values.clear();
+            } catch (JSONException e) {
+                Log.d(TAG, "Could not parse capaservices");
+            }
+        }
     }
     
     /**

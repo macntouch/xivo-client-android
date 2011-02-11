@@ -19,8 +19,6 @@
 
 package com.proformatique.android.xivoclient.xlets;
 
-import java.util.HashMap;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -28,6 +26,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -35,6 +34,7 @@ import android.widget.CheckBox;
 
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
+import com.proformatique.android.xivoclient.service.CapaservicesProvider;
 import com.proformatique.android.xivoclient.service.Connection;
 import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.tools.Constants;
@@ -47,19 +47,22 @@ public class XletServices extends XivoActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
 		setContentView(R.layout.xlet_services);
-		refreshFeatures();
-
-		receiver = new IncomingReceiver();
-
+		
 		/**
 		 *  Register a BroadcastReceiver for Intent action that trigger a change
 		 *  in the list from the Activity
 		 */
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Constants.ACTION_LOAD_FEATURES);
-        registerReceiver(receiver, new IntentFilter(filter));
+		receiver = new IncomingReceiver();
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(Constants.ACTION_LOAD_FEATURES);
+		registerReceiver(receiver, new IntentFilter(filter));
+	}
+	
+	@Override
+	protected void onBindingComplete() {
+		super.onBindingComplete();
+		refreshFeatures();
 	}
 	
 	public void clickOnCallrecord(View v){
@@ -174,7 +177,7 @@ public class XletServices extends XivoActivity {
 	 }
 	 
 	 private void setCheckboxDisplay(int code, CheckBox checkbox, 
-			 String phoneNumber, String textDisplay){
+			String phoneNumber, String textDisplay){
 		 if (code == Constants.OK){
 			 checkbox.setText(textDisplay + "\n"+getString(R.string.servicesPhone)+phoneNumber);
 			 checkbox.setChecked(true);
@@ -202,62 +205,71 @@ public class XletServices extends XivoActivity {
 		        }
 			}
 		}
-
-
-		public void refreshFeatures() {
-			HashMap<String, String> featureMap;
-			CheckBox checkbox;
-			int code=0;
-			
-			featureMap = InitialListLoader.getInstance().getFeaturesBusy();
-			if (featureMap.containsKey("enabled")){
-				checkbox = (CheckBox) findViewById(R.id.fwdbusy);
-				if (featureMap.get("enabled").equals("true")) code = Constants.OK;
-				else code = Constants.CANCEL;
-				setCheckboxDisplay(code, checkbox, featureMap.get("number"), 
-						getString(R.string.servicesFwdbusy));
-			}
-			
-			featureMap = InitialListLoader.getInstance().getFeaturesRna();
-			if (featureMap.containsKey("enabled")){
-				checkbox = (CheckBox) findViewById(R.id.fwdrna);
-				if (featureMap.get("enabled").equals("true")) code = Constants.OK;
-				else code = Constants.CANCEL;
-				setCheckboxDisplay(code, checkbox, featureMap.get("number"), 
-						getString(R.string.servicesFwdrna));
-			}
-			
-			featureMap = InitialListLoader.getInstance().getFeaturesUnc();
-			if (featureMap.containsKey("enabled")){
-				checkbox = (CheckBox) findViewById(R.id.fwdunc);
-				if (featureMap.get("enabled").equals("true")) code = Constants.OK;
-				else code = Constants.CANCEL;
-				setCheckboxDisplay(code, checkbox, featureMap.get("number"), 
-						getString(R.string.servicesFwdunc));
-			}
-
-			featureMap = InitialListLoader.getInstance().getFeaturesEnablednd();
-			if (featureMap.containsKey("enabled")){
-				checkbox = (CheckBox) findViewById(R.id.enablednd);
-				if (featureMap.get("enabled").equals("true")) checkbox.setChecked(true);
-				else checkbox.setChecked(false);
-			}
-
-			featureMap = InitialListLoader.getInstance().getFeaturesCallrecord();
-			if (featureMap.containsKey("enabled")){
-				checkbox = (CheckBox) findViewById(R.id.callrecord);
-				if (featureMap.get("enabled").equals("true")) checkbox.setChecked(true);
-				else checkbox.setChecked(false);
-			}
-
-			featureMap = InitialListLoader.getInstance().getFeaturesIncallfilter();
-			if (featureMap.containsKey("enabled")){
-				checkbox = (CheckBox) findViewById(R.id.incallfilter);
-				if (featureMap.get("enabled").equals("true")) checkbox.setChecked(true);
-				else checkbox.setChecked(false);
-			}
+	
+	public void refreshFeatures() {
+		Cursor c = getContentResolver().query(CapaservicesProvider.CONTENT_URI,
+				new String[]{ CapaservicesProvider._ID, CapaservicesProvider.SERVICE},
+				null, null, null);
+		c.moveToFirst();
+		if (c.moveToFirst()) {
+			do {
+				String service = c.getString(c.getColumnIndex(CapaservicesProvider.SERVICE));
+			if (service.equals("fwdbusy"))
+				enableFwdbusy(true);
+			else if (service.equals("fwdrna"))
+				enableFwdrna(true);
+			else if (service.equals("fwdunc"))
+				enableFwdunc(true);
+			else if (service.equals("enablednd"))
+				enableEnableDnd(true);
+			else if (service.equals("callrecord"))
+				enableCallrecord(true);
+			else if (service.equals("incallfilter"))
+				enableIncallfilter(true);
+			} while (c.moveToNext());
 		}
-
+		c.close();
+	}
+	
+	private void enableFwdbusy(final boolean status) {
+		CheckBox checkbox;
+		checkbox = (CheckBox) findViewById(R.id.fwdbusy);
+		setCheckboxDisplay(status == true ? Constants.OK : Constants.CANCEL, checkbox, "", 
+				getString(R.string.servicesFwdbusy));
+	}
+	
+	private void enableFwdrna(final boolean status) {
+		CheckBox checkbox;
+		checkbox = (CheckBox) findViewById(R.id.fwdrna);
+		setCheckboxDisplay(Constants.OK, checkbox, "", 
+				getString(R.string.servicesFwdrna));
+	}
+	
+	private void enableFwdunc(final boolean status) {
+		CheckBox checkbox;
+		checkbox = (CheckBox) findViewById(R.id.fwdunc);
+		setCheckboxDisplay(Constants.OK, checkbox, "", 
+				getString(R.string.servicesFwdunc));
+	}
+	
+	private void enableEnableDnd(final boolean status) {
+		CheckBox checkbox;
+		checkbox = (CheckBox) findViewById(R.id.enablednd);
+		checkbox.setChecked(status);
+	}
+	
+	private void enableCallrecord(final boolean status) {
+		CheckBox checkbox;
+		checkbox = (CheckBox) findViewById(R.id.callrecord);
+		checkbox.setChecked(status);
+	}
+	
+	private void enableIncallfilter(final boolean status) {
+		CheckBox checkbox;
+		checkbox = (CheckBox) findViewById(R.id.incallfilter);
+		checkbox.setChecked(status);
+	}
+	
 		private JSONObject createJsonFeaturePut(String feature, String value, String phone) {
 			JSONObject jObj = new JSONObject();
 			try {

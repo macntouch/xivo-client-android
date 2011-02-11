@@ -42,6 +42,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import com.proformatique.android.xivoclient.service.CapaxletsProvider;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.xlets.XletDialer;
+import com.proformatique.android.xivoclient.xlets.XletServices;
 
 public class HomeActivity extends XivoActivity implements OnItemClickListener {
 	
@@ -220,6 +221,9 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 		Log.d(LOG_TAG, "Clicked " + choice);
 		if (choice.equals("dial")) {
 			Intent i = new Intent(this, XletDialer.class);
+			startActivity(i);
+		} else if (choice.equals("features")) {
+			Intent i = new Intent(this, XletServices.class);
 			startActivity(i);
 		} else {
 			Log.d(LOG_TAG, "Unhandled click");
