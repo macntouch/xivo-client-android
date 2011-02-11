@@ -123,7 +123,7 @@ public class CapapresenceProvider extends ContentProvider {
 			sqlBuilder.appendWhere(_ID + " = " + uri.getLastPathSegment());
 		
 		Cursor c = sqlBuilder.query(
-				capapresenceDB, projection, selection, selectionArgs, null, null, null);
+				capapresenceDB, projection, selection, selectionArgs, null, null, sortOrder);
 		c.setNotificationUri(getContext().getContentResolver(), uri);
 		return c;
 	}

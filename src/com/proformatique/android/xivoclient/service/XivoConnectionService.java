@@ -28,6 +28,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -644,6 +645,9 @@ public class XivoConnectionService extends Service {
      */
     @SuppressWarnings("unchecked")
     private void parseCapapresence(JSONObject jPresence) {
+        /*
+         * Fill the DB
+         */
         Log.d(TAG, "Parsing capapresence");
         try {
             ContentValues presence = new ContentValues();
@@ -662,6 +666,24 @@ public class XivoConnectionService extends Service {
             }
         } catch (JSONException e) {
             Log.d(TAG, "json exception while parsing presences");
+        }
+        /*
+         * Send our starting presence index
+         */
+        try {
+            String current = jPresence.getJSONObject("state").getString("stateid");
+            Cursor c = getContentResolver().query(CapapresenceProvider.CONTENT_URI,
+                    new String[]{CapapresenceProvider._ID, CapapresenceProvider.NAME},
+                    CapapresenceProvider.NAME + " = '" + current + "'", null, null);
+            c.moveToFirst();
+            long index = c.getInt(c.getColumnIndex(CapapresenceProvider._ID));
+            Intent i = new Intent();
+            i.setAction(Constants.ACTION_MY_STATUS_CHANGE);
+            i.putExtra("id", index);
+            sendBroadcast(i);
+            
+        } catch (JSONException e) {
+            Log.d(TAG, "Could not retrieve current state");
         }
     }
     

@@ -95,6 +95,7 @@ public final class Constants {
 	public static final String ACTION_HANGUP = "xivo.intent.action.HANGUP";
 	public static final String ACTION_OFFHOOK = "xivo.intent.action.OFFHOOK";
 	public static final String ACTION_MWI_UPDATE = "xivo.intent.action.MWI_UPDATE";
+	public static final String ACTION_MY_STATUS_CHANGE = "xivo.intent.action.MY_STATUS_CHANGE";
 	
 	/**
 	 * XivoService connection status

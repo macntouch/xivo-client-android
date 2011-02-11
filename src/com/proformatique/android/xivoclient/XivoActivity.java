@@ -23,17 +23,22 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.proformatique.android.xivoclient.service.CapapresenceProvider;
 import com.proformatique.android.xivoclient.service.IXivoConnectionService;
 import com.proformatique.android.xivoclient.service.XivoConnectionService;
 import com.proformatique.android.xivoclient.tools.Constants;
+import com.proformatique.android.xivoclient.tools.GraphicsManager;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -47,6 +52,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 /**
@@ -68,6 +74,7 @@ public class XivoActivity extends Activity implements OnClickListener {
 	protected IXivoConnectionService xivoConnectionService = null;
 	private ConnectTask connectTask = null;
 	private AuthenticationTask authenticationTask = null;
+	private IntentReceiver receiver = null;
 	
 	private SharedPreferences settings;
 	
@@ -90,6 +97,11 @@ public class XivoActivity extends Activity implements OnClickListener {
 			this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 					WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		}
+		
+		receiver = new IntentReceiver();
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(Constants.ACTION_MY_STATUS_CHANGE);
+		registerReceiver(receiver, new IntentFilter(filter));
 	}
 	
 	@Override
@@ -102,6 +114,7 @@ public class XivoActivity extends Activity implements OnClickListener {
 	@Override
 	protected void onDestroy() {
 		releaseXivoConnectionService();
+		unregisterReceiver(receiver);
 		super.onDestroy();
 	}
 	
@@ -303,6 +316,25 @@ public class XivoActivity extends Activity implements OnClickListener {
 		} catch (RemoteException e) {
 			dieOnBindFail();
 		}
+	}
+	
+	/**
+	 * Retrieves our status from the DB and update the header
+	 * @param id
+	 */
+	private void updateMyStatus(long id) {
+		Cursor c = getContentResolver().query(CapapresenceProvider.CONTENT_URI,
+				new String[]{
+					CapapresenceProvider._ID,
+					CapapresenceProvider.LONGNAME,
+					CapapresenceProvider.COLOR},
+				CapapresenceProvider._ID + " = " + id, null, null);
+		c.moveToFirst();
+		((TextView) findViewById(R.id.identity_current_state_longname)).setText(
+				c.getString(c.getColumnIndex(CapapresenceProvider.LONGNAME)));
+		GraphicsManager.setIconStateDisplay(this,
+				(ImageView) findViewById(R.id.identity_current_state_image),
+				c.getString(c.getColumnIndex(CapapresenceProvider.COLOR)));
 	}
 	
 	/**
@@ -516,6 +548,16 @@ public class XivoActivity extends Activity implements OnClickListener {
 				Toast.makeText(XivoActivity.this, getString(R.string.connection_failed),
 						Toast.LENGTH_LONG).show();
 				break;
+			}
+		}
+	}
+	
+	private class IntentReceiver extends BroadcastReceiver {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if (intent.getAction().equals(Constants.ACTION_MY_STATUS_CHANGE)) {
+				updateMyStatus(intent.getLongExtra("id", 0));
 			}
 		}
 	}

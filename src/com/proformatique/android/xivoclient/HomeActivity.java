@@ -37,10 +37,8 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
-import com.proformatique.android.xivoclient.service.CapapresenceProvider;
 import com.proformatique.android.xivoclient.service.CapaxletsProvider;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.xlets.XletDialer;
@@ -239,19 +237,5 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 			super.onChange(selfChange);
 			xletsAdapter.updateAvailableXlets();
 		}
-	}
-	
-	private void testPresence() {
-		Cursor c = managedQuery(CapapresenceProvider.CONTENT_URI, null, null, null, null);
-		if (c.moveToFirst()) {
-			do {
-				String name = c.getString(c.getColumnIndex(CapapresenceProvider.NAME));
-				String color = c.getString(c.getColumnIndex(CapapresenceProvider.COLOR));
-				String longname = c.getString(c.getColumnIndex(CapapresenceProvider.LONGNAME));
-				int allowed = c.getInt(c.getColumnIndex(CapapresenceProvider.ALLOWED));
-				Log.d(LOG_TAG, "Presence: " + name + " " + longname + " " + color + " " + allowed);
-			} while (c.moveToNext());
-		}
-		handler.post(updateGrid);
 	}
 }
