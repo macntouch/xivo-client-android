@@ -9,4 +9,5 @@ interface IXivoConnectionService {
     void loadData();
     boolean loadDataCalled();
     long getReceivedBytes();
+    boolean hasNewVoiceMail();
 }

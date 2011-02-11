@@ -119,6 +119,12 @@ public class XivoConnectionService extends Service {
         public long getReceivedBytes() throws RemoteException {
             return bytesReceived;
         }
+        
+        @Override
+        public boolean hasNewVoiceMail() throws RemoteException {
+            // TODO Auto-generated method stub
+            return false;
+        }
     };
     
     /**
