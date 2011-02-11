@@ -1,61 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-  android:id="@+id/ScrollViewAbout" 
-  android:layout_width="fill_parent" 
-  android:layout_height="wrap_content">
-
-<LinearLayout
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  android:layout_width="fill_parent"
-  android:layout_height="wrap_content"
-  android:orientation="vertical"
-  android:scrollbars="vertical"
-  android:gravity="center_horizontal">
-
-<TextView android:layout_width="wrap_content"
-android:layout_height="wrap_content"
-android:text="@string/credits"
-android:textSize="16sp"
-android:textStyle="bold"></TextView>
-<TextView android:layout_width="wrap_content"
-android:layout_height="wrap_content"
-android:text="@string/credits_part0"></TextView>
-<TextView android:layout_width="wrap_content"
-	android:layout_height="wrap_content"
-	android:text="@string/credits_part1"
-	android:layout_marginTop="10dp"
-	android:gravity="center"/>
-<TextView android:layout_width="wrap_content"
-android:layout_height="wrap_content"
-android:text="@string/credits_part2"></TextView>
-<TextView android:layout_width="wrap_content"
-	android:layout_height="wrap_content"
-	android:text="@string/bandwidth_in_label"/>
-	<LinearLayout android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:orientation="horizontal"
-		android:gravity="center">
-		<TextView android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:id="@+id/bandwidth_received"
-			android:text="0"
-			android:layout_marginRight="8dp"/>
-		<TextView android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:id="@+id/bandwidth_unit"/>
-	</LinearLayout>
-<TextView android:layout_width="wrap_content"
-android:layout_height="wrap_content"
-android:text="@string/gpl"
-android:layout_marginTop="10dp"></TextView>
-<TextView android:layout_width="fill_parent"
-android:layout_height="wrap_content"
-android:text="@string/gpl_part1"
-android:layout_marginTop="10dp"></TextView>
-<TextView android:layout_width="fill_parent"
-android:layout_height="wrap_content"
-android:text="@string/gpl_part2"></TextView>
-
-
-</LinearLayout>
+    android:id="@+id/ScrollViewAbout" 
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content">
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:scrollbars="vertical"
+        android:gravity="center_horizontal"
+        android:background="@color/appli_bg">
+        <include layout="@layout/xlet_identity"/>
+        <TextView android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/credits"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/appli_text_color"/>
+        <TextView android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/credits_part0"
+            android:textColor="@color/appli_text_color"/>
+        <TextView android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/credits_part1"
+            android:textColor="@color/appli_text_color"
+            android:layout_marginTop="10dp"
+            android:gravity="center"/>
+        <TextView android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/credits_part2"
+            android:textColor="@color/appli_text_color"/>
+        <TextView android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/appli_text_color"
+            android:text="@string/bandwidth_in_label"/>
+        <LinearLayout android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+            <TextView android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/bandwidth_received"
+                android:text="0"
+                android:textColor="@color/appli_text_color"
+                android:layout_marginRight="8dp"/>
+            <TextView android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/appli_text_color"
+                android:id="@+id/bandwidth_unit"/>
+        </LinearLayout>
+        <TextView android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/gpl"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/appli_text_color"/>
+        <TextView android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/gpl_part1"
+            android:textColor="@color/appli_text_color"
+            android:layout_marginTop="10dp"/>
+        <TextView android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/appli_text_color"
+            android:text="@string/gpl_part2"/>
+    </LinearLayout>
 </ScrollView>
