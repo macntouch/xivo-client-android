@@ -19,13 +19,14 @@
 
 package com.proformatique.android.xivoclient;
 
-import com.proformatique.android.xivoclient.service.Connection;
-
-import android.app.Activity;
 import android.os.Bundle;
+import android.os.RemoteException;
+import android.util.Log;
 import android.widget.TextView;
 
-public class AboutActivity extends Activity {
+public class AboutActivity extends XivoActivity {
+	
+	private final static String TAG = "XiVO About";
 	
 	private final static double KB = Math.pow(2, 10);
 	private final static double MB = Math.pow(2, 20);
@@ -36,16 +37,24 @@ public class AboutActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.about);
+		super.registerButtons();
 		
 		TextView bandwidth = (TextView) findViewById(R.id.bandwidth_received);
 		TextView unit = (TextView) findViewById(R.id.bandwidth_unit);
 		
-		long received = 0L;
+		long received = -1L;
 		
-		if (Connection.getInstance(this).isConnected())
-			received = Connection.getInstance(this).getReceivedBytes();
+		try {
+			if (xivoConnectionService != null)
+				received = xivoConnectionService.getReceivedBytes();
+		} catch (RemoteException e) {
+			Log.d(TAG, "Could not retrieve bandwidth, using default value");
+		}
 		
-		if (received == 0) {
+		if (received == -1L) {
+			bandwidth.setText(getString(R.string.unknown));
+			unit.setText("");
+		} else if (received == 0) {
 			bandwidth.setText(Long.toString(received));
 			unit.setText(R.string.unit_byte);
 		} else if (received <= KB) {

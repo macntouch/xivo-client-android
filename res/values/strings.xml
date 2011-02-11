@@ -91,6 +91,7 @@
     <string name="bandwidth_in_label">Received:</string>
     
     <!-- Units -->
+    <string name="unknown">Unknown</string>
     <string name="unit_byte">Byte</string>
     <string name="unit_kb">KB</string>
     <string name="unit_mb">MB</string>
