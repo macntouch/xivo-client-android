@@ -40,7 +40,6 @@ import android.util.Log;
 public class XivoConnectionService extends Service {
     
     private static final String TAG = "XiVO connection service";
-    private static final int NB_FIELDS_USER = 7;
     
     private SharedPreferences prefs = null;
     private Socket networkConnection = null;
@@ -53,7 +52,6 @@ public class XivoConnectionService extends Service {
     
     // Informations that is relevant to a specific connection
     private boolean authenticationComplete = false;
-    private boolean usersListComplete = false;
     private String sessionId = null;
     private String xivoId = null;
     private String astId = null;
@@ -109,7 +107,7 @@ public class XivoConnectionService extends Service {
         public void loadData() throws RemoteException {
             Log.d(TAG, "loadData disabled");
             XivoConnectionService.this.refreshFeatures();
-            //XivoConnectionService.this.loadList("users");
+            XivoConnectionService.this.loadList("users");
         }
         
         @Override
@@ -135,7 +133,6 @@ public class XivoConnectionService extends Service {
     private void loadList(String list) {
         if (thread == null)
             startLooping(getApplicationContext());
-        usersListComplete = false;
         JSONObject query = JSONMessageFactory.getJsonClassFunction(list, "getlist");
         if (query == null) {
             Log.d(TAG, "Error while creating the getlist query");
@@ -287,7 +284,10 @@ public class XivoConnectionService extends Service {
                 switch(msg.what) {
                 case USERS_LIST_COMPLETE:
                     Log.d(TAG, "Users list loaded");
-                    loadList("phones");
+                    Intent i = new Intent();
+                    i.setAction(Constants.ACTION_LOAD_USER_LIST);
+                    sendBroadcast(i);
+                    //loadList("phones");
                     break;
                 case PHONES_LOADED:
                     Log.d(TAG, "Phones list loaded");
@@ -461,7 +461,6 @@ public class XivoConnectionService extends Service {
      * @param json
      * @return result parsed by the main loop handler
      */
-    @SuppressWarnings("unchecked")
     private int parseUsers(JSONObject line) {
         Log.d(TAG, "Parsing users");
         if (line.has("payload")) {
@@ -474,8 +473,9 @@ public class XivoConnectionService extends Service {
             }
             int len = payload != null ? payload.length() : 0;
             usersList = new ArrayList<HashMap<String, String>>(len);
+            getContentResolver().delete(UserProvider.CONTENT_URI, null, null);
+            ContentValues user = new ContentValues();
             for (int i = 0; i < len; i++) {
-                HashMap<String, String> user = new HashMap<String, String>(NB_FIELDS_USER);
                 JSONObject jUser = null;
                 JSONObject jUserState = null;
                 try {
@@ -490,18 +490,18 @@ public class XivoConnectionService extends Service {
                 /**
                  * Feed the useful fields to store in the list
                  */
-                String xivoId = null;
-                String userId = null;
                 try {
-                    xivoId = jUser.getString("xivo_userid");
-                    userId = jUser.getString("astid") + "/" + xivoId;
-                    user.put("xivo_userid", xivoId);
-                    user.put("fullname", jUser.getString("fullname"));
-                    user.put("phonenum", jUser.getString("phonenum"));
-                    user.put("stateid", jUserState.getString("stateid"));
-                    user.put("stateid_longname", jUserState.getString("longname"));
-                    user.put("stateid_color", jUserState.getString("color"));
-                    user.put("techlist", jUser.getJSONArray("techlist").getString(0));
+                    String xivoId = jUser.getString("xivo_userid");
+                    String astId = jUser.getString("astid");
+                    String userId = astId + "/" + xivoId;
+                    user.put(UserProvider.ASTID, astId);
+                    user.put(UserProvider.XIVO_USERID, xivoId);
+                    user.put(UserProvider.FULLNAME, jUser.getString("fullname"));
+                    user.put(UserProvider.PHONENUM, jUser.getString("phonenum"));
+                    user.put(UserProvider.STATEID, jUserState.getString("stateid"));
+                    user.put(UserProvider.STATEID_LONGNAME, jUserState.getString("longname"));
+                    user.put(UserProvider.STATEID_COLOR, jUserState.getString("color"));
+                    user.put(UserProvider.TECHLIST, jUser.getJSONArray("techlist").getString(0));
                     if (userId.equals(this.userId) && jUser.has("mwi")) {
                         JSONArray mwi = jUser.getJSONArray("mwi");
                         int lenmwi = mwi != null ? mwi.length() : 0;
@@ -513,12 +513,9 @@ public class XivoConnectionService extends Service {
                     Log.d(TAG, "Could not create the user data structure");
                     return JSON_EXCEPTION;
                 }
-                Log.d(TAG, "Adding user: " + user.toString());
-                usersList.add(user);
+                getContentResolver().insert(UserProvider.CONTENT_URI, user);
+                user.clear();
             }
-            if (usersList.size() > 1)
-                Collections.sort(usersList, new fullNameComparator());
-            usersListComplete = true;
             return USERS_LIST_COMPLETE;
         }
         return NO_MESSAGE;

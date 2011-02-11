@@ -66,18 +66,14 @@
                   android:launchMode="standard"
                   android:screenOrientation="portrait">
         </activity>
-<!--
         <activity android:name=".xlets.XletContactSearch"
                   android:label="@string/xlet_search_label"
                   android:description="@string/xlet_search_desc"
-                  android:launchMode="standard"
-                  android:screenOrientation="portrait"
-                  android:configChanges="keyboardHidden|orientation">
+                  android:launchMode="standard">
             <intent-filter>
-                <action android:name="xivo.intent.action.LOAD_XLET_TAB" />
+                <action android:name="xivo.intent.action.LOAD_USER_LIST" />
             </intent-filter>
         </activity>
--->
         <activity android:name=".xlets.XletServices"
                   android:label="@string/xlet_features_label"
                   android:description="@string/xlet_features_desc"
@@ -117,6 +113,8 @@
             android:authorities="com.proformatique.android.xivoclient.presence"/>
         <provider android:name=".service.CapaservicesProvider"
             android:authorities="com.proformatique.android.xivoclient.services"/>
+        <provider android:name=".service.UserProvider"
+            android:authorities="com.proformatique.android.xivoclient.user"/>
     </application>
     <uses-sdk android:minSdkVersion="7"/>
 </manifest> 
