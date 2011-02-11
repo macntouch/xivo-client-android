@@ -20,6 +20,7 @@
 package com.proformatique.android.xivoclient;
 
 import com.proformatique.android.xivoclient.service.JsonLoopListener;
+import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -130,5 +131,20 @@ public class SettingsActivity extends PreferenceActivity{
 		} else {
 			return null;
 		}
+	}
+	
+	/**
+	 * Returns the default context
+	 */
+	public static String getXivoContext(Context context) {
+		return PreferenceManager.getDefaultSharedPreferences(context).getString(
+				"context", Constants.XIVO_CONTEXT);
+	}
+	
+	/**
+	 * Returns the Xivo login
+	 */
+	public static String getLogin(Context context) {
+		return PreferenceManager.getDefaultSharedPreferences(context).getString("login", "");
 	}
 }

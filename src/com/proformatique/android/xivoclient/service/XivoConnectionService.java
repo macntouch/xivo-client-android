@@ -248,26 +248,13 @@ public class XivoConnectionService extends Service {
      * @return error or success code
      */
     private int loginCTI() {
-        String releaseOS = android.os.Build.VERSION.RELEASE;
-        String login = prefs.getString("login", "");
         int res;
-        Log.d(TAG, "release OS: " + releaseOS);
         
         /**
          * Creating first Json login array
          */
-        JSONObject jLogin = new JSONObject();
-        try {
-            jLogin.accumulate("class","login_id");
-            jLogin.accumulate("company", prefs.getString("context", Constants.XIVO_CONTEXT));
-            jLogin.accumulate("ident","android-"+releaseOS);
-            jLogin.accumulate("userid",login);
-            jLogin.accumulate("version",Constants.XIVO_LOGIN_VERSION);
-            jLogin.accumulate("xivoversion",Constants.XIVO_VERSION);
-        } catch (JSONException e) {
-            return Constants.JSON_POPULATE_ERROR;
-        }
-        
+        JSONObject jLogin = JSONMessageFactory.getJsonLogin(this);
+       
         /**
          * First step : check that login is allowed on server
          */
