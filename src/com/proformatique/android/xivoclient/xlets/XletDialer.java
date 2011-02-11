@@ -33,6 +33,7 @@ import android.content.IntentFilter;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -76,8 +77,15 @@ public class XletDialer extends XivoActivity {
 		filter.addAction(Constants.ACTION_OFFHOOK);
 		filter.addAction(Constants.ACTION_MWI_UPDATE);
 		registerReceiver(receiver, new IntentFilter(filter));
-		
-		newVoiceMail(InitialListLoader.getInstance().hasNewVoicemail());
+	}
+	
+	@Override
+	protected void onBindingComplete() {
+		try {
+			newVoiceMail(xivoConnectionService.hasNewVoiceMail());
+		} catch (RemoteException e) {
+			newVoiceMail(false);
+		}
 	}
 	
 	private void newVoiceMail(boolean status) {
@@ -402,7 +410,6 @@ public class XletDialer extends XivoActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		newVoiceMail(InitialListLoader.getInstance().hasNewVoicemail());
 	}
 	
 	@Override
