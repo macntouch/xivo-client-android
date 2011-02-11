@@ -20,7 +20,6 @@
 package com.proformatique.android.xivoclient;
 
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -33,21 +32,29 @@ public class AboutActivity extends XivoActivity {
 	private final static double GB = Math.pow(2, 30);
 	private final static double TB = Math.pow(2, 40);
 	
+	TextView bandwidth;
+	TextView unit;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.about);
 		super.registerButtons();
 		
-		TextView bandwidth = (TextView) findViewById(R.id.bandwidth_received);
-		TextView unit = (TextView) findViewById(R.id.bandwidth_unit);
+		bandwidth = (TextView) findViewById(R.id.bandwidth_received);
+		unit = (TextView) findViewById(R.id.bandwidth_unit);
+	}
+	
+	@Override
+	protected void onBindingComplete() {
+		super.onBindingComplete();
 		
 		long received = -1L;
 		
 		try {
 			if (xivoConnectionService != null)
 				received = xivoConnectionService.getReceivedBytes();
-		} catch (RemoteException e) {
+		} catch (Exception e) {
 			Log.d(TAG, "Could not retrieve bandwidth, using default value");
 		}
 		

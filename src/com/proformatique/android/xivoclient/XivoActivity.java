@@ -63,9 +63,9 @@ public class XivoActivity extends Activity implements OnClickListener {
 	/*
 	 * Service
 	 */
-	private BindingTask bindingTask = null;
+	protected BindingTask bindingTask = null;
 	private XivoConnectionServiceConnection con = null;
-	private IXivoConnectionService xivoConnectionService = null;
+	protected IXivoConnectionService xivoConnectionService = null;
 	private ConnectTask connectTask = null;
 	private AuthenticationTask authenticationTask = null;
 	
@@ -103,6 +103,11 @@ public class XivoActivity extends Activity implements OnClickListener {
 	protected void onDestroy() {
 		releaseXivoConnectionService();
 		super.onDestroy();
+	}
+	
+	protected void onBindingComplete() {
+		Log.d(TAG, "onBindingComplete");
+		launchCTIConnection();
 	}
 	
 	/*
@@ -309,7 +314,7 @@ public class XivoActivity extends Activity implements OnClickListener {
 	 * Establish a binding between the activity and the XivoConnectionService
 	 *
 	 */
-	private class XivoConnectionServiceConnection implements ServiceConnection {
+	protected class XivoConnectionServiceConnection implements ServiceConnection {
 		
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
@@ -330,7 +335,7 @@ public class XivoActivity extends Activity implements OnClickListener {
 	/**
 	 * Binds to the service
 	 */
-	private class BindingTask extends AsyncTask<Void, Void, Integer> {
+	protected class BindingTask extends AsyncTask<Void, Void, Integer> {
 		private int OK = 0;
 		private int FAIL = -1;
 		
@@ -360,7 +365,7 @@ public class XivoActivity extends Activity implements OnClickListener {
 		@Override
 		protected void onPostExecute(Integer result) {
 			Log.d(TAG, "Binding finished");
-			launchCTIConnection();
+			onBindingComplete();
 		}
 	}
 	
