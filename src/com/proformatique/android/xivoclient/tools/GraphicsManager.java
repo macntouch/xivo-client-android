@@ -112,11 +112,15 @@ public class GraphicsManager {
 			Drawable dr = getDrawableCopy(context, R.drawable.ic_dial_number_wht);
 			icon.setImageDrawable(dr);
 		}
-
-		if (color != null && !color.equals(""))
-			icon.setColorFilter(Color.parseColor(color), PorterDuff.Mode.SRC_ATOP);
-		else
-			icon.setColorFilter(Color.TRANSPARENT, PorterDuff.Mode.SRC_ATOP);
+		try {
+			if (color != null && !color.equals(""))
+				icon.setColorFilter(Color.parseColor(color), PorterDuff.Mode.SRC_ATOP);
+			else
+				icon.setColorFilter(Color.TRANSPARENT, PorterDuff.Mode.SRC_ATOP);
+		} catch (IllegalArgumentException e) {
+			Log.d(LOG_TAG, "Color: " + color + "\n" + e.toString());
+			e.printStackTrace();
+		}
 		
 	}
 
