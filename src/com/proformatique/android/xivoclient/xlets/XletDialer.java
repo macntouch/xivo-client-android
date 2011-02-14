@@ -76,6 +76,8 @@ public class XletDialer extends XivoActivity {
 		filter.addAction(Constants.ACTION_OFFHOOK);
 		filter.addAction(Constants.ACTION_MWI_UPDATE);
 		registerReceiver(receiver, new IntentFilter(filter));
+		
+		registerButtons();
 	}
 	
 	@Override
@@ -85,6 +87,7 @@ public class XletDialer extends XivoActivity {
 		} catch (RemoteException e) {
 			newVoiceMail(false);
 		}
+		super.onBindingComplete();
 	}
 	
 	private void newVoiceMail(boolean status) {
