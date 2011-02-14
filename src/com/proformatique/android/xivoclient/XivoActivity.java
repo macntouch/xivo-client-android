@@ -124,6 +124,11 @@ public class XivoActivity extends Activity implements OnClickListener {
 	protected void onBindingComplete() {
 		Log.d(TAG, "onBindingComplete");
 		launchCTIConnection();
+		try {
+			updateMyStatus(xivoConnectionService.getStateId());
+		} catch (RemoteException e) {
+			Log.d(TAG, "Could not set my state id");
+		}
 	}
 	
 	/*

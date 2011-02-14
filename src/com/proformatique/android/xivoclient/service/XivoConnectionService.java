@@ -61,6 +61,7 @@ public class XivoConnectionService extends Service {
     private List<HashMap<String, String>> usersList = null;
     private int[] mwi = new int[3];
     private JSONArray capalist = null;
+    private long stateId = 0L;
     
     // Messages from the loop to the handler
     private final static int NO_MESSAGE = 0;
@@ -124,6 +125,11 @@ public class XivoConnectionService extends Service {
         public boolean hasNewVoiceMail() throws RemoteException {
             // TODO Auto-generated method stub
             return false;
+        }
+        
+        @Override
+        public long getStateId() throws RemoteException {
+            return stateId;
         }
     };
     
@@ -502,6 +508,7 @@ public class XivoConnectionService extends Service {
                     user.put(UserProvider.STATEID_LONGNAME, jUserState.getString("longname"));
                     user.put(UserProvider.STATEID_COLOR, jUserState.getString("color"));
                     user.put(UserProvider.TECHLIST, jUser.getJSONArray("techlist").getString(0));
+                    user.put(UserProvider.HINTSTATUS_COLOR, Constants.DEFAULT_HINT_COLOR);
                     if (userId.equals(this.userId) && jUser.has("mwi")) {
                         JSONArray mwi = jUser.getJSONArray("mwi");
                         int lenmwi = mwi != null ? mwi.length() : 0;
@@ -673,11 +680,11 @@ public class XivoConnectionService extends Service {
                     new String[]{CapapresenceProvider._ID, CapapresenceProvider.NAME},
                     CapapresenceProvider.NAME + " = '" + current + "'", null, null);
             c.moveToFirst();
-            long index = c.getInt(c.getColumnIndex(CapapresenceProvider._ID));
+            stateId = c.getInt(c.getColumnIndex(CapapresenceProvider._ID));
             c.close();
             Intent i = new Intent();
             i.setAction(Constants.ACTION_MY_STATUS_CHANGE);
-            i.putExtra("id", index);
+            i.putExtra("id", stateId);
             sendBroadcast(i);
         } catch (JSONException e) {
             Log.d(TAG, "Could not retrieve current state");

@@ -10,4 +10,5 @@ interface IXivoConnectionService {
     boolean loadDataCalled();
     long getReceivedBytes();
     boolean hasNewVoiceMail();
+    long getStateId();
 }
