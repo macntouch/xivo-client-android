@@ -26,7 +26,7 @@
     android:layout_gravity="center_vertical|left"
     android:layout_marginLeft="50dp" 
     android:text="@string/user_identity"
-    android:textColor="@color/black">
+    android:textColor="@color/appli_text_color">
 </TextView>
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -59,7 +59,7 @@
     android:layout_gravity="right"
     android:gravity="center"
     android:visibility="visible"
-    android:textColor="@color/black"/>
+    android:textColor="@color/appli_text_color"/>
 
 <ImageView android:id="@+id/identityPhoneStatus"
      android:layout_width="30dp" 
@@ -79,6 +79,6 @@
     android:text="offline"
     android:textSize="10sp"
     android:visibility="visible"
-    android:textColor="@color/black"/>
+    android:textColor="@color/appli_text_color"/>
 
 </FrameLayout>
