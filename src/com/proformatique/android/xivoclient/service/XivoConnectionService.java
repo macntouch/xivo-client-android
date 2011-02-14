@@ -17,6 +17,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.proformatique.android.xivoclient.R;
+import com.proformatique.android.xivoclient.SettingsActivity;
 import com.proformatique.android.xivoclient.XivoNotification;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.JSONMessageFactory;
@@ -139,7 +140,25 @@ public class XivoConnectionService extends Service {
         public String getPhoneStatusLongname() throws RemoteException {
             return phoneStatusLongname;
         }
+        
+        @Override
+        public int call(String number) throws RemoteException {
+            return XivoConnectionService.this.call(number);
+        }
     };
+    
+    /**
+     * Initiate a call
+     * @param number
+     * @return OK or error code
+     */
+    private int call(String number) {
+        Log.d(TAG, "Calling " + number);
+        JSONObject jCall = JSONMessageFactory.getJsonCallingObject(
+                "originate", SettingsActivity.getMobileNumber(getApplicationContext()), number);
+        sendLine(jCall.toString());
+        return Constants.OK;
+    }
     
     /**
      * Asks the CTI server for a list

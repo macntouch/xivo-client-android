@@ -103,7 +103,12 @@ public class XletDialer extends XivoActivity {
 	
 	public void clickOnCall(View v) {
 		if (offHook) {
-			new HangupJsonTask().execute();
+			try {
+				xivoConnectionService.call(phoneNumber.getText().toString().replace("(", "")
+						.replace(")", "").replace("-", "").trim());
+			} catch (RemoteException e) {
+				Log.d(LOG_TAG, "Cannot call before binding");
+			}
 		} else {
 			if (!("").equals(phoneNumber.getText().toString())){
 				new CallJsonTask().execute();

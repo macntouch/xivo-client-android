@@ -13,4 +13,5 @@ interface IXivoConnectionService {
     long getStateId();
     String getPhoneStatusColor();
     String getPhoneStatusLongname();
+    int call(String number);
 }
