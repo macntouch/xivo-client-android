@@ -62,6 +62,7 @@ public class XivoConnectionService extends Service {
     private int[] mwi = new int[3];
     private JSONArray capalist = null;
     private long stateId = 0L;
+    private long phoneStateId = 0L;
     
     // Messages from the loop to the handler
     private final static int NO_MESSAGE = 0;
@@ -128,6 +129,11 @@ public class XivoConnectionService extends Service {
         @Override
         public long getStateId() throws RemoteException {
             return stateId;
+        }
+        
+        @Override
+        public long getPhoneStateId() throws RemoteException {
+            return phoneStateId;
         }
     };
     
@@ -288,13 +294,16 @@ public class XivoConnectionService extends Service {
                 switch(msg.what) {
                 case USERS_LIST_COMPLETE:
                     Log.d(TAG, "Users list loaded");
-                    Intent i = new Intent();
-                    i.setAction(Constants.ACTION_LOAD_USER_LIST);
-                    sendBroadcast(i);
+                    Intent iLoadUser = new Intent();
+                    iLoadUser.setAction(Constants.ACTION_LOAD_USER_LIST);
+                    sendBroadcast(iLoadUser);
                     loadList("phones");
                     break;
                 case PHONES_LOADED:
                     Log.d(TAG, "Phones list loaded");
+                    Intent iLoadPhone = new Intent();
+                    iLoadPhone.setAction(Constants.ACTION_LOAD_USER_LIST);
+                    sendBroadcast(iLoadPhone);
                     break;
                 case NO_MESSAGE:
                     break;
@@ -417,9 +426,10 @@ public class XivoConnectionService extends Service {
     private void setPhoneForUser(Cursor user, JSONObject jPhone) {
         
         long id = user.getLong(user.getColumnIndex(UserProvider._ID));
+        JSONObject jPhoneStatus = null;
         final ContentValues values = new ContentValues();
         try {
-            JSONObject jPhoneStatus = jPhone.getJSONObject("hintstatus");
+            jPhoneStatus = jPhone.getJSONObject("hintstatus");
             values.put(UserProvider.PHONENUM, jPhone.getString("number"));
             values.put(UserProvider.HINTSTATUS_COLOR, jPhoneStatus.getString("color"));
             values.put(UserProvider.HINTSTATUS_CODE, jPhoneStatus.getString("code"));
@@ -429,21 +439,33 @@ public class XivoConnectionService extends Service {
         } catch (JSONException e) {
             Log.d(TAG, "JSONException, could not update phone status");
         }
+        values.clear();
         
         if (user.getString(user.getColumnIndex(UserProvider.XIVO_USERID)).equals(xivoId)) {
-            values.clear();
-            values.put(CapapresenceProvider.HINTSTATUS_COLOR, user.getString(
-                    user.getColumnIndex(UserProvider.HINTSTATUS_COLOR)));
-            values.put(CapapresenceProvider.HINTSTATUS_CODE, user.getString(
-                    user.getColumnIndex(UserProvider.HINTSTATUS_CODE)));
-            values.put(CapapresenceProvider.HINTSTATUS_LONGNAME, user.getString(
-                    user.getColumnIndex(UserProvider.HINTSTATUS_LONGNAME)));
-            getContentResolver().update(CapapresenceProvider.CONTENT_URI, values, null, null);
-            Intent i = new Intent();
-            i.setAction(Constants.ACTION_MY_STATUS_CHANGE);
-            sendBroadcast(i);
+            try {
+                String code = jPhoneStatus.getString("code");
+                String longname = jPhoneStatus.getString("longname");
+                String color = jPhoneStatus.getString("color");
+                Cursor phoneState = getContentResolver().query(CapapresenceProvider.CONTENT_URI,
+                        new String[] {CapapresenceProvider._ID, CapapresenceProvider.NAME},
+                        CapapresenceProvider.NAME + "= '" + code + "'", null, null);
+                if (phoneState.getCount() < 1) {
+                    Log.d(TAG, "No phone state found...");
+                } else {
+                    phoneState.moveToFirst();
+                    phoneStateId = phoneState.getLong(
+                            phoneState.getColumnIndex(CapapresenceProvider.NAME));
+                    phoneState.close();
+                }
+                Intent i = new Intent();
+                i.setAction(Constants.ACTION_MY_PHONE_CHANGE);
+                i.putExtra("color", color);
+                i.putExtra("longname", longname);
+                sendBroadcast(i);
+            } catch (JSONException e) {
+                Log.d(TAG, "Failled to set our status");
+            }
         }
-        values.clear();
     }
     
     /**
@@ -653,10 +675,6 @@ public class XivoConnectionService extends Service {
                         jPresence.getJSONObject("names").getJSONObject(key).getString("longname"));
                 int allowed = jPresence.getJSONObject("allowed").getBoolean(key) == true ? 1 : 0;
                 presence.put(CapapresenceProvider.ALLOWED, allowed);
-                presence.put(CapapresenceProvider.HINTSTATUS_COLOR, Constants.DEFAULT_HINT_COLOR);
-                presence.put(CapapresenceProvider.HINTSTATUS_CODE, Constants.DEFAULT_HINT_CODE);
-                presence.put(CapapresenceProvider.HINTSTATUS_LONGNAME,
-                        getString(R.string.default_hint_longname));
                 getContentResolver().insert(CapapresenceProvider.CONTENT_URI, presence);
                 presence.clear();
             }

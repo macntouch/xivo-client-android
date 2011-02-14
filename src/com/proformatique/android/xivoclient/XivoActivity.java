@@ -101,6 +101,7 @@ public class XivoActivity extends Activity implements OnClickListener {
 		receiver = new IntentReceiver();
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(Constants.ACTION_MY_STATUS_CHANGE);
+		filter.addAction(Constants.ACTION_MY_PHONE_CHANGE);
 		registerReceiver(receiver, new IntentFilter(filter));
 	}
 	
@@ -126,6 +127,7 @@ public class XivoActivity extends Activity implements OnClickListener {
 		launchCTIConnection();
 		try {
 			updateMyStatus(xivoConnectionService.getStateId());
+			updatePhoneStatus(xivoConnectionService.getPhoneStateId());
 		} catch (RemoteException e) {
 			Log.d(TAG, "Could not set my state id");
 		}
@@ -342,6 +344,33 @@ public class XivoActivity extends Activity implements OnClickListener {
 					c.getString(c.getColumnIndex(CapapresenceProvider.COLOR)));
 		}
 		c.close();
+	}
+	
+	/**
+	 * Update my phone status
+	 */
+	private void updatePhoneStatus(long id) {
+		Cursor c = getContentResolver().query(CapapresenceProvider.CONTENT_URI,
+				new String[]{
+					CapapresenceProvider._ID,
+					CapapresenceProvider.LONGNAME,
+					CapapresenceProvider.COLOR},
+				CapapresenceProvider._ID + " = " + id, null, null);
+		if (c.getCount() != 0) {
+			c.moveToFirst();
+			((TextView) findViewById(R.id.identityPhoneLongnameState)).setText(
+					c.getString(c.getColumnIndex(CapapresenceProvider.LONGNAME)));
+			GraphicsManager.setIconStateDisplay(this,
+					(ImageView) findViewById(R.id.identityPhoneStatus),
+					c.getString(c.getColumnIndex(CapapresenceProvider.COLOR)));
+		}
+		c.close();
+	}
+	
+	private void updatePhoneStatus(String color, String longname) {
+		((TextView) findViewById(R.id.identityPhoneLongnameState)).setText(longname);
+		GraphicsManager.setIconPhoneDisplay(this,
+				(ImageView) findViewById(R.id.identityPhoneStatus), color);
 	}
 	
 	/**
@@ -566,6 +595,9 @@ public class XivoActivity extends Activity implements OnClickListener {
 		public void onReceive(Context context, Intent intent) {
 			if (intent.getAction().equals(Constants.ACTION_MY_STATUS_CHANGE)) {
 				updateMyStatus(intent.getLongExtra("id", 0));
+			} else if (intent.getAction().equals(Constants.ACTION_MY_PHONE_CHANGE)) {
+				updatePhoneStatus(intent.getStringExtra("color"),
+						intent.getStringExtra("longname"));
 			}
 		}
 	}
