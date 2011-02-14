@@ -39,6 +39,8 @@ public class UserProvider extends ContentProvider {
 	public static final String STATEID_COLOR = "stateid_color";
 	public static final String TECHLIST = "techlist";
 	public static final String HINTSTATUS_COLOR = "hintstatus_color";
+	public static final String HINTSTATUS_CODE = "hintstatus_code";
+	public static final String HINTSTATUS_LONGNAME = "hintstatus_longname";
 	
 	/*
 	 * uri matchers
@@ -58,7 +60,7 @@ public class UserProvider extends ContentProvider {
 	private SQLiteDatabase xivouserDB;
 	private static final String DATABASE_NAME = "xivo_user";
 	private static final String DATABASE_TABLE = "user";
-	private static final int DATABASE_VERSION = 2;
+	private static final int DATABASE_VERSION = 3;
 	private static final String DATABASE_CREATE =
 		"create table " + DATABASE_TABLE + " (" +
 		_ID + " integer primary key autoincrement, " +
@@ -70,7 +72,10 @@ public class UserProvider extends ContentProvider {
 		STATEID_LONGNAME + " text not null, " +
 		STATEID_COLOR + " text not null, " +
 		TECHLIST + " text not null," +
-		HINTSTATUS_COLOR + " text not null);";
+		HINTSTATUS_COLOR + " text not null, "+
+		HINTSTATUS_CODE + " text not null, " +
+		HINTSTATUS_LONGNAME + " text not null" +
+		");";
 	
 	@Override
 	public int delete(Uri uri, String selection, String[] selectionArgs) {
@@ -139,8 +144,7 @@ public class UserProvider extends ContentProvider {
 	}
 	
 	@Override
-	public int update(Uri uri, ContentValues values, String selection,
-			String[] selectionArgs) {
+	public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
 		int count = 0;
 		switch (uriMatcher.match(uri)){
 		case USERS:

@@ -76,6 +76,8 @@ public final class Constants {
 	public static final int TRANSFER_MENU = 1;
 	public static final int ATXFER_ITEM_INDEX = 1;
 	public static final int TRANSFER_ITEM_INDEX = 2;
+	public static final String DEFAULT_HINT_COLOR = "gray";
+	public static final String DEFAULT_HINT_CODE = "away";
 	
 	/**
 	 * Intent actions
@@ -114,6 +116,4 @@ public final class Constants {
 	public static final String AUTO_START_SERVICE = "xivo.preference.auto_start_service";
 	public static final String PREF_USER_NAME = "login";
 	public static final String PREF_PASSWORD = "password";
-	public static final String DEFAULT_HINT_COLOR = "gray";
-	
 }

@@ -333,12 +333,14 @@ public class XivoActivity extends Activity implements OnClickListener {
 					CapapresenceProvider.LONGNAME,
 					CapapresenceProvider.COLOR},
 				CapapresenceProvider._ID + " = " + id, null, null);
-		c.moveToFirst();
-		((TextView) findViewById(R.id.identity_current_state_longname)).setText(
-				c.getString(c.getColumnIndex(CapapresenceProvider.LONGNAME)));
-		GraphicsManager.setIconStateDisplay(this,
-				(ImageView) findViewById(R.id.identity_current_state_image),
-				c.getString(c.getColumnIndex(CapapresenceProvider.COLOR)));
+		if (c.getCount() != 0) {
+			c.moveToFirst();
+			((TextView) findViewById(R.id.identity_current_state_longname)).setText(
+					c.getString(c.getColumnIndex(CapapresenceProvider.LONGNAME)));
+			GraphicsManager.setIconStateDisplay(this,
+					(ImageView) findViewById(R.id.identity_current_state_image),
+					c.getString(c.getColumnIndex(CapapresenceProvider.COLOR)));
+		}
 		c.close();
 	}
 	

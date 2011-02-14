@@ -184,6 +184,7 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 					}
 				
 			} while (cursor.moveToNext());
+			cursor.close();
 			return contact;
 		} else {
 			return null;
@@ -355,7 +356,6 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 		
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			Log.d(LOG_TAG, "getView");
 			View v;
 			if (convertView == null) {
 				final LayoutInflater inflater = LayoutInflater.from(XletContactSearch.this);
@@ -381,7 +381,8 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 			
 			// Phone status
 			ImageView iconPhone = (ImageView) v.findViewById(R.id.phoneStatusContact);
-			((TextView) v.findViewById(R.id.phone_longname_state)).setText("Phone State");
+			((TextView) v.findViewById(R.id.phone_longname_state)).setText(
+					user.getString(user.getColumnIndex(UserProvider.HINTSTATUS_LONGNAME)));
 			GraphicsManager.setIconPhoneDisplay(
 					XletContactSearch.this, iconPhone, user.getString(
 							user.getColumnIndex(UserProvider.HINTSTATUS_COLOR)));
@@ -414,6 +415,7 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 	private void getUserList() {
 		user = getContentResolver().query(
 				UserProvider.CONTENT_URI, null, null, null, UserProvider.FULLNAME);
+		userAdapter.notifyDataSetChanged();
 	}
 	
 	/**

@@ -103,4 +103,6 @@
     <string name="userslist_btn_lbl">User list</string>
     <string name="history_btn_lbl">History</string>
     <string name="service_btn_lbl">Services</string>
+    
+    <string name="default_hint_longname">Away</string>
 </resources>

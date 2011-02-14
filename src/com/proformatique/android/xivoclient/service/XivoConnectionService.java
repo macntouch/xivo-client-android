@@ -9,8 +9,6 @@ import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -19,6 +17,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoNotification;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.JSONMessageFactory;
@@ -29,6 +28,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -106,7 +106,6 @@ public class XivoConnectionService extends Service {
         
         @Override
         public void loadData() throws RemoteException {
-            Log.d(TAG, "loadData disabled");
             XivoConnectionService.this.refreshFeatures();
             XivoConnectionService.this.loadList("users");
         }
@@ -123,8 +122,7 @@ public class XivoConnectionService extends Service {
         
         @Override
         public boolean hasNewVoiceMail() throws RemoteException {
-            // TODO Auto-generated method stub
-            return false;
+            return mwi != null ? mwi[0] == 1 : false;
         }
         
         @Override
@@ -293,7 +291,7 @@ public class XivoConnectionService extends Service {
                     Intent i = new Intent();
                     i.setAction(Constants.ACTION_LOAD_USER_LIST);
                     sendBroadcast(i);
-                    //loadList("phones");
+                    loadList("phones");
                     break;
                 case PHONES_LOADED:
                     Log.d(TAG, "Phones list loaded");
@@ -394,72 +392,58 @@ public class XivoConnectionService extends Service {
             }
         }
         
-        int nbXivo = jAllPhones.length();
         /**
          * For each users in the userslist, find the corresponding phone and update the user's
          * status
          */
-        int i = 0;
-        for (HashMap<String, String> mapUser: usersList) {
-            if (!(mapUser.containsKey("techlist"))) {
-                Log.d(TAG, "This user has no phone, skipping");
-                Log.d(TAG, mapUser.toString());
-                continue;
-            }
-            JSONObject jPhone = null;
-            for (int j = 0; j < nbXivo; j++) {
-                JSONObject xivo = null;
+        Cursor user = getContentResolver().query(UserProvider.CONTENT_URI, null, null, null, null);
+        user.moveToFirst();
+        int techlistIndex = user.getColumnIndex(UserProvider.TECHLIST);
+        int nbXivo = jAllPhones.length();
+        do {
+            String techlist = user.getString(techlistIndex);
+            for (int i = 0; i < nbXivo; i++) {
                 try {
-                    xivo = jAllPhones.getJSONObject(j);
-                } catch (JSONException e) {
-                    Log.d(TAG, "Bad json array index");
-                    continue;
-                }
-                if (xivo.has(mapUser.get("techlist")) == true) {
-                    try {
-                        jPhone = xivo.getJSONObject(mapUser.get("techlist"));
-                    } catch (JSONException e) {
-                        Log.e(TAG, "Found an invalid phone");
-                        return JSON_EXCEPTION;
+                    if (jAllPhones.getJSONObject(i).has(techlist)) {
+                        setPhoneForUser(user, jAllPhones.getJSONObject(i).getJSONObject(techlist));
                     }
-                    break;
-                }
+                } catch (JSONException e) {}
             }
-            if (jPhone == null) {
-                Log.d(TAG, "No phone for this user, skipping");
-                continue;
-            }
-            
-            /**
-             * "Real" phone number is retrieved from phones list
-             */
-            try {
-                mapUser.put("phonenum", jPhone.getString("number"));
-            } catch (JSONException e1) {
-                Log.d(TAG, "Phone without a number");
-                mapUser.put("phonenum", null);
-            }
-            try {
-                JSONObject jPhoneStatus = jPhone.getJSONObject("hintstatus");
-                mapUser.put("hintstatus_color", jPhoneStatus.getString("color"));
-                mapUser.put("hintstatus_code", jPhoneStatus.getString("code"));
-                mapUser.put("hintstatus_longname", jPhoneStatus.getString("longname"));
-            } catch (JSONException e) {
-                Log.d(TAG, "No Phones status : "+ jPhone.toString());
-                mapUser.put("hintstatus_color", "");
-                mapUser.put("hintstatus_code", "");
-                mapUser.put("hintstatus_longname", "");
-            }
-            if (mapUser.get("xivo_userid").equals(xivoId)){
-                capaPresenceState.put("phonenum", mapUser.get("phonenum"));
-                capaPresenceState.put("hintstatus_color", mapUser.get("hintstatus_color"));
-                capaPresenceState.put("hintstatus_code", mapUser.get("hintstatus_code"));
-                capaPresenceState.put("hintstatus_longname", mapUser.get("hintstatus_longname"));
-            }
-            usersList.set(i, mapUser);
-            i++;
-        }
+        } while (user.moveToNext());
+        user.close();
         return PHONES_LOADED;
+    }
+    
+    private void setPhoneForUser(Cursor user, JSONObject jPhone) {
+        
+        long id = user.getLong(user.getColumnIndex(UserProvider._ID));
+        final ContentValues values = new ContentValues();
+        try {
+            JSONObject jPhoneStatus = jPhone.getJSONObject("hintstatus");
+            values.put(UserProvider.PHONENUM, jPhone.getString("number"));
+            values.put(UserProvider.HINTSTATUS_COLOR, jPhoneStatus.getString("color"));
+            values.put(UserProvider.HINTSTATUS_CODE, jPhoneStatus.getString("code"));
+            values.put(UserProvider.HINTSTATUS_LONGNAME, jPhoneStatus.getString("longname"));
+            getContentResolver().update(
+                    Uri.parse(UserProvider.CONTENT_URI + "/" + id), values, null, null);
+        } catch (JSONException e) {
+            Log.d(TAG, "JSONException, could not update phone status");
+        }
+        
+        if (user.getString(user.getColumnIndex(UserProvider.XIVO_USERID)).equals(xivoId)) {
+            values.clear();
+            values.put(CapapresenceProvider.HINTSTATUS_COLOR, user.getString(
+                    user.getColumnIndex(UserProvider.HINTSTATUS_COLOR)));
+            values.put(CapapresenceProvider.HINTSTATUS_CODE, user.getString(
+                    user.getColumnIndex(UserProvider.HINTSTATUS_CODE)));
+            values.put(CapapresenceProvider.HINTSTATUS_LONGNAME, user.getString(
+                    user.getColumnIndex(UserProvider.HINTSTATUS_LONGNAME)));
+            getContentResolver().update(CapapresenceProvider.CONTENT_URI, values, null, null);
+            Intent i = new Intent();
+            i.setAction(Constants.ACTION_MY_STATUS_CHANGE);
+            sendBroadcast(i);
+        }
+        values.clear();
     }
     
     /**
@@ -509,6 +493,9 @@ public class XivoConnectionService extends Service {
                     user.put(UserProvider.STATEID_COLOR, jUserState.getString("color"));
                     user.put(UserProvider.TECHLIST, jUser.getJSONArray("techlist").getString(0));
                     user.put(UserProvider.HINTSTATUS_COLOR, Constants.DEFAULT_HINT_COLOR);
+                    user.put(UserProvider.HINTSTATUS_CODE, Constants.DEFAULT_HINT_CODE);
+                    user.put(UserProvider.HINTSTATUS_LONGNAME, getString(
+                            R.string.default_hint_longname));
                     if (userId.equals(this.userId) && jUser.has("mwi")) {
                         JSONArray mwi = jUser.getJSONArray("mwi");
                         int lenmwi = mwi != null ? mwi.length() : 0;
@@ -653,41 +640,43 @@ public class XivoConnectionService extends Service {
          * Fill the DB
          */
         Log.d(TAG, "Parsing capapresence");
+        getContentResolver().delete(CapapresenceProvider.CONTENT_URI, null, null);
         try {
             ContentValues presence = new ContentValues();
             for (Iterator<String> keyIter = jPresence.getJSONObject("names").keys();
                     keyIter.hasNext(); ) {
                 String key = keyIter.next();
-                presence.put("name", key);
-                presence.put("color",
+                presence.put(CapapresenceProvider.NAME, key);
+                presence.put(CapapresenceProvider.COLOR,
                         jPresence.getJSONObject("names").getJSONObject(key).getString("color"));
-                presence.put("longname",
+                presence.put(CapapresenceProvider.LONGNAME,
                         jPresence.getJSONObject("names").getJSONObject(key).getString("longname"));
                 int allowed = jPresence.getJSONObject("allowed").getBoolean(key) == true ? 1 : 0;
-                presence.put("allowed", allowed);
+                presence.put(CapapresenceProvider.ALLOWED, allowed);
+                presence.put(CapapresenceProvider.HINTSTATUS_COLOR, Constants.DEFAULT_HINT_COLOR);
+                presence.put(CapapresenceProvider.HINTSTATUS_CODE, Constants.DEFAULT_HINT_CODE);
+                presence.put(CapapresenceProvider.HINTSTATUS_LONGNAME,
+                        getString(R.string.default_hint_longname));
                 getContentResolver().insert(CapapresenceProvider.CONTENT_URI, presence);
                 presence.clear();
             }
         } catch (JSONException e) {
             Log.d(TAG, "json exception while parsing presences");
         }
-        /*
-         * Send our starting presence index
-         */
         try {
-            String current = jPresence.getJSONObject("state").getString("stateid");
-            Cursor c = getContentResolver().query(CapapresenceProvider.CONTENT_URI,
-                    new String[]{CapapresenceProvider._ID, CapapresenceProvider.NAME},
-                    CapapresenceProvider.NAME + " = '" + current + "'", null, null);
-            c.moveToFirst();
-            stateId = c.getInt(c.getColumnIndex(CapapresenceProvider._ID));
-            c.close();
+            JSONObject myPresence = jPresence.getJSONObject("state");
+            String code = myPresence.getString("stateid");
+            Cursor presence = getContentResolver().query(CapapresenceProvider.CONTENT_URI,
+                    new String[] {CapapresenceProvider._ID, CapapresenceProvider.NAME},
+                    CapapresenceProvider.NAME + " = '" + code + "'", null, null);
+            presence.moveToFirst();
+            stateId = presence.getLong(presence.getColumnIndex(CapapresenceProvider._ID));
+            presence.close();
             Intent i = new Intent();
             i.setAction(Constants.ACTION_MY_STATUS_CHANGE);
             i.putExtra("id", stateId);
-            sendBroadcast(i);
         } catch (JSONException e) {
-            Log.d(TAG, "Could not retrieve current state");
+            Log.d(TAG, "Could not get my presence");
         }
     }
     
@@ -935,16 +924,5 @@ public class XivoConnectionService extends Service {
         Log.d(TAG, "Client: " + line);
         output.println(line);
         return Constants.OK;
-    }
-    
-    @SuppressWarnings("unchecked")
-    private class fullNameComparator implements Comparator
-    {
-        public int compare(Object obj1, Object obj2)
-        {
-            HashMap<String, String> update1 = (HashMap<String, String>)obj1;
-            HashMap<String, String> update2 = (HashMap<String, String>)obj2;
-            return update1.get("fullname").compareToIgnoreCase(update2.get("fullname"));
-        }
     }
 }
