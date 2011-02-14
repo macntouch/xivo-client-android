@@ -402,9 +402,29 @@ public class XivoConnectionService extends Service {
      * @param line
      * @return msg to the handler
      */
-    @SuppressWarnings("unchecked")
     private int parsePhones(JSONObject line) {
-        Log.d(TAG, "Parsing phones:\n" + line.toString());
+        try {
+            String function = line.getString("function");
+            if (function.equals("sendlist")) {
+                return parsePhoneList(line);
+            } else if (function.equals("update")) {
+                return parsePhoneUpdate(line);
+            }
+        } catch (JSONException e) {
+            Log.d(TAG, "Phone class without function");
+            return NO_MESSAGE;
+        }
+        return NO_MESSAGE;
+    }
+    
+    private int parsePhoneUpdate(JSONObject line) {
+        Log.d(TAG, "Parsing phone update");
+        Log.d(TAG, line.toString());
+        return Constants.OK;
+    }
+    
+    private int parsePhoneList(JSONObject line) {
+        Log.d(TAG, "Parsing phone list");
         if (line.has("payload") == false)
             return NO_MESSAGE;
         JSONObject payloads = null;
