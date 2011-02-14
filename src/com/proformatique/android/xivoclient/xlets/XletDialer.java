@@ -44,7 +44,6 @@ import android.widget.Toast;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.SettingsActivity;
 import com.proformatique.android.xivoclient.XivoActivity;
-import com.proformatique.android.xivoclient.XletsContainerTabActivity;
 import com.proformatique.android.xivoclient.service.Connection;
 import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.tools.Constants;
@@ -314,11 +313,7 @@ public class XletDialer extends XivoActivity {
 				Bundle extra = intent.getExtras();
 				
 				if (extra != null){
-					XletsContainerTabActivity parentAct;
 					phoneNumber.setText(extra.getString("numToCall"));
-					parentAct = (XletsContainerTabActivity)XletDialer.this.getParent();
-					parentAct.switchTab(0);
-					
 					new CallJsonTask().execute();
 				}
 			} else if (intent.getAction().equals(Constants.ACTION_HANGUP)) {

@@ -19,6 +19,8 @@
 
 package com.proformatique.android.xivoclient;
 
+import com.proformatique.android.xivoclient.xlets.XletDialer;
+
 import android.app.KeyguardManager;
 import android.app.Service;
 import android.content.Context;
@@ -59,7 +61,7 @@ public class InCallScreenKiller extends Service {
 			public void onCallStateChanged(int state, String incomingNumber) {
 				Log.d(LOG_TAG, "onCallStateChanged called");
 				if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
-					Intent i = new Intent(getApplicationContext(), XletsContainerTabActivity.class);
+					Intent i = new Intent(getApplicationContext(), XletDialer.class);
 					i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 					try {
 						Thread.sleep(2000);

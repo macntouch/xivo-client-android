@@ -8,7 +8,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -46,7 +45,6 @@ public class XivoConnectionService extends Service {
     private BufferedReader inputBuffer = null;
     private Handler handler = null;
     private Thread thread = null;
-    private Context context = null;
     private long bytesReceived = 0L;
     private boolean cancel = false;
     
@@ -284,7 +282,6 @@ public class XivoConnectionService extends Service {
      * Starts the main loop to listen to incoming JSON messages from the CTI server
      */
     private void startLooping(Context context) {
-        this.context = context;
         cancel = false;
         handler = new Handler() {
             /**
@@ -484,7 +481,6 @@ public class XivoConnectionService extends Service {
                 return JSON_EXCEPTION;
             }
             int len = payload != null ? payload.length() : 0;
-            usersList = new ArrayList<HashMap<String, String>>(len);
             getContentResolver().delete(UserProvider.CONTENT_URI, null, null);
             ContentValues user = new ContentValues();
             for (int i = 0; i < len; i++) {
