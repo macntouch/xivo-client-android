@@ -38,6 +38,7 @@ public class UserProvider extends ContentProvider {
 	public static final String STATEID_LONGNAME = "stateid_longname";
 	public static final String STATEID_COLOR = "stateid_color";
 	public static final String TECHLIST = "techlist";
+	public static final String HINTSTATUS_COLOR = "hintstatus_color";
 	
 	/*
 	 * uri matchers
@@ -57,7 +58,7 @@ public class UserProvider extends ContentProvider {
 	private SQLiteDatabase xivouserDB;
 	private static final String DATABASE_NAME = "xivo_user";
 	private static final String DATABASE_TABLE = "user";
-	private static final int DATABASE_VERSION = 1;
+	private static final int DATABASE_VERSION = 2;
 	private static final String DATABASE_CREATE =
 		"create table " + DATABASE_TABLE + " (" +
 		_ID + " integer primary key autoincrement, " +
@@ -68,7 +69,8 @@ public class UserProvider extends ContentProvider {
 		STATEID + " text not null, " +
 		STATEID_LONGNAME + " text not null, " +
 		STATEID_COLOR + " text not null, " +
-		TECHLIST + " text not null);";
+		TECHLIST + " text not null," +
+		HINTSTATUS_COLOR + " text not null);";
 	
 	@Override
 	public int delete(Uri uri, String selection, String[] selectionArgs) {

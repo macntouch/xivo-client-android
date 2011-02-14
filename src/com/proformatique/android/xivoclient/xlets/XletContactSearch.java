@@ -19,9 +19,7 @@
 
 package com.proformatique.android.xivoclient.xlets;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,62 +37,61 @@ import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.ContextMenu;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
 
 import com.proformatique.android.xivoclient.AttendedTransferActivity;
 import com.proformatique.android.xivoclient.BlindTransferActivity;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
-import com.proformatique.android.xivoclient.service.CapaxletsProvider;
 import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.service.UserProvider;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
 
-public class XletContactSearch extends XivoActivity {
+public class XletContactSearch extends XivoActivity implements OnItemClickListener {
 	
-	private static final String LOG_TAG = "XiVO XletContactSearch";
-	private static final int CALL_MENU = 0;
-	private static final int CALL_ITEM_INDEX = 0;
+	private static final String LOG_TAG = "XiVO search";
 	
-	private List<HashMap<String, String>> contacts = null;
-	private AlternativeAdapter usersAdapter = null;
-	
-	
+	private Cursor user;
+	private UserAdapter userAdapter = null;
 	private String[] pickedContactPhoneList;
+	private IncomingReceiver receiver;
 	
+	/*
+	 * UI
+	 */
 	private EditText et;
 	private ListView lv;
-	private IncomingReceiver receiver;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
 		setContentView(R.layout.xlet_search);
-		//contacts = InitialListLoader.getInstance().getUsersList();
-		et = (EditText)findViewById(R.id.SearchEdit);
-		//filllist(et.getText().toString());
-		//initListView();
 		
-		receiver = new IncomingReceiver();
+		et = (EditText)findViewById(R.id.SearchEdit);
+		lv = (ListView) findViewById(R.id.users_list);
+		
+		userAdapter = new UserAdapter();
+		lv.setAdapter(userAdapter);
+		lv.setOnItemClickListener(this);
 		
 		/**
 		 *  Register a BroadcastReceiver for Intent action that trigger a change
 		 *  in the users list from the Activity
 		 */
+		receiver = new IncomingReceiver();
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(Constants.ACTION_LOAD_USER_LIST);
 		filter.addAction(Constants.ACTION_REFRESH_USER_LIST);
@@ -124,6 +121,8 @@ public class XletContactSearch extends XivoActivity {
 						Constants.CONTACT_PICKER_RESULT);
 			}
 		});
+		
+		registerButtons();
 	}
 	
 	/**
@@ -178,8 +177,9 @@ public class XletContactSearch extends XivoActivity {
 						} else if (col.equals("data1")) {
 							number = cursor.getString(index);
 						} else if (col.equals("data2")) {
-							contact.put((String) Phone.getTypeLabel(this.getResources(), cursor.getInt(
-									cursor.getColumnIndex(Phone.TYPE)), "unknown"), number);
+							contact.put((String) Phone.getTypeLabel(
+									this.getResources(), cursor.getInt( cursor.getColumnIndex(
+											Phone.TYPE)), "unknown"), number);
 						}
 					}
 				
@@ -267,7 +267,8 @@ public class XletContactSearch extends XivoActivity {
 	 */
 	protected void callNumberForResult(int i) {
 		if (i == pickedContactPhoneList.length - 1) {
-			Toast.makeText(getApplicationContext(), getString(R.string.call_canceled), Toast.LENGTH_LONG).show();
+			Toast.makeText(getApplicationContext(), getString(R.string.call_canceled),
+					Toast.LENGTH_LONG).show();
 		} else {
 			String[] number = pickedContactPhoneList[i].split(" ");
 			dialNumber(number[1]);
@@ -323,78 +324,68 @@ public class XletContactSearch extends XivoActivity {
 	
 	protected void onResume() {
 		super.onResume();
-		//contacts = InitialListLoader.getInstance().getUsersList();
-		//filllist(et.getText().toString());
-		//nitListView();
+		getUserList();
 	}
 	
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		Log.d(LOG_TAG, item.getTitle().toString());
-		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-		//String phoneNumber = filteredUsersList.get(info.position).get("phonenum");
-		switch (item.getGroupId()) {
-		// Call menu
-		case CALL_MENU:
-			switch (item.getItemId()) {
-			case CALL_ITEM_INDEX:
-			//	dialNumber(phoneNumber);
-				break;
-			default:
-				break;
-			}
-			break;
-		// Transfer menu
-		case Constants.TRANSFER_MENU:
-			switch (item.getItemId()) {
-			case Constants.ATXFER_ITEM_INDEX:
-				Log.d(LOG_TAG, "Attended transfer selected");
-				//atxferNumber(phoneNumber);
-				break;
-			case Constants.TRANSFER_ITEM_INDEX:
-				Log.d(LOG_TAG, "Blind transfer selected");
-		//		transferNumber(phoneNumber);
-				break;
-			}
-			break;
-			
-		default:
-			break;
-		}
-		et = (EditText)findViewById(R.id.SearchEdit);
-		et.setText("");
-		return super.onContextItemSelected(item);
-	}
-	
-	/**
-	 * Adapter subclass based on SimpleAdapter
-	 * Allow modifying fields displayed in the ListView
-	 * 
-	 * @author cquaquin
-	 */
-	private class AlternativeAdapter extends SimpleAdapter {
+	private class UserAdapter extends BaseAdapter {
 		
-		public AlternativeAdapter(Context context,
-				List<? extends Map<String, ?>> data, int resource, String[] from,
-				int[] to) {
-			super(context, data, resource, from, to);
+		private final static String TAG = "User Adapter";
+		
+		public UserAdapter() {
+			Log.d(TAG, "User adapter");
+			Log.d(TAG, user == null ? "0" : Long.toString(user.getCount()));
 		}
 		
-		@SuppressWarnings("unchecked")
+		@Override
+		public int getCount() {
+			return user != null ? user.getCount() : 0;
+		}
+		
+		@Override
+		public Object getItem(int position) {
+			user.moveToPosition(position);
+			return user.getExtras();
+		}
+		
+		@Override
+		public long getItemId(int position) {
+			user.moveToPosition(position);
+			return user.getLong(user.getColumnIndex(UserProvider._ID));
+		}
+		
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
+			Log.d(LOG_TAG, "getView");
+			View v;
+			if (convertView == null) {
+				final LayoutInflater inflater = LayoutInflater.from(XletContactSearch.this);
+				v = inflater.inflate(R.layout.xlet_search_items, null);
+			} else {
+				v = convertView;
+			}
+			user.moveToPosition(position);
 			
-			View view = super.getView(position, convertView, parent);
-			HashMap<String, String> line = (HashMap<String, String>) lv.getItemAtPosition(position);
-			String stateIdColor = line.get("stateid_color");
-			ImageView iconState = (ImageView) view.findViewById(R.id.statusContact);
-			GraphicsManager.setIconStateDisplay(XletContactSearch.this, iconState, stateIdColor);
-			String colorString = line.get("hintstatus_color");
-			ImageView iconPhone = (ImageView) view.findViewById(R.id.phoneStatusContact);
-			GraphicsManager.setIconPhoneDisplay(XletContactSearch.this, iconPhone, colorString);
+			// Contact info
+			((TextView) v.findViewById(R.id.fullname)).setText(
+					user.getString(user.getColumnIndex(UserProvider.FULLNAME)));
+			((TextView) v.findViewById(R.id.phonenum)).setText(
+					user.getString(user.getColumnIndex(UserProvider.PHONENUM)));
 			
-			return view;
+			// Contact Status
+			ImageView iconState = (ImageView) v.findViewById(R.id.statusContact);
+			((TextView) v.findViewById(R.id.longname_state)).setText(
+					user.getString(user.getColumnIndex(UserProvider.STATEID_LONGNAME)));
+			GraphicsManager.setIconStateDisplay(
+					XletContactSearch.this, iconState, user.getString(
+							user.getColumnIndex(UserProvider.STATEID_COLOR)));
 			
+			// Phone status
+			ImageView iconPhone = (ImageView) v.findViewById(R.id.phoneStatusContact);
+			((TextView) v.findViewById(R.id.phone_longname_state)).setText("Phone State");
+			GraphicsManager.setIconPhoneDisplay(
+					XletContactSearch.this, iconPhone, user.getString(
+							user.getColumnIndex(UserProvider.HINTSTATUS_COLOR)));
+			return v;
 		}
 	}
 	
@@ -410,70 +401,20 @@ public class XletContactSearch extends XivoActivity {
 		public void onReceive(Context context, Intent intent) {
 			if (intent.getAction().equals(Constants.ACTION_LOAD_USER_LIST)) {
 				Log.d( LOG_TAG , "Received Broadcast ");
-				logUserList();
-				/*if (usersAdapter != null) {
-					contacts = InitialListLoader.getInstance().getUsersList();
-					filllist(et.getText().toString());
-					usersAdapter.notifyDataSetChanged();
-				}*/
+				getUserList();
+				userAdapter.notifyDataSetChanged();
 			} else if (intent.getAction().equals(Constants.ACTION_REFRESH_USER_LIST)) {
 				Log.d(LOG_TAG, "Received search Broadcast");
-				if (usersAdapter != null) {
-					//filllist(et.getText().toString());
-					//initListView();
-					usersAdapter.notifyDataSetChanged();
-				}
+				
+				
 			}
 		}
 	}
 	
-	private void logUserList() {
-		Cursor c = managedQuery(UserProvider.CONTENT_URI, null, null, null, null);
-		if (c.moveToFirst()) {
-			do {
-				String name = c.getString(c.getColumnIndex(UserProvider.FULLNAME));
-				Log.d(LOG_TAG, "User: " + name);
-			} while (c.moveToNext());
-		}
-		c.close();
+	private void getUserList() {
+		user = getContentResolver().query(
+				UserProvider.CONTENT_URI, null, null, null, UserProvider.FULLNAME);
 	}
-	
-	/**
-	 * Fill the filtered user list to display on the listview
-	 * 
-	 * @param filter -- The search value to look for
-	 */
-	/*private void filllist(String filter) {
-		if (filter.equals("") == false) {
-			filteredUsersList = new ArrayList<HashMap<String, String>>();
-			int len = filter.length();
-			for (HashMap<String, String> user: contacts) {
-				if (len <= user.get("fullname").length() && filter.equalsIgnoreCase((String) user.get("fullname").subSequence(0, len))) {
-					filteredUsersList.add(user);
-				}
-			}
-		} else {
-			if (contacts.size() > filteredUsersList.size()) {
-				filteredUsersList.clear();
-				filteredUsersList.addAll(contacts);
-			}
-		}
-	}*/
-	
-	/**
-	 * Initialize the ListView for the searched contacts
-	 */
-	/*private void initListView() {
-		usersAdapter = new AlternativeAdapter(
-				this,
-				filteredUsersList,
-				R.layout.xlet_search_items,
-				Constants.USERS_LIST_FROM_STRINGS,
-				Constants.USERS_LIST_TO_RESSOURCES);
-		
-		lv= (ListView)findViewById(R.id.users_list);
-		lv.setAdapter(usersAdapter);
-	}*/
 	
 	/**
 	 * Perform a call via Dial Activity
@@ -515,6 +456,46 @@ public class XletContactSearch extends XivoActivity {
 	@Override
 	protected void onDestroy() {
 		unregisterReceiver(receiver);
+		if (user != null)
+			user.close();
 		super.onDestroy();
+	}
+	
+	@Override
+	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+		user.moveToPosition(position);
+		String phoneNumber = user.getString(user.getColumnIndex(UserProvider.PHONENUM));
+		String name = user.getString(user.getColumnIndex(UserProvider.FULLNAME));
+		Log.d(LOG_TAG, "Clicked: " + name + " " + phoneNumber);
+		/*switch (item.getGroupId()) {
+		// Call menu
+		case CALL_MENU:
+			switch (item.getItemId()) {
+			case CALL_ITEM_INDEX:
+				dialNumber(phoneNumber);
+				break;
+			default:
+				break;
+			}
+			break;
+		// Transfer menu
+		case Constants.TRANSFER_MENU:
+			switch (item.getItemId()) {
+			case Constants.ATXFER_ITEM_INDEX:
+				Log.d(LOG_TAG, "Attended transfer selected");
+				atxferNumber(phoneNumber);
+				break;
+			case Constants.TRANSFER_ITEM_INDEX:
+				Log.d(LOG_TAG, "Blind transfer selected");
+				transferNumber(phoneNumber);
+				break;
+			}
+			break;	
+		default:
+			break;
+		}
+		et = (EditText)findViewById(R.id.SearchEdit);
+		et.setText("");
+		return super.onContextItemSelected(item);*/
 	}
 }

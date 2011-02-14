@@ -19,8 +19,6 @@
 
 package com.proformatique.android.xivoclient.tools;
 
-import com.proformatique.android.xivoclient.R;
-
 public final class Constants {
 
 	/**
@@ -109,8 +107,6 @@ public final class Constants {
 	 */
 	public static final String[] USERS_LIST_FROM_STRINGS = {"fullname","phonenum","stateid","stateid_longname", "stateid_color",
 		"hintstatus_code", "hintstatus_longname", "hintstatus_color"};
-	public static final int[] USERS_LIST_TO_RESSOURCES = {R.id.fullname, R.id.phonenum, R.id.stateid, R.id.longname_state, 0,
-		R.id.phoneStateCode, R.id.phone_longname_state, R.id.phoneStateColor} ;
 	
 	/**
 	 * Preferences
@@ -118,5 +114,6 @@ public final class Constants {
 	public static final String AUTO_START_SERVICE = "xivo.preference.auto_start_service";
 	public static final String PREF_USER_NAME = "login";
 	public static final String PREF_PASSWORD = "password";
+	public static final String DEFAULT_HINT_COLOR = "gray";
 	
 }
