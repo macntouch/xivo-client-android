@@ -51,4 +51,36 @@ public class JSONMessageFactory {
         }
         return obj;
     }
+    
+    /**
+     * Prepare the Json string for calling process
+     * 
+     * @param inputClass
+     * @param phoneNumberSrc
+     * @param phoneNumberDest
+     * @return
+     */
+    public static JSONObject getJsonCallingObject(String inputClass, String phoneNumberSrc,
+            String phoneNumberDest) {
+        
+        JSONObject jObj = new JSONObject();
+        String phoneSrc;
+        
+        if (phoneNumberSrc == null)
+            phoneSrc = "user:special:me";
+        else if (phoneNumberSrc.equals(""))
+            phoneSrc = "user:special:me";
+        else
+            phoneSrc = "ext:"+phoneNumberSrc;
+        
+        try {
+            jObj.accumulate("direction", Constants.XIVO_SERVER);
+            jObj.accumulate("class",inputClass);
+            jObj.accumulate("source", phoneSrc);
+            jObj.accumulate("destination", "ext:"+phoneNumberDest);
+            return jObj;
+        } catch (JSONException e) {
+            return null;
+        }
+    }
 }

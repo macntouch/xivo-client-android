@@ -47,6 +47,7 @@ import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.service.Connection;
 import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.tools.Constants;
+import com.proformatique.android.xivoclient.tools.JSONMessageFactory;
 
 public class XletDialer extends XivoActivity {
 	
@@ -182,7 +183,8 @@ public class XletDialer extends XivoActivity {
 			/**
 			 * Creating Call Json object
 			 */
-			JSONObject jCalling = createJsonCallingObject("originate", SettingsActivity.getMobileNumber(getApplicationContext()), 
+			JSONObject jCalling = JSONMessageFactory.getJsonCallingObject(
+					"originate", SettingsActivity.getMobileNumber(getApplicationContext()), 
 					phoneNumber.getText().toString().replaceAll("-", ""));
 			try {
 				Log.d( LOG_TAG, "jCalling: " + jCalling.toString());
@@ -225,38 +227,7 @@ public class XletDialer extends XivoActivity {
 		}
 	}
 	
-	/**
-	 * Prepare the Json string for calling process
-	 * 
-	 * @param inputClass
-	 * @param phoneNumberSrc
-	 * @param phoneNumberDest
-	 * @return
-	 */
-	private JSONObject createJsonCallingObject(String inputClass, 
-			String phoneNumberSrc,
-			String phoneNumberDest) {
-		
-		JSONObject jObj = new JSONObject();
-		String phoneSrc;
-		
-		if (phoneNumberSrc == null)
-			phoneSrc = "user:special:me";
-		else if (phoneNumberSrc.equals(""))
-			phoneSrc = "user:special:me";
-		else phoneSrc = "ext:"+phoneNumberSrc;
-		
-		try {
-			jObj.accumulate("direction", Constants.XIVO_SERVER);
-			jObj.accumulate("class",inputClass);
-			jObj.accumulate("source", phoneSrc);
-			jObj.accumulate("destination", "ext:"+phoneNumberDest);
-			
-			return jObj;
-		} catch (JSONException e) {
-			return null;
-		}
-	}
+
 	
 	/**
 	 * Create an hangup JSON object
@@ -398,7 +369,8 @@ public class XletDialer extends XivoActivity {
 	
 	public void clickVoiceMail(View v) {
 		if (SettingsActivity.getUseMobile(this)) {
-			Toast.makeText(this, "Not available when using your mobile number.", Toast.LENGTH_LONG).show();
+			Toast.makeText(this, "Not available when using your mobile number.",
+					Toast.LENGTH_LONG).show();
 		} else {
 			((EditText) findViewById(R.id.number)).setText("*98");
 			new CallJsonTask().execute();
