@@ -110,6 +110,15 @@ public class XivoActivity extends Activity implements OnClickListener {
 		super.onResume();
 		startXivoConnectionService();
 		bindXivoConnectionService();
+		if (xivoConnectionService == null)
+			return;
+		try {
+			updateMyStatus(xivoConnectionService.getStateId());
+			updatePhoneStatus(xivoConnectionService.getPhoneStatusColor(),
+				xivoConnectionService.getPhoneStatusLongname());
+		} catch(RemoteException e) {
+			Log.d(TAG, "Not binded yet, will load state later");
+		}
 	}
 	
 	@Override
@@ -127,7 +136,8 @@ public class XivoActivity extends Activity implements OnClickListener {
 		launchCTIConnection();
 		try {
 			updateMyStatus(xivoConnectionService.getStateId());
-			updatePhoneStatus(xivoConnectionService.getPhoneStateId());
+			updatePhoneStatus(xivoConnectionService.getPhoneStatusColor(), 
+					xivoConnectionService.getPhoneStatusLongname());
 		} catch (RemoteException e) {
 			Log.d(TAG, "Could not set my state id");
 		}
@@ -341,27 +351,6 @@ public class XivoActivity extends Activity implements OnClickListener {
 					c.getString(c.getColumnIndex(CapapresenceProvider.LONGNAME)));
 			GraphicsManager.setIconStateDisplay(this,
 					(ImageView) findViewById(R.id.identity_current_state_image),
-					c.getString(c.getColumnIndex(CapapresenceProvider.COLOR)));
-		}
-		c.close();
-	}
-	
-	/**
-	 * Update my phone status
-	 */
-	private void updatePhoneStatus(long id) {
-		Cursor c = getContentResolver().query(CapapresenceProvider.CONTENT_URI,
-				new String[]{
-					CapapresenceProvider._ID,
-					CapapresenceProvider.LONGNAME,
-					CapapresenceProvider.COLOR},
-				CapapresenceProvider._ID + " = " + id, null, null);
-		if (c.getCount() != 0) {
-			c.moveToFirst();
-			((TextView) findViewById(R.id.identityPhoneLongnameState)).setText(
-					c.getString(c.getColumnIndex(CapapresenceProvider.LONGNAME)));
-			GraphicsManager.setIconStateDisplay(this,
-					(ImageView) findViewById(R.id.identityPhoneStatus),
 					c.getString(c.getColumnIndex(CapapresenceProvider.COLOR)));
 		}
 		c.close();

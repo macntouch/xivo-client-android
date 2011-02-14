@@ -60,7 +60,8 @@ public class XivoConnectionService extends Service {
     private int[] mwi = new int[3];
     private JSONArray capalist = null;
     private long stateId = 0L;
-    private long phoneStateId = 0L;
+    private String phoneStatusLongname = null;
+    private String phoneStatusColor = Constants.DEFAULT_HINT_COLOR;
     
     // Messages from the loop to the handler
     private final static int NO_MESSAGE = 0;
@@ -130,8 +131,13 @@ public class XivoConnectionService extends Service {
         }
         
         @Override
-        public long getPhoneStateId() throws RemoteException {
-            return phoneStateId;
+        public String getPhoneStatusColor() throws RemoteException {
+            return phoneStatusColor;
+        }
+        
+        @Override
+        public String getPhoneStatusLongname() throws RemoteException {
+            return phoneStatusLongname;
         }
     };
     
@@ -162,6 +168,7 @@ public class XivoConnectionService extends Service {
     public void onCreate() {
         super.onCreate();
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        phoneStatusLongname = getString(R.string.default_hint_longname);
     }
     
     @Override
@@ -440,24 +447,12 @@ public class XivoConnectionService extends Service {
         
         if (user.getString(user.getColumnIndex(UserProvider.XIVO_USERID)).equals(xivoId)) {
             try {
-                String code = jPhoneStatus.getString("code");
-                String longname = jPhoneStatus.getString("longname");
-                String color = jPhoneStatus.getString("color");
-                Cursor phoneState = getContentResolver().query(CapapresenceProvider.CONTENT_URI,
-                        new String[] {CapapresenceProvider._ID, CapapresenceProvider.NAME},
-                        CapapresenceProvider.NAME + "= '" + code + "'", null, null);
-                if (phoneState.getCount() < 1) {
-                    Log.d(TAG, "No phone state found...");
-                } else {
-                    phoneState.moveToFirst();
-                    phoneStateId = phoneState.getLong(
-                            phoneState.getColumnIndex(CapapresenceProvider.NAME));
-                    phoneState.close();
-                }
+                phoneStatusLongname = jPhoneStatus.getString("longname");
+                phoneStatusColor = jPhoneStatus.getString("color");
                 Intent i = new Intent();
                 i.setAction(Constants.ACTION_MY_PHONE_CHANGE);
-                i.putExtra("color", color);
-                i.putExtra("longname", longname);
+                i.putExtra("color", phoneStatusColor);
+                i.putExtra("longname", phoneStatusLongname);
                 sendBroadcast(i);
             } catch (JSONException e) {
                 Log.d(TAG, "Failled to set our status");
