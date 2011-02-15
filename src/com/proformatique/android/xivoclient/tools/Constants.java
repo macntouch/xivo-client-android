@@ -78,6 +78,7 @@ public final class Constants {
 	public static final int TRANSFER_ITEM_INDEX = 2;
 	public static final String DEFAULT_HINT_COLOR = "gray";
 	public static final String DEFAULT_HINT_CODE = "away";
+	public static final int MAX_PHONE_NUMBER_LEN = 7;
 	
 	/**
 	 * Intent actions

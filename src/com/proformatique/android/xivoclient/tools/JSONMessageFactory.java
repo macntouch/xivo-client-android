@@ -1,5 +1,7 @@
 package com.proformatique.android.xivoclient.tools;
 
+import java.util.Iterator;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -81,6 +83,39 @@ public class JSONMessageFactory {
             return jObj;
         } catch (JSONException e) {
             return null;
+        }
+    }
+    
+    /**
+     * Parses a phone update and retuns the calleridnum
+     * @param line
+     * @return calleridnum or ""
+     */
+    @SuppressWarnings("unchecked")
+    public static String getCalledIdNum(JSONObject line) {
+        try {
+            JSONObject comms = line.getJSONObject("status").getJSONObject("comms");
+            for (Iterator<String> iter = comms.keys(); iter.hasNext(); )
+                return comms.getJSONObject(iter.toString()).getString("calleridnum");
+        } catch (JSONException e) {
+            return "";
+        }
+        return "";
+    }
+    
+    /**
+     * Parses a phone update and check if it matches a given astId and xivoId
+     * @param line
+     * @param astId
+     * @param xivoId
+     * @return
+     */
+    public static boolean checkIdMatch(JSONObject line, String astId, String xivoId) {
+        try {
+            return line.getString("astid").equals(astId)
+                    && line.getJSONObject("status").getString("id").equals(xivoId);
+        } catch (JSONException e) {
+            return false;
         }
     }
 }

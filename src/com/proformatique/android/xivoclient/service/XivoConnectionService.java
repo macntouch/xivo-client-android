@@ -63,6 +63,7 @@ public class XivoConnectionService extends Service {
     private long stateId = 0L;
     private String phoneStatusLongname = null;
     private String phoneStatusColor = Constants.DEFAULT_HINT_COLOR;
+    private String lastCalledNumber = null;
     
     // Messages from the loop to the handler
     private final static int NO_MESSAGE = 0;
@@ -154,6 +155,7 @@ public class XivoConnectionService extends Service {
      */
     private int call(String number) {
         Log.d(TAG, "Calling " + number);
+        lastCalledNumber = number;
         JSONObject jCall = JSONMessageFactory.getJsonCallingObject(
                 "originate", SettingsActivity.getMobileNumber(getApplicationContext()), number);
         sendLine(jCall.toString());
@@ -423,9 +425,102 @@ public class XivoConnectionService extends Service {
      * @return Message to the handler
      */
     private int parsePhoneUpdate(JSONObject line) {
-        Log.d(TAG, "Parsing phone update");
-        Log.d(TAG, line.toString());
-        return Constants.OK;
+        
+        /*
+         * Check if the update concerns a call I'm doing
+         */
+        if (lastCalledNumber != null) {
+            if (SettingsActivity.getUseMobile(this)) {
+                if (lastCalledNumber.length() < Constants.MAX_PHONE_NUMBER_LEN) {
+                    if (JSONMessageFactory.getCalledIdNum(line).equals(
+                            SettingsActivity.getMobileNumber(this))) {
+                        parseMyMobilePhoneUpdate(line);
+                    }
+                }
+            } else { // Not using mobile
+                if (JSONMessageFactory.checkIdMatch(line, astId, xivoId)) {
+                    parseMyPhoneUpdate(line);
+                }
+            }
+        }
+        
+        /*
+         * For all updates
+         */
+        try {
+            long id = getUserIdFromUpdate(line.getString("astid"),
+                    line.getJSONObject("status").getString("id"));
+            if (id > 0)
+                return updateUserHintStatus(id,
+                        line.getJSONObject("status").getJSONObject("hintstatus"));
+        } catch (JSONException e) {
+            Log.d(TAG, "Could not find and astid and an id for this update");
+            return NO_MESSAGE;
+        }
+        return NO_MESSAGE;
+    }
+    
+    /**
+     * Updates a user hintstatus and sends an update intent
+     * @param id
+     * @param hintstatus
+     * @return
+     */
+    private int updateUserHintStatus(long id, JSONObject hintstatus) {
+        ContentValues values = new ContentValues();
+        try {
+            values.put(UserProvider.HINTSTATUS_CODE, hintstatus.getString("code"));
+            values.put(UserProvider.HINTSTATUS_COLOR, hintstatus.getString("color"));
+            values.put(UserProvider.HINTSTATUS_LONGNAME, hintstatus.getString("longname"));
+        } catch (JSONException e) {
+            Log.d(TAG, "Failed to update the user status");
+            return NO_MESSAGE;
+        }
+        getContentResolver().update(
+                Uri.parse(UserProvider.CONTENT_URI + "/" + id), values, null, null);
+        Intent iUpdateIntent = new Intent();
+        iUpdateIntent.setAction(Constants.ACTION_LOAD_USER_LIST);
+        iUpdateIntent.putExtra("id", id);
+        sendBroadcast(iUpdateIntent);
+        Log.d(TAG, "Update intent sent");
+        return NO_MESSAGE;
+    }
+    
+    /**
+     * Searches the DB for this user and return it's column id
+     * @param astid
+     * @param xivoid
+     */
+    private long getUserIdFromUpdate(String astid, String xivoid) {
+        Cursor user = getContentResolver().query(UserProvider.CONTENT_URI,
+                new String[] {UserProvider._ID, UserProvider.ASTID, UserProvider.XIVO_USERID},
+                UserProvider.ASTID + " = '" + astid 
+                + "' AND " + UserProvider.XIVO_USERID + " = '" + xivoid + "'", null, null);
+        if (user.getCount() > 0) {
+            user.moveToFirst();
+            long id = user.getLong(user.getColumnIndex(UserProvider._ID));
+            user.close();
+            return id;
+        } else {
+            user.close();
+            return -1;
+        }
+    }
+    
+    /**
+     * Parses phones update for a call from the user (not using his mobile)
+     * @param line
+     */
+    private void parseMyPhoneUpdate(JSONObject line) {
+        Log.d(TAG, "Parsing my phone update");
+    }
+    
+    /**
+     * Parses phones for a call from the user's mobile
+     * @param line
+     */
+    private void parseMyMobilePhoneUpdate(JSONObject line) {
+        Log.d(TAG, "Parsing my mobile phone update");
     }
     
     /**
@@ -433,6 +528,7 @@ public class XivoConnectionService extends Service {
      * @param line
      * @return Message to the handler
      */
+	@SuppressWarnings("unchecked")
 	private int parsePhoneList(JSONObject line) {
         Log.d(TAG, "Parsing phone list");
         if (line.has("payload") == false)
