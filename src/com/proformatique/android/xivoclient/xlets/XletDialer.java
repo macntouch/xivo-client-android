@@ -103,12 +103,7 @@ public class XletDialer extends XivoActivity {
 	
 	public void clickOnCall(View v) {
 		if (offHook) {
-			try {
-				xivoConnectionService.call(phoneNumber.getText().toString().replace("(", "")
-						.replace(")", "").replace("-", "").trim());
-			} catch (RemoteException e) {
-				Log.d(LOG_TAG, "Cannot call before binding");
-			}
+
 		} else {
 			if (!("").equals(phoneNumber.getText().toString())){
 				new CallJsonTask().execute();
@@ -182,30 +177,15 @@ public class XletDialer extends XivoActivity {
 		
 		@Override
 		protected Integer doInBackground(Void... params) {
-			
-			timer(1000);
-			
-			/**
-			 * Creating Call Json object
-			 */
-			JSONObject jCalling = JSONMessageFactory.getJsonCallingObject(
-					"originate", SettingsActivity.getMobileNumber(getApplicationContext()), 
-					phoneNumber.getText().toString().replaceAll("-", ""));
+			int result;
 			try {
-				Log.d( LOG_TAG, "jCalling: " + jCalling.toString());
-				PrintStream output = new PrintStream(Connection.getInstance(getApplicationContext()).getNetworkConnection().getOutputStream());
-				output.println(jCalling.toString());
-								
-				publishProgress(Constants.OK);
-				timer(3000);
-				
-				return Constants.OK; 
-				
-			} catch (IOException e) {
-				publishProgress(Constants.NO_NETWORK_AVAILABLE);
-				
-				return Constants.NO_NETWORK_AVAILABLE;
+				result = xivoConnectionService.call(phoneNumber.getText().toString().replace("(", "")
+						.replace(")", "").replace("-", "").trim());
+				timer(2000);
+			} catch (RemoteException e) {
+				result = Constants.REMOTE_EXCEPTION;
 			}
+			return result;
 		}
 		
 		private void timer(int milliseconds){
@@ -230,9 +210,29 @@ public class XletDialer extends XivoActivity {
 			}
 			super.onProgressUpdate(values);
 		}
+		
+		@Override
+		protected void onPostExecute(Integer result) {
+			Log.d(LOG_TAG, "Call completed");
+			if (dialog != null)
+				dialog.dismiss();
+			phoneNumber.setEnabled(true);
+			switch (result) {
+			case Constants.OK:
+				Log.i(LOG_TAG, "Call completed succesfully");
+				break;
+			case Constants.REMOTE_EXCEPTION:
+				showToast(R.string.remote_exception);
+				break;
+			}
+		}
+		
+		private void showToast(int messageId) {
+			Toast.makeText(XletDialer.this, getString(messageId), Toast.LENGTH_SHORT).show();
+		}
 	}
 	
-
+	
 	
 	/**
 	 * Create an hangup JSON object
