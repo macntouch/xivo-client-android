@@ -66,13 +66,19 @@ public class XletDialer extends XivoActivity {
 		setPhoneOffHook(false);
 		phoneNumber = (EditText) findViewById(R.id.number);
 		
+		Bundle bundle = getIntent().getExtras();
+		if (bundle != null) {
+			phoneNumber.setText(bundle.getString("numToCall"));
+			callTask = new CallTask();
+			callTask.execute();
+		}
+		
 		receiver = new IncomingReceiver();
 		
 		/**
 		 *  Register a BroadcastReceiver for Intent action that trigger a call
 		 */
 		IntentFilter filter = new IntentFilter();
-		filter.addAction(Constants.ACTION_XLET_DIAL_CALL);
 		filter.addAction(Constants.ACTION_HANGUP);
 		filter.addAction(Constants.ACTION_OFFHOOK);
 		filter.addAction(Constants.ACTION_MWI_UPDATE);
@@ -188,6 +194,8 @@ public class XletDialer extends XivoActivity {
 		protected Integer doInBackground(Void... params) {
 			int result = Constants.OK;
 			try {
+				while (xivoConnectionService == null)
+					timer(100);
 				xivoConnectionService.call(phoneNumber.getText().toString().replace("(", "")
 						.replace(")", "").replace("-", "").trim());
 				while (!completeOrCancel) {
@@ -289,15 +297,7 @@ public class XletDialer extends XivoActivity {
 		
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			if (intent.getAction().equals(Constants.ACTION_XLET_DIAL_CALL)) {
-				Log.d( LOG_TAG , "Received Broadcast ");
-				Bundle extra = intent.getExtras();
-				
-				if (extra != null){
-					phoneNumber.setText(extra.getString("numToCall"));
-					new CallTask().execute();
-				}
-			} else if (intent.getAction().equals(Constants.ACTION_HANGUP)) {
+			if (intent.getAction().equals(Constants.ACTION_HANGUP)) {
 				Log.d(LOG_TAG, "Hangup action received");
 				setPhoneOffHook(false);
 				phoneNumber.setEnabled(true);

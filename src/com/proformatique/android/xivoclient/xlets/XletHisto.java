@@ -120,10 +120,9 @@ public class XletHisto extends XivoActivity {
 		
 		if (!phoneString.equals("")) {
 			if (InitialListLoader.getInstance().getThisChannelId() == null){
-				Intent iCall = new Intent();
-				iCall.setAction(Constants.ACTION_XLET_DIAL_CALL);
+				Intent iCall = new Intent(this, XletDialer.class);
 				iCall.putExtra("numToCall", phoneString);
-				sendBroadcast(iCall);
+				startActivity(iCall);
 			} else {
 				switch (menuItemIndex) {
 				case Constants.ATXFER_ITEM_INDEX:
