@@ -146,6 +146,11 @@ public class XivoConnectionService extends Service {
         public int call(String number) throws RemoteException {
             return XivoConnectionService.this.call(number);
         }
+        
+        @Override
+        public boolean isOnThePhone() throws RemoteException {
+            return false;
+        }
     };
     
     /**

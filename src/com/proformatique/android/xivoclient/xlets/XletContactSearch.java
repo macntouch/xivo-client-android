@@ -21,7 +21,6 @@ package com.proformatique.android.xivoclient.xlets;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -32,6 +31,7 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.text.Editable;
@@ -55,7 +55,6 @@ import com.proformatique.android.xivoclient.AttendedTransferActivity;
 import com.proformatique.android.xivoclient.BlindTransferActivity;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
-import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.service.UserProvider;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
@@ -66,7 +65,6 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 	
 	private Cursor user;
 	private UserAdapter userAdapter = null;
-	private String[] pickedContactPhoneList;
 	private IncomingReceiver receiver;
 	
 	/*
@@ -134,18 +132,7 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 			switch (requestCode) {
 			case Constants.CONTACT_PICKER_RESULT:
 				Map<String, String> contact = getPickedContact(data);
-				if (contact != null) {
-					setContactPhoneList(contact);
-					if (InitialListLoader.getInstance().getThisChannelId()
-							== null) {
-						callContact(contact);
-					} else {
-						transferContact(contact);
-					}
-				} else {
-					Toast.makeText(this, getString(R.string.no_phone_error),
-							Toast.LENGTH_LONG).show();
-				}
+				promptAfterSelection(contact);
 				break;
 			}
 		} else {
@@ -187,140 +174,9 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 			cursor.close();
 			return contact;
 		} else {
+			cursor.close();
 			return null;
 		}
-	}
-	
-	/**
-	 * Prompt the user for the number to transfer to
-	 * @param contact
-	 */
-	private void transferContact(Map<String, String> contact) {
-		pickedContactPhoneList[pickedContactPhoneList.length - 1] =
-			getString(R.string.cancel_label);
-		new AlertDialog.Builder(this)
-		.setTitle(getContactName(contact))
-		.setItems(pickedContactPhoneList,
-			new DialogInterface.OnClickListener() {
-				
-				@Override
-				public void onClick(DialogInterface dialog, int i) {
-					transferNumberForResult(i);
-				}
-			}).show();
-	}
-	
-	/**
-	 * Prompt the user for the number to call (Home, Office, etc)
-	 * 
-	 * @param contact
-	 */
-	private void callContact(Map<String, String> contact) {
-		pickedContactPhoneList[pickedContactPhoneList.length - 1] =
-			getString(R.string.cancel_label);
-		new AlertDialog.Builder(this)
-		.setTitle(getContactName(contact))
-		.setItems(pickedContactPhoneList,
-			new DialogInterface.OnClickListener() {
-				
-				@Override
-				public void onClick(DialogInterface dialog, int i) {
-					callNumberForResult(i);
-				}
-			}).show();
-	}
-	
-	/**
-	 * Returns the name of a picked Android contact
-	 * 
-	 * @param contact
-	 * @return
-	 */
-	private CharSequence getContactName(Map<String, String> contact) {
-		if (contact.containsKey("Name")) {
-			return contact.get("Name");
-		} else {
-			return getString(R.string.unknown_contact_name);
-		}
-	}
-	
-	/**
-	 * Set the field pickedContactPhoneList to the phone numbers
-	 * available for a given contact.
-	 * 
-	 * @param contact
-	 */
-	private void setContactPhoneList(Map<String, String> contact) {
-		Set<String> keys = contact.keySet();
-		pickedContactPhoneList = new String[contact.size()];
-		int i = 0;
-		for (String key: keys) {
-			if (key != "Name") {
-				String c = key + " " + contact.get(key);
-				pickedContactPhoneList[i++] = c;
-			}
-		}
-	}
-	
-	/**
-	 * Calls the choosen number for the selected android contact
-	 * @param i
-	 */
-	protected void callNumberForResult(int i) {
-		if (i == pickedContactPhoneList.length - 1) {
-			Toast.makeText(getApplicationContext(), getString(R.string.call_canceled),
-					Toast.LENGTH_LONG).show();
-		} else {
-			String[] number = pickedContactPhoneList[i].split(" ");
-			dialNumber(number[1]);
-		}
-	}
-	
-	/**
-	 * Retrieves the number to call from the picked contact number chooser
-	 * 
-	 * @param i
-	 */
-	protected void transferNumberForResult(int i) {
-		if (i == pickedContactPhoneList.length - 1) {
-			Toast.makeText(this, getString(R.string.transfer_canceled),
-					Toast.LENGTH_LONG).show();
-		} else {
-			String[] namePhone = pickedContactPhoneList[i].split(" ");
-			promptForTransfer(namePhone[1]);
-		}
-	}
-	
-	/**
-	 * Asks for blind or attended transfer
-	 * @param string
-	 */
-	private void promptForTransfer(final String number) {
-		new AlertDialog.Builder(this)
-		.setTitle(number)
-		.setItems(new String[] {
-				getString(R.string.attended_transfer_title),
-				getString(R.string.blind_transfer_title,
-				getString(R.string.cancel_label))},
-			new DialogInterface.OnClickListener() {
-				
-				@Override
-				public void onClick(DialogInterface dialog, int i) {
-					switch (i) {
-					case 0:
-						atxferNumber(number);
-						break;
-					case 1:
-						transferNumber(number);
-						break;
-					default:
-						Toast.makeText(getApplicationContext(),
-								getString(R.string.transfer_canceled),
-								Toast.LENGTH_LONG).show();
-						break;
-					}
-				}
-			}).show();
 	}
 	
 	protected void onResume() {
@@ -412,47 +268,15 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 		}
 	}
 	
+	/**
+	 * Refresh the user list and notify the list adapter
+	 */
 	private void getUserList() {
+		if (user != null && user.isClosed() == false)
+			user.close();
 		user = getContentResolver().query(
 				UserProvider.CONTENT_URI, null, null, null, UserProvider.FULLNAME);
 		userAdapter.notifyDataSetChanged();
-	}
-	
-	/**
-	 * Perform a call via Dial Activity
-	 * 
-	 * @param v
-	 */
-	public void dialNumber(String numToCall){
-		
-		Intent defineIntent = new Intent();
-		defineIntent.setAction(Constants.ACTION_XLET_DIAL_CALL);
-		defineIntent.putExtra("numToCall", numToCall);
-		
-		XletContactSearch.this.sendBroadcast(defineIntent);
-		et.setText("");
-	}
-	
-	/**
-	 * Sends an blind transfer to numToCall
-	 * 
-	 * @param numToCall
-	 */
-	public void atxferNumber(String numToCall) {
-		Intent i = new Intent(XletContactSearch.this, AttendedTransferActivity.class);
-		i.putExtra("num", numToCall);
-		startActivity(i);
-	}
-	
-	/**
-	 * Sends a blind transfer to numToCall
-	 * 
-	 * @param numToCall
-	 */
-	public void transferNumber(String numToCall) {
-		Intent i = new Intent(XletContactSearch.this, BlindTransferActivity.class);
-		i.putExtra("num", numToCall);
-		startActivity(i);
 	}
 	
 	@Override
@@ -463,41 +287,98 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 		super.onDestroy();
 	}
 	
+	/**
+	 * When an item on the list is clicked
+	 */
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		user.moveToPosition(position);
 		String phoneNumber = user.getString(user.getColumnIndex(UserProvider.PHONENUM));
 		String name = user.getString(user.getColumnIndex(UserProvider.FULLNAME));
 		Log.d(LOG_TAG, "Clicked: " + name + " " + phoneNumber);
-		/*switch (item.getGroupId()) {
-		// Call menu
-		case CALL_MENU:
-			switch (item.getItemId()) {
-			case CALL_ITEM_INDEX:
-				dialNumber(phoneNumber);
-				break;
-			default:
-				break;
+		HashMap<String, String> contact = new HashMap<String, String>();
+		contact.put("Name", name);
+		contact.put(getString(R.string.xivo_phone_type_lbl), phoneNumber);
+		promptAfterSelection(contact);
+	}
+	
+	/**
+	 * Prompt the user to call or transfer to one of his number when selected on the list
+	 * or picked on the Android contact picker
+	 * @param contact
+	 */
+	private void promptAfterSelection(Map<String, String> contact) {
+		if (contact == null)
+			return;
+		
+		String[] items = null;
+		try {
+			int i = 0;
+			if (xivoConnectionService.isOnThePhone()) {
+				items = new String[(contact.size() - 1) * 2 + 1];
+				for (String key: contact.keySet()) {
+					if (key.equals("Name"))
+						continue;
+					items[i++] = String.format(
+							getString(R.string.context_action_atxfer), key, contact.get(key));
+					items[i++] = String.format(
+							getString(R.string.context_action_transfer), key, contact.get(key));
+				}
+			} else {
+				items = new String[contact.size()];
+				for (String key: contact.keySet()) {
+					if (key.equals("Name"))
+						continue;
+					items[i++] = String.format(
+							getString(R.string.context_action_call), key, contact.get(key));
+				}
 			}
-			break;
-		// Transfer menu
-		case Constants.TRANSFER_MENU:
-			switch (item.getItemId()) {
-			case Constants.ATXFER_ITEM_INDEX:
-				Log.d(LOG_TAG, "Attended transfer selected");
-				atxferNumber(phoneNumber);
-				break;
-			case Constants.TRANSFER_ITEM_INDEX:
-				Log.d(LOG_TAG, "Blind transfer selected");
-				transferNumber(phoneNumber);
-				break;
-			}
-			break;	
-		default:
-			break;
+			items[i] = getString(R.string.cancel_label);
+		} catch (RemoteException e) {
+			Toast.makeText(XletContactSearch.this, getString(R.string.remote_exception),
+					Toast.LENGTH_SHORT).show();
+			return;
 		}
-		et = (EditText)findViewById(R.id.SearchEdit);
-		et.setText("");
-		return super.onContextItemSelected(item);*/
+		
+		final String[] menuItems = items;
+		new AlertDialog.Builder(this)
+		.setTitle(contact.get("Name"))
+		.setItems(menuItems,
+			new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int i) {
+					if (i == menuItems.length - 1) {
+						Log.d(LOG_TAG, "Cancel selected");
+						return;
+					}
+					String number = menuItems[i].substring(
+							menuItems[i].indexOf("(") + 1, menuItems[i].indexOf(")"))
+							.replace("-", "").trim();
+					try {
+						if (xivoConnectionService.isOnThePhone()) {
+							if (i % 2 == 1) {
+								Intent intent = new Intent(XletContactSearch.this,
+										AttendedTransferActivity.class);
+								intent.putExtra("num", number);
+								startActivity(intent);
+							} else {
+								Intent intent = new Intent(XletContactSearch.this,
+										BlindTransferActivity.class);
+								intent.putExtra("num", number);
+								startActivity(intent);
+							}
+						} else {
+							Intent intent = new Intent(XletContactSearch.this, XletDialer.class);
+							intent.putExtra("numToCall", number);
+							startActivity(intent);
+						}
+						
+					} catch (RemoteException e) {
+						Toast.makeText(XletContactSearch.this,
+								getString(R.string.remote_exception), Toast.LENGTH_SHORT).show();
+					}
+				}
+			}).show();
 	}
 }
