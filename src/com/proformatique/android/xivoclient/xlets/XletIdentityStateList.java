@@ -40,7 +40,6 @@ import android.widget.AdapterView.OnItemClickListener;
 
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
-import com.proformatique.android.xivoclient.service.Connection;
 import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
@@ -129,7 +128,7 @@ public class XletIdentityStateList extends XivoActivity {
 		 * - Call Json to change state
 		 */
 		JSONObject jObj = createJsonState(stateId);
-		Connection.getInstance(getApplicationContext()).sendJsonString(jObj);
+		//Connection.getInstance(getApplicationContext()).sendJsonString(jObj);
 		
 		Intent data = new Intent();
 		data.putExtra("stateid", stateId);

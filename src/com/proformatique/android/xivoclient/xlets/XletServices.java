@@ -35,7 +35,6 @@ import android.widget.CheckBox;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.service.CapaservicesProvider;
-import com.proformatique.android.xivoclient.service.Connection;
 import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.tools.Constants;
 
@@ -289,7 +288,7 @@ public class XletServices extends XivoActivity {
 
 		private void sendFeaturePut(String feature, String value, String phone){
 			JSONObject jObj = createJsonFeaturePut(feature, value, phone);
-			Connection.getInstance(getApplicationContext()).sendJsonString(jObj);
+			//Connection.getInstance(getApplicationContext()).sendJsonString(jObj);
 		}
 
 		@Override

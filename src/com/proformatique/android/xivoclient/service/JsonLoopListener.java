@@ -112,13 +112,11 @@ public class JsonLoopListener {
 			jObj.accumulate("class","featuresget");
 			jObj.accumulate("userid", InitialListLoader.getInstance().getUserId());
 			
-			PrintStream output = new PrintStream(
-					Connection.getInstance(context).getNetworkConnection().getOutputStream());
-			output.println(jObj.toString());
+			//PrintStream output = new PrintStream(
+			//		Connection.getInstance(context).getNetworkConnection().getOutputStream());
+			//output.println(jObj.toString());
 			Log.d( LOG_TAG , "Client : "+jObj.toString());
 		} catch (JSONException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -140,13 +138,11 @@ public class JsonLoopListener {
 			jObj.accumulate("mode",mode);
 			jObj.accumulate("morerecentthan",sIso.format(c1.getTime()));
 			
-			PrintStream output = new PrintStream(
-					Connection.getInstance(context).getNetworkConnection().getOutputStream());
-			output.println(jObj.toString());
+			//PrintStream output = new PrintStream(
+			//		Connection.getInstance(context).getNetworkConnection().getOutputStream());
+			//output.println(jObj.toString());
 			Log.d( LOG_TAG , "Client : "+jObj.toString());
 		} catch (JSONException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -232,7 +228,8 @@ public class JsonLoopListener {
 					
 					try {
 						
-						JSONObject jObjCurrent = Connection.getInstance(context).readData();
+						//JSONObject jObjCurrent = Connection.getInstance(context).readData();
+						JSONObject jObjCurrent = new JSONObject();
 						String classRec = "";
 						@SuppressWarnings("unused")
 						String functionRec = "";
@@ -411,10 +408,6 @@ public class JsonLoopListener {
 						e.printStackTrace();
 						cancel = true;
 						handler.sendEmptyMessage(Constants.JSON_POPULATE_ERROR);
-					} catch (IOException e) {
-						Log.e(LOG_TAG, "IOException");
-						cancel = true;
-						handler.sendEmptyMessage(Constants.NO_NETWORK_AVAILABLE);
 					} catch (JSONException e) {
 						Log.e(LOG_TAG, e.toString());
 						cancel = true;

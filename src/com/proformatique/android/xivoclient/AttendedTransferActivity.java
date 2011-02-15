@@ -21,7 +21,6 @@ package com.proformatique.android.xivoclient;
 
 import org.json.JSONObject;
 
-import com.proformatique.android.xivoclient.service.Connection;
 import com.proformatique.android.xivoclient.service.InitialListLoader;
 
 import android.os.AsyncTask;
@@ -84,7 +83,7 @@ public class AttendedTransferActivity extends TransferActivity {
 				
 			}
 			JSONObject jTransferObject = createJsonTransferObject("atxfer", source, number);
-			Connection.getInstance(AttendedTransferActivity.this).sendJsonString(jTransferObject);
+			//Connection.getInstance(AttendedTransferActivity.this).sendJsonString(jTransferObject);
 			return null;
 		}
 	}
