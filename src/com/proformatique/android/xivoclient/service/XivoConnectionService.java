@@ -445,6 +445,10 @@ public class XivoConnectionService extends Service {
             } else { // Not using mobile
                 if (JSONMessageFactory.checkIdMatch(line, astId, xivoId)) {
                     parseMyPhoneUpdate(line);
+                    try {
+                        sendMyNewHintstatus(line.getJSONObject("status")
+                                .getJSONObject("hintstatus"));
+                    } catch (JSONException e) {}
                 }
             }
         }
@@ -463,6 +467,19 @@ public class XivoConnectionService extends Service {
             return NO_MESSAGE;
         }
         return NO_MESSAGE;
+    }
+    
+    /**
+     * Sends my new phone status
+     * @param hintstatus
+     * @throws JSONException
+     */
+    private void sendMyNewHintstatus(JSONObject hintstatus) throws JSONException {
+        Intent i = new Intent();
+        i.setAction(Constants.ACTION_MY_PHONE_CHANGE);
+        i.putExtra("color", hintstatus.getString("color"));
+        i.putExtra("longname", hintstatus.getString("longname"));
+        sendBroadcast(i);
     }
     
     /**
