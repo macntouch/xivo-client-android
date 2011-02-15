@@ -513,6 +513,22 @@ public class XivoConnectionService extends Service {
      */
     private void parseMyPhoneUpdate(JSONObject line) {
         Log.d(TAG, "Parsing my phone update");
+        /*
+         * Sends the new call progress status
+         */
+        try {
+            Intent iStatusUpdate = new Intent();
+            iStatusUpdate.setAction(Constants.ACTION_CALL_PROGRESS);
+            JSONObject hintstatus = line.getJSONObject("status").getJSONObject("hintstatus");
+            iStatusUpdate.putExtra("status", hintstatus.getString("longname"));
+            iStatusUpdate.putExtra("code", hintstatus.getString("code"));
+            sendBroadcast(iStatusUpdate);
+        } catch (JSONException e) {
+            Log.d(TAG, "Could not get the new status");
+        }
+        /*
+         * Save channels
+         */
     }
     
     /**

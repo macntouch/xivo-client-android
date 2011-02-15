@@ -19,9 +19,6 @@
 
 package com.proformatique.android.xivoclient.xlets;
 
-import java.io.IOException;
-import java.io.PrintStream;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -47,16 +44,19 @@ import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.service.Connection;
 import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.tools.Constants;
-import com.proformatique.android.xivoclient.tools.JSONMessageFactory;
 
 public class XletDialer extends XivoActivity {
 	
 	private static final String LOG_TAG = "XLET DIALER";
+	private final int VM_DISABLED_FILTER = 0xff555555;
+	
 	EditText phoneNumber;
 	IncomingReceiver receiver;
 	Dialog dialog;
+	
 	private boolean offHook;
-	private final int VM_DISABLED_FILTER = 0xff555555;
+	
+	private CallTask callTask = null;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +76,7 @@ public class XletDialer extends XivoActivity {
 		filter.addAction(Constants.ACTION_HANGUP);
 		filter.addAction(Constants.ACTION_OFFHOOK);
 		filter.addAction(Constants.ACTION_MWI_UPDATE);
+		filter.addAction(Constants.ACTION_CALL_PROGRESS);
 		registerReceiver(receiver, new IntentFilter(filter));
 		
 		registerButtons();
@@ -103,10 +104,11 @@ public class XletDialer extends XivoActivity {
 	
 	public void clickOnCall(View v) {
 		if (offHook) {
-
+			new HangupJsonTask().execute();
 		} else {
 			if (!("").equals(phoneNumber.getText().toString())){
-				new CallJsonTask().execute();
+				callTask = new CallTask();
+				callTask.execute();
 			}
 		}
 	}
@@ -156,10 +158,17 @@ public class XletDialer extends XivoActivity {
 	 * Creating a AsyncTask to run call process
 	 * @author cquaquin
 	 */
-	private class CallJsonTask extends AsyncTask<Void, Integer, Integer> {
+	private class CallTask extends AsyncTask<Void, Integer, Integer> {
+		
+		public String progress = null;
+		private TextView text = null;
+		public boolean completeOrCancel = false;
 		
 		@Override
 		protected void onPreExecute() {
+			
+			progress = getString(R.string.calling, phoneNumber.getText().toString());
+			completeOrCancel = false;
 			
 			phoneNumber.setEnabled(false);
 			dialog = new Dialog(XletDialer.this);
@@ -167,8 +176,8 @@ public class XletDialer extends XivoActivity {
 			dialog.setContentView(R.layout.xlet_dialer_call);
 			dialog.setTitle(R.string.calling_title);
 			
-			TextView text = (TextView) dialog.findViewById(R.id.call_message);
-			text.setText(getString(R.string.calling, phoneNumber.getText().toString()));
+			text = (TextView) dialog.findViewById(R.id.call_message);
+			text.setText(progress);
 			
 			dialog.show();
 			
@@ -177,11 +186,13 @@ public class XletDialer extends XivoActivity {
 		
 		@Override
 		protected Integer doInBackground(Void... params) {
-			int result;
+			int result = Constants.OK;
 			try {
-				result = xivoConnectionService.call(phoneNumber.getText().toString().replace("(", "")
+				xivoConnectionService.call(phoneNumber.getText().toString().replace("(", "")
 						.replace(")", "").replace("-", "").trim());
-				timer(2000);
+				while (!completeOrCancel) {
+					timer(200);
+				}
 			} catch (RemoteException e) {
 				result = Constants.REMOTE_EXCEPTION;
 			}
@@ -200,14 +211,7 @@ public class XletDialer extends XivoActivity {
 		
 		@Override
 		protected void onProgressUpdate(Integer... values) {
-			if (values[0]==Constants.OK) {
-				TextView text = (TextView) dialog.findViewById(R.id.call_message);
-				text.setText(getString(R.string.call_ok));
-			}
-			else {
-				TextView text = (TextView) dialog.findViewById(R.id.call_message);
-				text.setText(getString(R.string.no_web_connection));
-			}
+			text.setText(progress);
 			super.onProgressUpdate(values);
 		}
 		
@@ -231,8 +235,6 @@ public class XletDialer extends XivoActivity {
 			Toast.makeText(XletDialer.this, getString(messageId), Toast.LENGTH_SHORT).show();
 		}
 	}
-	
-	
 	
 	/**
 	 * Create an hangup JSON object
@@ -293,7 +295,7 @@ public class XletDialer extends XivoActivity {
 				
 				if (extra != null){
 					phoneNumber.setText(extra.getString("numToCall"));
-					new CallJsonTask().execute();
+					new CallTask().execute();
 				}
 			} else if (intent.getAction().equals(Constants.ACTION_HANGUP)) {
 				Log.d(LOG_TAG, "Hangup action received");
@@ -311,6 +313,16 @@ public class XletDialer extends XivoActivity {
 				Log.d(LOG_TAG, "MWI update received");
 				int[] mwi = intent.getExtras().getIntArray("mwi");
 				newVoiceMail(mwi[0] == 1);
+			} else if (intent.getAction().equals(Constants.ACTION_CALL_PROGRESS)) {
+				String status = intent.getStringExtra("status");
+				String code = intent.getStringExtra("code");
+				Log.d(LOG_TAG, "New call progress received: " + status + " code: " + code);
+				if (callTask != null) {
+					if (Integer.parseInt(code) == Constants.HINTSTATUS_AVAILABLE_CODE)
+						callTask.completeOrCancel = true;
+					callTask.progress = status;
+					callTask.onProgressUpdate();
+				}
 			}
 		}
 	}
@@ -378,7 +390,7 @@ public class XletDialer extends XivoActivity {
 					Toast.LENGTH_LONG).show();
 		} else {
 			((EditText) findViewById(R.id.number)).setText("*98");
-			new CallJsonTask().execute();
+			new CallTask().execute();
 		}
 	}
 	

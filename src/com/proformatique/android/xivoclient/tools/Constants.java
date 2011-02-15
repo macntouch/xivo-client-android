@@ -79,6 +79,7 @@ public final class Constants {
 	public static final String DEFAULT_HINT_COLOR = "gray";
 	public static final String DEFAULT_HINT_CODE = "away";
 	public static final int MAX_PHONE_NUMBER_LEN = 7;
+	public static final int HINTSTATUS_AVAILABLE_CODE = 0;
 	
 	/**
 	 * Intent actions
@@ -98,6 +99,7 @@ public final class Constants {
 	public static final String ACTION_MWI_UPDATE = "xivo.intent.action.MWI_UPDATE";
 	public static final String ACTION_MY_STATUS_CHANGE = "xivo.intent.action.MY_STATUS_CHANGE";
 	public static final String ACTION_MY_PHONE_CHANGE = "xivo.intent.action.MY_PHONE_CHANGE";
+	public static final String ACTION_CALL_PROGRESS = "xivo.intent.action.CALL_PROGRESS";
 	
 	/**
 	 * XivoService connection status
