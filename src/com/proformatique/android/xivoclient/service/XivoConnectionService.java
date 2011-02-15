@@ -417,13 +417,23 @@ public class XivoConnectionService extends Service {
         return NO_MESSAGE;
     }
     
+    /**
+     * Parses phone updates
+     * @param line
+     * @return Message to the handler
+     */
     private int parsePhoneUpdate(JSONObject line) {
         Log.d(TAG, "Parsing phone update");
         Log.d(TAG, line.toString());
         return Constants.OK;
     }
     
-    private int parsePhoneList(JSONObject line) {
+    /**
+     * Parses the phone list received at the beginning of a session.
+     * @param line
+     * @return Message to the handler
+     */
+	private int parsePhoneList(JSONObject line) {
         Log.d(TAG, "Parsing phone list");
         if (line.has("payload") == false)
             return NO_MESSAGE;
