@@ -1,5 +1,9 @@
 package com.proformatique.android.xivoclient.tools;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 
 import org.json.JSONException;
@@ -130,6 +134,35 @@ public class JSONMessageFactory {
             jObj.accumulate("direction", Constants.XIVO_SERVER);
             jObj.accumulate("class", "availstate");
             jObj.accumulate("availstate", stateId);
+        } catch (JSONException e) { }
+        return jObj;
+    }
+    
+    public static JSONObject getJsonHistoRefresh(String userId, String mode, String size) {
+        
+        SimpleDateFormat sIso = new SimpleDateFormat("yyyy-MM-dd");
+        Date dDay = new Date();
+        Calendar c1 = new GregorianCalendar();
+        c1.setTime(dDay);
+        c1.add(Calendar.DAY_OF_MONTH, -30);
+        
+        JSONObject jObj = new JSONObject();
+        try {
+            jObj.accumulate("direction", Constants.XIVO_SERVER);
+            jObj.accumulate("class","history");
+            jObj.accumulate("peer", userId);
+            jObj.accumulate("size",size);
+            jObj.accumulate("mode",mode);
+            jObj.accumulate("morerecentthan",sIso.format(c1.getTime()));
+        } catch (JSONException e) { }
+        return jObj;
+    }
+    
+    public static JSONObject getKeepAlive() {
+        JSONObject jObj = new JSONObject();
+        try {
+            jObj.accumulate("direction", Constants.XIVO_SERVER);
+            jObj.accumulate("class", "keepalive");
         } catch (JSONException e) { }
         return jObj;
     }
