@@ -15,4 +15,5 @@ interface IXivoConnectionService {
     String getPhoneStatusLongname();
     int call(String number);
     boolean isOnThePhone();
+    void setState(String stateId);
 }

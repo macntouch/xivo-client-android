@@ -151,7 +151,19 @@ public class XivoConnectionService extends Service {
         public boolean isOnThePhone() throws RemoteException {
             return false;
         }
+        
+        @Override
+        public void setState(String stateId) throws RemoteException {
+            XivoConnectionService.this.setState(stateId);
+        }
     };
+    
+    /**
+     * Set a new status to the user
+     */
+    private void setState(String stateId) {
+        sendLine(JSONMessageFactory.getJsonState(stateId).toString());
+    }
     
     /**
      * Initiate a call
@@ -1103,6 +1115,9 @@ public class XivoConnectionService extends Service {
      * Sends a line to the networkConnection
      */
     private int sendLine(String line) {
+        if (line == null || line.equals("")) {
+            return Constants.OK;
+        }
         PrintStream output;
         try {
             if (networkConnection == null)
