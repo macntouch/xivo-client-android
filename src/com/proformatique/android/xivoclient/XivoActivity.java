@@ -28,6 +28,7 @@ import com.proformatique.android.xivoclient.service.IXivoConnectionService;
 import com.proformatique.android.xivoclient.service.XivoConnectionService;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
+import com.proformatique.android.xivoclient.xlets.XletIdentityStateList;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -51,6 +52,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -83,6 +85,7 @@ public class XivoActivity extends Activity implements OnClickListener {
 	 */
 	private ImageView statusButton;
 	private ProgressDialog dialog;
+	private FrameLayout status;
 	
 	/*
 	 * Activity lifecycle
@@ -110,15 +113,6 @@ public class XivoActivity extends Activity implements OnClickListener {
 		super.onResume();
 		startXivoConnectionService();
 		bindXivoConnectionService();
-		if (xivoConnectionService == null)
-			return;
-		try {
-			updateMyStatus(xivoConnectionService.getStateId());
-			updatePhoneStatus(xivoConnectionService.getPhoneStatusColor(),
-				xivoConnectionService.getPhoneStatusLongname());
-		} catch(RemoteException e) {
-			Log.d(TAG, "Not binded yet, will load state later");
-		}
 	}
 	
 	@Override
@@ -133,7 +127,6 @@ public class XivoActivity extends Activity implements OnClickListener {
 	 */
 	protected void onBindingComplete() {
 		Log.d(TAG, "onBindingComplete");
-		launchCTIConnection();
 		try {
 			updateMyStatus(xivoConnectionService.getStateId());
 			updatePhoneStatus(xivoConnectionService.getPhoneStatusColor(), 
@@ -141,6 +134,7 @@ public class XivoActivity extends Activity implements OnClickListener {
 		} catch (RemoteException e) {
 			Log.d(TAG, "Could not set my state id");
 		}
+		launchCTIConnection();
 	}
 	
 	/*
@@ -149,6 +143,12 @@ public class XivoActivity extends Activity implements OnClickListener {
 	protected void registerButtons() {
 		statusButton = (ImageView) findViewById(R.id.statusContact);
 		statusButton.setOnClickListener(this);
+		status = (FrameLayout) findViewById(R.id.identityClickZone);
+		status.setOnClickListener(this);
+	}
+	
+	public void onMyStatusClicked(View v) {
+		Log.d(TAG, "Status clicked");
 	}
 	
 	@Override
@@ -156,6 +156,9 @@ public class XivoActivity extends Activity implements OnClickListener {
 		switch (v.getId()) {
 		case R.id.statusContact:
 			Toast.makeText(this, "Status button clicked", Toast.LENGTH_LONG).show();
+			break;
+		case R.id.identityClickZone:
+			startActivity(new Intent(this, XletIdentityStateList.class));
 			break;
 		default:
 			break;
@@ -244,13 +247,8 @@ public class XivoActivity extends Activity implements OnClickListener {
 	 * Makes sure the service is authenticated and that data are loaded
 	 */
 	private void launchCTIConnection() {
-		if (xivoConnectionService != null) {
-			waitForConnection();
-			waitForAuthentication();
-		} else {
-			Log.d(TAG, "launchCTIConnection == null");
-			dieOnBindFail();
-		}
+		waitForConnection();
+		waitForAuthentication();
 	}
 	
 	/**
@@ -271,7 +269,8 @@ public class XivoActivity extends Activity implements OnClickListener {
 	 */
 	private void waitForConnection() {
 		try {
-			if (xivoConnectionService.isConnected() && xivoConnectionService.isAuthenticated())
+			if (xivoConnectionService != null && xivoConnectionService.isConnected()
+					&& xivoConnectionService.isAuthenticated())
 				return;
 		} catch (RemoteException e) {
 			dieOnBindFail();
@@ -339,6 +338,7 @@ public class XivoActivity extends Activity implements OnClickListener {
 	 * @param id
 	 */
 	private void updateMyStatus(long id) {
+		Log.d(TAG, "updateMyStatus");
 		Cursor c = getContentResolver().query(CapapresenceProvider.CONTENT_URI,
 				new String[]{
 					CapapresenceProvider._ID,
@@ -441,20 +441,25 @@ public class XivoActivity extends Activity implements OnClickListener {
 	
 	private class AuthenticationTask extends AsyncTask<Void, Void, Integer> {
 		
-		public AuthenticationTask() {
+		private int MAX_WAIT = 20;
+		private int WAIT_DELAY = 100;
+		
+		@Override
+		protected void onPreExecute() {
 			if (dialog == null)
 				dialog = new ProgressDialog(XivoActivity.this);
 			dialog.setCancelable(true);
 			dialog.setMessage(getString(R.string.authenticating));
-		}
-		
-		@Override
-		protected void onPreExecute() {
 			dialog.show();
 		}
 		
 		@Override
 		protected Integer doInBackground(Void... params) {
+			int i = 0;
+			while (xivoConnectionService == null && i < MAX_WAIT) {
+				timer(WAIT_DELAY);
+				i++;
+			}
 			try {
 				if (xivoConnectionService != null && xivoConnectionService.isAuthenticated())
 					return Constants.AUTHENTICATION_OK;
@@ -515,6 +520,16 @@ public class XivoActivity extends Activity implements OnClickListener {
 				break;
 			}
 		}
+		
+		private void timer(int milliseconds){
+			try {
+				synchronized(this) {
+					this.wait(milliseconds);
+					} 
+				} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	/**
@@ -522,20 +537,25 @@ public class XivoActivity extends Activity implements OnClickListener {
 	 */
 	private class ConnectTask extends AsyncTask<Void, Void, Integer> {
 		
-		public ConnectTask() {
+		private int MAX_TRY = 20;
+		private int WAIT_DELAY = 100;
+		
+		@Override
+		protected void onPreExecute() {
 			if (dialog == null)
 				dialog = new ProgressDialog(XivoActivity.this);
 			dialog.setCancelable(true);
 			dialog.setMessage(getString(R.string.connection));
-		}
-		
-		@Override
-		protected void onPreExecute() {
 			dialog.show();
 		}
 		
 		@Override
 		protected Integer doInBackground(Void... params) {
+			int i = 0;
+			while (xivoConnectionService == null && i < MAX_TRY) {
+				timer(WAIT_DELAY);
+				i++;
+			}
 			try {
 				if (xivoConnectionService != null && xivoConnectionService.isConnected())
 					return Constants.CONNECTION_OK;
@@ -574,6 +594,16 @@ public class XivoActivity extends Activity implements OnClickListener {
 				Toast.makeText(XivoActivity.this, getString(R.string.connection_failed),
 						Toast.LENGTH_LONG).show();
 				break;
+			}
+		}
+		
+		private void timer(int milliseconds){
+			try {
+				synchronized(this) {
+					this.wait(milliseconds);
+					} 
+				} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
 	}
