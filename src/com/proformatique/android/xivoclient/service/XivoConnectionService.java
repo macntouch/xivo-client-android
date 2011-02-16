@@ -162,6 +162,7 @@ public class XivoConnectionService extends Service {
      * Sends an history reques to the CTI server
      */
     private void refreshHistory() {
+        getContentResolver().delete(HistoryProvider.CONTENT_URI, null, null);
         sendLine(JSONMessageFactory.getJsonHistoRefresh(astId, xivoId, "0", "10").toString());
         sendLine(JSONMessageFactory.getJsonHistoRefresh(astId, xivoId, "1", "10").toString());
         sendLine(JSONMessageFactory.getJsonHistoRefresh(astId, xivoId, "2", "10").toString());
