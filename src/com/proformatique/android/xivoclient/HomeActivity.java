@@ -102,10 +102,6 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 		super.onDestroy();
 	}
 	
-	public void onClick(View v) {
-		Log.d(LOG_TAG, "onClick");
-	}
-	
 	/**
 	 * A runnable to be used from non UI thread to update the Grid
 	 * Use handler.post(upgradeGrid)
