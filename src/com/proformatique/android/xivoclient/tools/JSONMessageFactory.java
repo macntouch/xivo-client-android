@@ -138,7 +138,7 @@ public class JSONMessageFactory {
         return jObj;
     }
     
-    public static JSONObject getJsonHistoRefresh(String userId, String mode, String size) {
+    public static JSONObject getJsonHistoRefresh(String astid, String userId, String mode, String size) {
         
         SimpleDateFormat sIso = new SimpleDateFormat("yyyy-MM-dd");
         Date dDay = new Date();
@@ -150,7 +150,7 @@ public class JSONMessageFactory {
         try {
             jObj.accumulate("direction", Constants.XIVO_SERVER);
             jObj.accumulate("class","history");
-            jObj.accumulate("peer", userId);
+            jObj.accumulate("peer", astid + "/" + userId);
             jObj.accumulate("size",size);
             jObj.accumulate("mode",mode);
             jObj.accumulate("morerecentthan",sIso.format(c1.getTime()));

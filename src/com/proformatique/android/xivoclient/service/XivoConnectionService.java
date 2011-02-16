@@ -107,6 +107,7 @@ public class XivoConnectionService extends Service {
         @Override
         public void loadData() throws RemoteException {
             XivoConnectionService.this.refreshFeatures();
+            XivoConnectionService.this.refreshHistory();
             XivoConnectionService.this.loadList("users");
         }
         
@@ -155,6 +156,15 @@ public class XivoConnectionService extends Service {
             XivoConnectionService.this.setState(stateId);
         }
     };
+    
+    /**
+     * Sends an history reques to the CTI server
+     */
+    private void refreshHistory() {
+        sendLine(JSONMessageFactory.getJsonHistoRefresh(astId, xivoId, "0", "10").toString());
+        sendLine(JSONMessageFactory.getJsonHistoRefresh(astId, xivoId, "1", "10").toString());
+        sendLine(JSONMessageFactory.getJsonHistoRefresh(astId, xivoId, "2", "10").toString());
+    }
     
     /**
      * Set a new status to the user
@@ -1052,6 +1062,7 @@ public class XivoConnectionService extends Service {
                     return ReadLineObject;
                 }
                 catch (Exception e) {
+                    Log.e(TAG, "readJsonObjectCTI error");
                     e.printStackTrace();
                 }
             }
