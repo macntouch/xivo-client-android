@@ -1,5 +1,9 @@
 package com.proformatique.android.xivoclient.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.content.ContentProvider;
@@ -166,5 +170,44 @@ public class CapapresenceProvider extends ContentProvider {
 			onCreate(db);
 		}
 		
+	}
+	
+	/**
+	 * Helper function to get the column _ID of a given stateId
+	 * @param context
+	 * @param stateid
+	 * @return _ID
+	 */
+	public static long getIndex(Context context, String stateid) {
+		long id = -1L;
+		Cursor row = context.getContentResolver().query(
+				CONTENT_URI, new String[] {_ID, NAME}, NAME + " = '" + stateid + "'", null, null);
+		if (row.getCount() > 0) {
+			row.moveToFirst();
+			id = row.getLong(row.getColumnIndex(_ID));
+		}
+		row.close();
+		return id;
+	}
+	
+	/**
+	 * Helper function to get a List of HashMap containing available states
+	 */
+	public static List<HashMap<String, String>> getStateList(Context context) {
+		List<HashMap<String, String>> list = new ArrayList<HashMap<String, String>>();
+		Cursor states = context.getContentResolver().query(CONTENT_URI,
+				new String[] {_ID, NAME, LONGNAME, COLOR}, null, null, null);
+		if (states.getCount() > 1) {
+			states.moveToFirst();
+			do {
+				HashMap<String, String> item = new HashMap<String, String>(3);
+				item.put("color", states.getString(states.getColumnIndex(COLOR)));
+				item.put("stateid", states.getString(states.getColumnIndex(NAME)));
+				item.put("longname", states.getString(states.getColumnIndex(LONGNAME)));
+				list.add(item);
+			} while(states.moveToNext());
+		}
+		states.close();
+		return list;
 	}
 }
