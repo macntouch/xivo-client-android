@@ -396,12 +396,19 @@ public class XivoActivity extends Activity implements OnClickListener {
 	 * Binds to the service
 	 */
 	protected class BindingTask extends AsyncTask<Void, Void, Integer> {
-		private int OK = 0;
-		private int FAIL = -1;
+		private final static int OK = 0;
+		private final static int FAIL = -1;
+		private final static int DELAY = 50;
+		private final static int MAX_WAIT = 50;
 		
 		@Override
 		protected void onPreExecute() {
 			Log.d(TAG, "Binding started");
+			if (dialog == null)
+				dialog = new ProgressDialog(XivoActivity.this);
+			dialog.setCancelable(true);
+			dialog.setMessage(getString(R.string.binding));
+			dialog.show();
 		}
 		
 		@Override
@@ -417,7 +424,11 @@ public class XivoActivity extends Activity implements OnClickListener {
 			}
 			
 			// wait until it's connected...
-			while (con == null || xivoConnectionService == null);
+			int i = 0;
+			while (i < MAX_WAIT && (con == null || xivoConnectionService == null)) {
+				timer(DELAY);
+				i++;
+			}
 			
 			return xivoConnectionService == null ? FAIL : OK;
 		}
@@ -425,7 +436,26 @@ public class XivoActivity extends Activity implements OnClickListener {
 		@Override
 		protected void onPostExecute(Integer result) {
 			Log.d(TAG, "Binding finished");
-			onBindingComplete();
+			if (dialog != null) {
+				dialog.dismiss();
+				dialog = null;
+			}
+			if (result == OK) {
+				onBindingComplete();
+			} else {
+				Toast.makeText(XivoActivity.this, getString(R.string.binding_error),
+						Toast.LENGTH_SHORT).show();
+			}
+		}
+		
+		private void timer(int milliseconds){
+			try {
+				synchronized(this) {
+					this.wait(milliseconds);
+					} 
+				} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
