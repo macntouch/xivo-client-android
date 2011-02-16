@@ -181,4 +181,71 @@ public class UserProvider extends ContentProvider {
 		}
 		
 	}
+	
+	/**
+	 * Returns a user index for a given userId and AstId
+	 * @param context
+	 * @param astid
+	 * @param userid
+	 * @return index
+	 */
+	public static long getIndex(Context context, String astid, String userid) {
+		long index = -1;
+		Cursor row = context.getContentResolver().query(CONTENT_URI,
+				new String[] {_ID, ASTID, XIVO_USERID},
+				ASTID + " = '" + astid + "' AND " + XIVO_USERID + " = '" + userid + "'",
+				null, null);
+		if (row.getCount() > 0) {
+			row.moveToFirst();
+			index = row.getLong(row.getColumnIndex(_ID));
+		}
+		row.close();
+		return index;
+	}
+	
+	/**
+	 * Updates the presence status of a user
+	 * @param context
+	 * @param id - Column id in the DB
+	 * @param stateId
+	 */
+	public static void updatePresence(Context context, long id, String stateId) {
+		ContentValues values = new ContentValues();
+		values.put(STATEID, stateId);
+		values.put(STATEID_COLOR, CapapresenceProvider.getColor(context, stateId));
+		values.put(STATEID_LONGNAME, CapapresenceProvider.getLongname(context, stateId));
+		context.getContentResolver().update(
+				CONTENT_URI, values, _ID + " = '" + id + "'", null);
+	}
+	
+	/**
+	 * Logs user info
+	 * @param context
+	 * @param astid
+	 * @param xivoid
+	 */
+	public static void showUserInfo(Context context, String astid, String xivoid) {
+		Cursor user = context.getContentResolver().query(CONTENT_URI, null,
+				ASTID + " = '" + astid + "' and " + XIVO_USERID + " = '" + xivoid + "'",
+				null, null);
+		if (user.getCount() > 0) {
+			user.moveToFirst();
+			do {
+				showUserInfo(user);
+			} while(user.moveToNext());
+		} else {
+			Log.d(TAG, "No user found");
+		}
+		user.close();
+	}
+	
+	/**
+	 * Logs user info for a cursor containing a user
+	 * @param user
+	 */
+	public static void showUserInfo(Cursor user) {
+		Log.d(TAG, "Id: " + user.getLong(user.getColumnIndex(_ID)));
+		Log.d(TAG, "Name: " + user.getString(user.getColumnIndex(FULLNAME)));
+		Log.d(TAG, "StateId: " + user.getString(user.getColumnIndex(STATEID)));
+	}
 }
