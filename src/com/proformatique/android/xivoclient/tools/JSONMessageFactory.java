@@ -118,4 +118,19 @@ public class JSONMessageFactory {
             return false;
         }
     }
+    
+    /**
+     * Create a json object to change the users current state
+     * @param stateId
+     * @return
+     */
+    public static JSONObject getJsonState(String stateId) {
+        JSONObject jObj = new JSONObject();
+        try {
+            jObj.accumulate("direction", Constants.XIVO_SERVER);
+            jObj.accumulate("class", "availstate");
+            jObj.accumulate("availstate", stateId);
+        } catch (JSONException e) { }
+        return jObj;
+    }
 }
