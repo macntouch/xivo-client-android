@@ -43,6 +43,7 @@ import com.proformatique.android.xivoclient.service.CapaxletsProvider;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.xlets.XletContactSearch;
 import com.proformatique.android.xivoclient.xlets.XletDialer;
+import com.proformatique.android.xivoclient.xlets.XletHisto;
 import com.proformatique.android.xivoclient.xlets.XletServices;
 
 public class HomeActivity extends XivoActivity implements OnItemClickListener {
@@ -226,6 +227,8 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
 		} else if (choice.equals("search")) {
 			Intent i = new Intent(this, XletContactSearch.class);
 			startActivity(i);
+		} else if (choice.equals("history")) {
+			startActivity(new Intent(this, XletHisto.class));
 		} else {
 			Log.d(LOG_TAG, "Unhandled click");
 		}

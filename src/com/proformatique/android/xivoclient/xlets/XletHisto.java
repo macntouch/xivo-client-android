@@ -58,20 +58,20 @@ public class XletHisto extends XivoActivity {
 	AlternativeAdapter xletAdapter = null;
 	ListView lv;
 	IncomingReceiver receiver;
-
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.xlet_history);
-		initList();
+		lv = (ListView)findViewById(R.id.history_list);
+		//initList();
 		
-		receiver = new IncomingReceiver();
-
 		/**
 		 *  Register a BroadcastReceiver for Intent action that trigger a change
 		 *  in the list from the Activity
 		 */
+		receiver = new IncomingReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.ACTION_LOAD_HISTORY_LIST);
         registerReceiver(receiver, new IntentFilter(filter));

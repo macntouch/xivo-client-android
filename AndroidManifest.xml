@@ -59,18 +59,10 @@
                   android:description="@string/xlet_features_desc"
                   android:launchMode="standard">
         </activity>
-<!--
         <activity android:name=".xlets.XletHisto"
                   android:label="@string/xlet_history_label"
                   android:description="@string/xlet_history_desc"
-                  android:launchMode="standard"
-                  android:screenOrientation="portrait"
-                  android:configChanges="keyboardHidden|orientation">
-            <intent-filter>
-                <action android:name="xivo.intent.action.LOAD_XLET_TAB" />
-            </intent-filter>
-        </activity>
-        
+                  android:launchMode="standard"/>
         <activity android:name=".xlets.XletServicesAsk" 
 	        android:theme="@android:style/Theme.Dialog"
         	android:screenOrientation="portrait"
