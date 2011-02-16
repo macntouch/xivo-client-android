@@ -262,8 +262,7 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 				userAdapter.notifyDataSetChanged();
 			} else if (intent.getAction().equals(Constants.ACTION_REFRESH_USER_LIST)) {
 				Log.d(LOG_TAG, "Received search Broadcast");
-				
-				
+				getUserList();
 			}
 		}
 	}
@@ -274,8 +273,9 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 	private void getUserList() {
 		if (user != null && user.isClosed() == false)
 			user.close();
-		user = getContentResolver().query(
-				UserProvider.CONTENT_URI, null, null, null, UserProvider.FULLNAME);
+		user = getContentResolver().query(UserProvider.CONTENT_URI, null,
+				UserProvider.FULLNAME + " LIKE '%" + et.getText() + "%'",
+				null, UserProvider.FULLNAME);
 		userAdapter.notifyDataSetChanged();
 	}
 	
