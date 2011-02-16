@@ -1,5 +1,9 @@
 package com.proformatique.android.xivoclient.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.content.ContentProvider;
@@ -168,5 +172,34 @@ public class HistoryProvider extends ContentProvider {
 			db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE);
 			onCreate(db);
 		}
+	}
+	
+	/**
+	 * Returns a list of hashmap of the history entries
+	 * @param context
+	 * @return list
+	 */
+	public static List<HashMap<String, String>> getList(Context context) {
+		List<HashMap<String, String>> list = new ArrayList<HashMap<String, String>>();
+		Cursor history = context.getContentResolver().query(CONTENT_URI, null, null, null, null);
+		if (history.getCount() > 0) {
+			int iDur = history.getColumnIndex(DURATION);
+			int iTs = history.getColumnIndex(TS);
+			int iDir = history.getColumnIndex(DIRECTION);
+			int iTermin = history.getColumnIndex(TERMIN);
+			int iFullname = history.getColumnIndex(FULLNAME);
+			history.moveToFirst();
+			do {
+				HashMap<String, String> item = new HashMap<String, String>();
+				item.put("duration", history.getString(iDur));
+				item.put("direction", history.getString(iDir));
+				item.put("ts", history.getString(iTs));
+				item.put("termin", history.getString(iTermin));
+				item.put("fullname", history.getString(iFullname));
+				list.add(item);
+			} while(history.moveToNext());
+		}
+		history.close();
+		return list;
 	}
 }
