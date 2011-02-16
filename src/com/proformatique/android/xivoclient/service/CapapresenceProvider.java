@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.content.ContentProvider;
@@ -197,7 +198,7 @@ public class CapapresenceProvider extends ContentProvider {
 		List<HashMap<String, String>> list = new ArrayList<HashMap<String, String>>();
 		Cursor states = context.getContentResolver().query(CONTENT_URI,
 				new String[] {_ID, NAME, LONGNAME, COLOR}, null, null, null);
-		if (states.getCount() > 1) {
+		if (states.getCount() > 0) {
 			states.moveToFirst();
 			do {
 				HashMap<String, String> item = new HashMap<String, String>(3);
@@ -209,5 +210,41 @@ public class CapapresenceProvider extends ContentProvider {
 		}
 		states.close();
 		return list;
+	}
+	
+	/**
+	 * Returns a state color for a given stateId
+	 * @param context
+	 * @param stateId
+	 * @return color
+	 */
+	public static String getColor(Context context, String stateId) {
+		String color = Constants.DEFAULT_HINT_COLOR;
+		Cursor state = context.getContentResolver().query(CONTENT_URI,
+				new String[] {NAME, COLOR}, NAME + " = '" + stateId + "'", null, null);
+		if (state.getCount() > 0) {
+			state.moveToFirst();
+			color = state.getString(state.getColumnIndex(COLOR));
+		}
+		state.close();
+		return color;
+	}
+	
+	/**
+	 * Returns a longname for a given stateId
+	 * @param context
+	 * @param stateId
+	 * @return
+	 */
+	public static String getLongname(Context context, String stateId) {
+		String longname = context.getString(R.string.default_hint_longname);
+		Cursor state = context.getContentResolver().query(CONTENT_URI,
+				new String[] {NAME, LONGNAME}, NAME + " = '" + stateId + "'", null, null);
+		if (state.getCount() > 0) {
+			state.moveToFirst();
+			longname = state.getString(state.getColumnIndex(LONGNAME));
+		}
+		state.close();
+		return longname;
 	}
 }
