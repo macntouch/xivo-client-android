@@ -55,7 +55,6 @@ public class XivoConnectionService extends Service {
     private String xivoId = null;
     private String astId = null;
     private String userId = null;
-    private HashMap<String, String> capaPresenceState = null;
     private XivoNotification xivoNotif = null;
     private List<HashMap<String, String>> usersList = null;
     private int[] mwi = new int[3];
@@ -74,7 +73,6 @@ public class XivoConnectionService extends Service {
     private static final int USERS_LIST_COMPLETE = 5;
     private static final int PHONES_LOADED = 6;
     private static final int PRESENCE_UPDATE = 7;
-    private static final int MY_STATUS_UPDATE = 8;
     
     /**
      * Implementation of the methods between the service and the activities
@@ -346,6 +344,12 @@ public class XivoConnectionService extends Service {
                     Intent iLoadPhone = new Intent();
                     iLoadPhone.setAction(Constants.ACTION_LOAD_USER_LIST);
                     sendBroadcast(iLoadPhone);
+                    break;
+                case PRESENCE_UPDATE:
+                    Log.d(TAG, "Presence changed");
+                    Intent iLoadPresence = new Intent();
+                    iLoadPresence.setAction(Constants.ACTION_LOAD_USER_LIST);
+                    sendBroadcast(iLoadPresence);
                     break;
                 case NO_MESSAGE:
                     break;
@@ -725,19 +729,25 @@ public class XivoConnectionService extends Service {
     
     private int parsePresence(JSONObject line) {
         Log.d(TAG, "Parsing presences: " + line.toString());
-        HashMap<String, String> map = new HashMap<String, String>();
-        JSONObject jState = null;
         try {
-            jState = line.getJSONObject("capapresence").getJSONObject("state");
-            map.put("xivo_userid", line.getString("xivo_userid"));
-            map.put("stateid", jState.getString("stateid"));
-            map.put("stateid_longname", jState.getString("longname"));
-            map.put("stateid_color", jState.getString("color"));
+            String id = line.getString("xivo_userid");
+            String astid = line.getString("astid");
+            String stateid = line.getJSONObject("capapresence").getJSONObject("state")
+                    .getString("stateid");
+            this.stateId = CapapresenceProvider.getIndex(this, stateid);
+            long index = UserProvider.getIndex(this, astid, id);
+            UserProvider.updatePresence(this, index, stateid);
+            if (id.equals(xivoId) && astid.equals(astId)) {
+                Intent iUpdate = new Intent();
+                iUpdate.setAction(Constants.ACTION_MY_STATUS_CHANGE);
+                iUpdate.putExtra("id", this.stateId);
+                sendBroadcast(iUpdate);
+            }
         } catch (JSONException e) {
-            Log.d(TAG, "Exception while retrieving presence");
+            Log.d(TAG, "Failed to update presence");
             return NO_MESSAGE;
         }
-        return updateUserList(map, "presence");
+        return PRESENCE_UPDATE;
     }
     
     private int parseGroups(JSONObject line) {
@@ -912,7 +922,6 @@ public class XivoConnectionService extends Service {
         authenticationComplete = false;
         sessionId = null;
         astId = null;
-        capaPresenceState = null;
         xivoNotif = null;
         usersList = null;
         
@@ -1025,36 +1034,6 @@ public class XivoConnectionService extends Service {
             Log.d(TAG, "JSON exception while parsing error strin");
         }
         return Constants.LOGIN_KO;
-    }
-    
-    private int updateUserList(HashMap<String, String> map, String type) {
-        int len = usersList != null ? usersList.size() : 0;
-        for (int i = 0; i < len; i++) {
-            HashMap<String, String> usersMap = usersList.get(i);
-            if (usersMap.containsKey("xivo_userid") && usersMap.get("xivo_userid")
-                    .equals(map.get("xivo_userid"))) {
-                if (type.equals("presence")) {
-                    usersMap.put("stateid", map.get("stateid"));
-                    usersMap.put("stateid_longname", map.get("stateid_longname"));
-                    usersMap.put("stateid_color", map.get("stateid_color"));
-                    usersList.set(i, usersMap);
-                } else if (type.equals("phone")) {
-                    usersMap.put("hintstatus_color", map.get("hintstatus_color"));
-                    usersMap.put("hintstatus_code", map.get("hintstatus_code"));
-                    usersMap.put("hintstatus_longname", map.get("hintstatus_longname"));
-                    usersList.set(i, usersMap);
-                    if (map.get("xivo_userid").equals(userId)){
-                        capaPresenceState.put("hintstatus_color", map.get("hintstatus_color"));
-                        capaPresenceState.put("hintstatus_code", map.get("hintstatus_code"));
-                        capaPresenceState.put("hintstatus_longname",
-                                map.get("hintstatus_longname"));
-                        return MY_STATUS_UPDATE;
-                    } 
-                }
-                return PRESENCE_UPDATE;
-            }
-        }
-        return NO_MESSAGE;
     }
     
     /**
