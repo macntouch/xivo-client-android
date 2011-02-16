@@ -19,7 +19,11 @@
 
 package com.proformatique.android.xivoclient.xlets;
 
-import java.util.ArrayList;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +51,7 @@ import com.proformatique.android.xivoclient.AttendedTransferActivity;
 import com.proformatique.android.xivoclient.BlindTransferActivity;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
+import com.proformatique.android.xivoclient.service.HistoryProvider;
 import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
@@ -54,7 +59,7 @@ import com.proformatique.android.xivoclient.tools.GraphicsManager;
 public class XletHisto extends XivoActivity {
 	
 	private static final String LOG_TAG = "XiVO " + XletHisto.class.getSimpleName();
-	private  List<HashMap<String, String>> xletList = new ArrayList<HashMap<String, String>>();
+	private  List<HashMap<String, String>> xletList = null;
 	AlternativeAdapter xletAdapter = null;
 	ListView lv;
 	IncomingReceiver receiver;
@@ -65,19 +70,27 @@ public class XletHisto extends XivoActivity {
 		
 		setContentView(R.layout.xlet_history);
 		lv = (ListView)findViewById(R.id.history_list);
-		//initList();
+		xletList = HistoryProvider.getList(this);
+		sortHistory();
+		xletAdapter = new AlternativeAdapter(
+				this,
+				xletList,
+				R.layout.xlet_history_items,
+				new String[] {"fullname", "ts", "duration"},
+				new int[] {R.id.history_fullname, R.id.history_date, R.id.history_duration});
+		lv.setAdapter(xletAdapter);
 		
 		/**
 		 *  Register a BroadcastReceiver for Intent action that trigger a change
 		 *  in the list from the Activity
 		 */
 		receiver = new IncomingReceiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Constants.ACTION_LOAD_HISTORY_LIST);
-        registerReceiver(receiver, new IntentFilter(filter));
-        registerForContextMenu(lv);
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(Constants.ACTION_LOAD_HISTORY_LIST);
+		registerReceiver(receiver, new IntentFilter(filter));
+		registerForContextMenu(lv);
 	}
-
+	
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
 			ContextMenuInfo menuInfo) {
@@ -144,21 +157,6 @@ public class XletHisto extends XivoActivity {
 		return super.onContextItemSelected(item);
 	}
 	
-	private void initList() {
-		xletList = InitialListLoader.getInstance().getHistoryList();
-		
-		xletAdapter = new AlternativeAdapter(
-				this,
-				xletList,
-				R.layout.xlet_history_items,
-				new String[] { "fullname","ts","duration" },
-				new int[] { R.id.history_fullname, R.id.history_date, R.id.history_duration} );
-		
-		lv= (ListView)findViewById(R.id.history_list);
-		lv.setAdapter(xletAdapter);
-		
-	}	
-	
 	/**
 	 * BroadcastReceiver, intercept Intents with action ACTION_LOAD_HISTORY_LIST
 	 * to perform an reload of the displayed list
@@ -166,53 +164,78 @@ public class XletHisto extends XivoActivity {
 	 *
 	 */
 	private class IncomingReceiver extends BroadcastReceiver {
-
+		
 		@Override
 		public void onReceive(Context context, Intent intent) {
-	        if (intent.getAction().equals(Constants.ACTION_LOAD_HISTORY_LIST)) {
-	        	Log.d( LOG_TAG , "Received Broadcast "+Constants.ACTION_LOAD_HISTORY_LIST);
-	        	if (xletAdapter != null) 
-	        		runOnUiThread(new Runnable() {
+			if (intent.getAction().equals(Constants.ACTION_LOAD_HISTORY_LIST)) {
+				Log.d( LOG_TAG , "Received Broadcast "+Constants.ACTION_LOAD_HISTORY_LIST);
+				if (xletAdapter != null) 
+					runOnUiThread(new Runnable() {
 						
 						@Override
 						public void run() {
-							xletList = InitialListLoader.getInstance().getHistoryList();
+							xletList = HistoryProvider.getList(XletHisto.this);
+							sortHistory();
 							xletAdapter.notifyDataSetChanged();
 						}
 					});
-	        }
+			}
 		}
 	}
 	
+	// TODO: Change the adapter to user a cursor instead of a List<HashMap<String, String>>
 	private class AlternativeAdapter extends SimpleAdapter {
-
+		
 		public AlternativeAdapter(Context context,
 				List<? extends Map<String, ?>> data, int resource, String[] from,
 				int[] to) {
 			super(context, data, resource, from, to);
 		}
-
+		
 		@SuppressWarnings("unchecked")
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-
-		  View view = super.getView(position, convertView, parent);
-		  
-		  HashMap<String, String> line = (HashMap<String, String>) lv.getItemAtPosition(position);
-		  String direction = line.get("direction");
-		  
-	      ImageView icon = (ImageView) view.findViewById(R.id.callStatus);
-	      icon.setBackgroundResource(GraphicsManager.getCallIcon(direction));
-		  
-		  return view;
-		
+			
+			View view = super.getView(position, convertView, parent);
+			
+			HashMap<String, String> line = (HashMap<String, String>) lv.getItemAtPosition(position);
+			String direction = line.get("direction");
+			
+			ImageView icon = (ImageView) view.findViewById(R.id.callStatus);
+			icon.setBackgroundResource(GraphicsManager.getCallIcon(direction));
+			
+			return view;
 		}
 	}
-
+	
 	@Override
 	protected void onDestroy() {
 		unregisterReceiver(receiver);
 		super.onDestroy();
 	}
-
+	
+	@SuppressWarnings("unchecked")
+	private void sortHistory() {
+		Collections.sort(xletList, new DateComparator());
+	}
+	
+	@SuppressWarnings("unchecked")
+	private class DateComparator implements Comparator
+	{
+		public int compare(Object obj1, Object obj2)
+		{
+			SimpleDateFormat sd1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			HashMap<String, String> update1 = (HashMap<String, String>)obj1;
+			HashMap<String, String> update2 = (HashMap<String, String>)obj2;
+			Date d1 = null, d2 = null;
+			try {
+				d1 = sd1.parse(update1.get("ts"));
+				d2 = sd1.parse(update2.get("ts"));
+			} catch (ParseException e) {
+				e.printStackTrace();
+				return 0;
+			}
+			return (((d2.getTime()-d1.getTime())>0)?1:-1);
+		}
+	}
 }
