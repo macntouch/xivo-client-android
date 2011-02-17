@@ -183,4 +183,15 @@ public class CapaservicesProvider extends ContentProvider {
 		row.close();
 		return number;
 	}
+	
+	public static void logFeature(Context context, String feature) {
+		Log.d(TAG, "Loging " + feature);
+		Cursor row = context.getContentResolver().query(CONTENT_URI, null,
+				SERVICES + " = '" + feature + "'", null, null);
+		if (row.getCount() > 0) {
+			row.moveToFirst();
+			cursorToString(row);
+		}
+		row.close();
+	}
 }
