@@ -10,7 +10,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.proformatique.android.xivoclient.SettingsActivity;
-import com.proformatique.android.xivoclient.service.InitialListLoader;
 
 import android.content.Context;
 
@@ -168,12 +167,12 @@ public class JSONMessageFactory {
         return jObj;
     }
     
-    public static JSONObject createJsonFeaturePut(String feature, String value, String phone) {
+    public static JSONObject createJsonFeaturePut(String astid, String xivoid, String feature, String value, String phone) {
         JSONObject jObj = new JSONObject();
         try {
             jObj.accumulate("direction", Constants.XIVO_SERVER);
             jObj.accumulate("class", "featuresput");
-            jObj.accumulate("userid", InitialListLoader.getInstance().getUserId());
+            jObj.accumulate("userid", astid + "/" + xivoid);
             jObj.accumulate("function", feature);
             jObj.accumulate("value", value);
             if (phone != null)
