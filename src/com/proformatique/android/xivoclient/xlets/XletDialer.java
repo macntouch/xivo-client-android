@@ -51,8 +51,6 @@ public class XletDialer extends XivoActivity {
 	IncomingReceiver receiver;
 	Dialog dialog;
 	
-	private boolean offHook;
-	
 	private CallTask callTask = null;
 	
 	@Override
@@ -106,13 +104,17 @@ public class XletDialer extends XivoActivity {
 	}
 	
 	public void clickOnCall(View v) {
-		if (offHook) {
-			new HangupJsonTask().execute();
-		} else {
-			if (!("").equals(phoneNumber.getText().toString())){
-				callTask = new CallTask();
-				callTask.execute();
+		try {
+			if (xivoConnectionService.isOnThePhone()) {
+				new HangupJsonTask().execute();
+			} else {
+				if (!("").equals(phoneNumber.getText().toString())) {
+					callTask = new CallTask();
+					callTask.execute();
+				}
 			}
+		} catch (RemoteException e) {
+			Toast.makeText(this, getString(R.string.remote_exception), Toast.LENGTH_SHORT).show();
 		}
 	}
 	
@@ -121,7 +123,6 @@ public class XletDialer extends XivoActivity {
 	 * @param offHook
 	 */
 	public void setPhoneOffHook(boolean offHook) {
-		this.offHook = offHook;
 		if (offHook) {
 			((ImageButton)findViewById(R.id.dialButton)).setImageDrawable(getResources()
 					.getDrawable(R.drawable.ic_dial_action_hangup));
@@ -139,6 +140,11 @@ public class XletDialer extends XivoActivity {
 	 *
 	 */
 	private class HangupJsonTask extends AsyncTask<Void, Integer, Integer> {
+		
+		@Override
+		protected void onPreExecute() {
+			Log.d(LOG_TAG, "Hangup starting");
+		}
 		
 		@Override
 		protected Integer doInBackground(Void... params) {
@@ -243,51 +249,6 @@ public class XletDialer extends XivoActivity {
 	}
 	
 	/**
-	 * Create an hangup JSON object
-	 * "{
-	 *   "class": "ipbxcommand",
-	 *   "details": {
-	 *     "channelids": "chan:xivo/17:SIP/4002-00000755",
-	 *     "command": "hangup"
-	 *   },
-	 *   "direction": "xivoserver"
-	 * }" 
-	 * @return
-	 */
-	/*
-	public JSONObject createJsonHangupObject() {
-		JSONObject j = new JSONObject();
-		JSONObject details = new JSONObject();
-		InitialListLoader l = InitialListLoader.getInstance();
-		String source = "chan:" + l.getUserId() + ":";
-		if (SettingsActivity.getUseMobile(this)) {
-			if (l.getPeersPeerChannelId() != null
-					&& l.getPeersPeerChannelId().startsWith("Local") == false) {
-				source += l.getPeersPeerChannelId();
-			} else if (l.getThisChannelId() != null) {
-				source += l.getThisChannelId();
-			} else {
-				source += l.getPeerChannelId();
-			}
-		} else {
-			source += l.getThisChannelId();
-		}
-		try {
-			details.accumulate("command", "hangup");
-			details.accumulate("channelids", source);
-			j.accumulate("class", "ipbxcommand");
-			j.accumulate("direction", Constants.XIVO_SERVER);
-			j.accumulate("details", details);
-			return j;
-		} catch (JSONException e) {
-			Log.e(LOG_TAG, "JSONException");
-			e.printStackTrace();
-			return null;
-		}
-	}
-	*/
-	
-	/**
 	 * BroadcastReceiver, intercept Intents with action ACTION_XLET_DIAL_CALL
 	 * to perform a call
 	 * @author cquaquin
@@ -316,6 +277,21 @@ public class XletDialer extends XivoActivity {
 			} else if (intent.getAction().equals(Constants.ACTION_CALL_PROGRESS)) {
 				String status = intent.getStringExtra("status");
 				String code = intent.getStringExtra("code");
+				setPhoneOffHook(!code.equals(Constants.AVAILABLE_STATUS_CODE));
+				if (code.equals(Constants.CALLING_STATUS_CODE)) {
+					try {
+						if (xivoConnectionService.hasChannels()) {
+							Log.d(LOG_TAG, "Dismissing dialogs");
+							if (dialog != null) {
+								dialog.dismiss();
+								dialog = null;
+							}
+							phoneNumber.setEnabled(true);
+						}
+					} catch (RemoteException e) {
+						Log.d(LOG_TAG, "Remote exception");
+					}
+				}
 				Log.d(LOG_TAG, "New call progress received: " + status + " code: " + code);
 				if (callTask != null) {
 					if (Integer.parseInt(code) == Constants.HINTSTATUS_AVAILABLE_CODE)
