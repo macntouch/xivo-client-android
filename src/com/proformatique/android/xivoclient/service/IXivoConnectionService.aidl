@@ -13,6 +13,7 @@ interface IXivoConnectionService {
     long getStateId();
     String getPhoneStatusColor();
     String getPhoneStatusLongname();
+    String getFullname();
     int call(String number);
     boolean isOnThePhone();
     void setState(String stateId);

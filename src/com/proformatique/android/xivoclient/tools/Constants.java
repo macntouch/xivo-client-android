@@ -98,6 +98,7 @@ public final class Constants {
 	public static final String ACTION_MY_STATUS_CHANGE = "xivo.intent.action.MY_STATUS_CHANGE";
 	public static final String ACTION_MY_PHONE_CHANGE = "xivo.intent.action.MY_PHONE_CHANGE";
 	public static final String ACTION_CALL_PROGRESS = "xivo.intent.action.CALL_PROGRESS";
+	public static final String ACTION_UPDATE_IDENTITY = "xivo.intent.action.UPDATE_IDENTITY";
 	
 	/**
 	 * XivoService connection status

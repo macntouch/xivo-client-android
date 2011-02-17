@@ -55,6 +55,7 @@ public class XivoConnectionService extends Service {
     private String xivoId = null;
     private String astId = null;
     private String userId = null;
+    private String fullname = null;
     private XivoNotification xivoNotif = null;
     private List<HashMap<String, String>> usersList = null;
     private int[] mwi = new int[3];
@@ -140,6 +141,11 @@ public class XivoConnectionService extends Service {
         @Override
         public String getPhoneStatusLongname() throws RemoteException {
             return phoneStatusLongname;
+        }
+        
+        @Override
+        public String getFullname() throws RemoteException {
+            return fullname == null ? getString(R.string.user_identity) : fullname;
         }
         
         @Override
@@ -742,11 +748,18 @@ public class XivoConnectionService extends Service {
                     user.put(UserProvider.HINTSTATUS_CODE, Constants.DEFAULT_HINT_CODE);
                     user.put(UserProvider.HINTSTATUS_LONGNAME, getString(
                             R.string.default_hint_longname));
-                    if (userId.equals(this.userId) && jUser.has("mwi")) {
-                        JSONArray mwi = jUser.getJSONArray("mwi");
-                        int lenmwi = mwi != null ? mwi.length() : 0;
-                        for (int j = 0; j < lenmwi; j++) {
-                            this.mwi[j] = mwi.getInt(j);
+                    if (userId.equals(this.userId)) {
+                        fullname = jUser.getString("fullname");
+                        Intent iUpdateIdentity = new Intent();
+                        iUpdateIdentity.setAction(Constants.ACTION_UPDATE_IDENTITY);
+                        iUpdateIdentity.putExtra("fullname", fullname);
+                        sendBroadcast(iUpdateIdentity);
+                        if (jUser.has("mwi")) {
+                            JSONArray mwi = jUser.getJSONArray("mwi");
+                            int lenmwi = mwi != null ? mwi.length() : 0;
+                            for (int j = 0; j < lenmwi; j++) {
+                                this.mwi[j] = mwi.getInt(j);
+                            }
                         }
                     }
                 } catch (JSONException e) {

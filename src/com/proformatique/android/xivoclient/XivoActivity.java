@@ -105,6 +105,7 @@ public class XivoActivity extends Activity implements OnClickListener {
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(Constants.ACTION_MY_STATUS_CHANGE);
 		filter.addAction(Constants.ACTION_MY_PHONE_CHANGE);
+		filter.addAction(Constants.ACTION_UPDATE_IDENTITY);
 		registerReceiver(receiver, new IntentFilter(filter));
 	}
 	
@@ -131,6 +132,7 @@ public class XivoActivity extends Activity implements OnClickListener {
 			updateMyStatus(xivoConnectionService.getStateId());
 			updatePhoneStatus(xivoConnectionService.getPhoneStatusColor(), 
 					xivoConnectionService.getPhoneStatusLongname());
+			updateFullname(xivoConnectionService.getFullname());
 		} catch (RemoteException e) {
 			Log.d(TAG, "Could not set my state id");
 		}
@@ -360,6 +362,10 @@ public class XivoActivity extends Activity implements OnClickListener {
 		((TextView) findViewById(R.id.identityPhoneLongnameState)).setText(longname);
 		GraphicsManager.setIconPhoneDisplay(this,
 				(ImageView) findViewById(R.id.identityPhoneStatus), color);
+	}
+	
+	private void updateFullname(String name) {
+		((TextView) findViewById(R.id.user_identity)).setText(name);
 	}
 	
 	/**
@@ -647,6 +653,8 @@ public class XivoActivity extends Activity implements OnClickListener {
 			} else if (intent.getAction().equals(Constants.ACTION_MY_PHONE_CHANGE)) {
 				updatePhoneStatus(intent.getStringExtra("color"),
 						intent.getStringExtra("longname"));
+			} else if (intent.getAction().equals(Constants.ACTION_UPDATE_IDENTITY)) {
+				updateFullname(intent.getStringExtra("fullname"));
 			}
 		}
 	}
