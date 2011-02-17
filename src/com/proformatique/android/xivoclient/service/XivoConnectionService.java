@@ -181,7 +181,23 @@ public class XivoConnectionService extends Service {
                 return true;
             return false;
         }
+        
+        @Override
+        public void hangup() throws RemoteException {
+            XivoConnectionService.this.hangup();
+        }
     };
+    
+    /**
+     * Hang-up the current call
+     */
+    private void hangup() {
+        if (!SettingsActivity.getUseMobile(this) 
+                && thisChannel != null && !thisChannel.contains("Local/")) {
+            String channel = "chan:" + astId + "/" + xivoId + ":" + thisChannel;
+            sendLine(JSONMessageFactory.createJsonHangupObject(this, channel).toString());
+        }
+    }
     
     /**
      * Change a feature value

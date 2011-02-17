@@ -19,4 +19,5 @@ interface IXivoConnectionService {
     void setState(String stateId);
     void sendFeature(String feature, String value, String phone);
     boolean hasChannels();
+    void hangup();
 }
