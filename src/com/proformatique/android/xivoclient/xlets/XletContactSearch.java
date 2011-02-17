@@ -51,8 +51,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
-import com.proformatique.android.xivoclient.AttendedTransferActivity;
-import com.proformatique.android.xivoclient.BlindTransferActivity;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.service.UserProvider;
@@ -358,15 +356,9 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 					try {
 						if (xivoConnectionService.isOnThePhone()) {
 							if (i % 2 == 1) {
-								Intent intent = new Intent(XletContactSearch.this,
-										AttendedTransferActivity.class);
-								intent.putExtra("num", number);
-								startActivity(intent);
+								xivoConnectionService.atxfer(number);
 							} else {
-								Intent intent = new Intent(XletContactSearch.this,
-										BlindTransferActivity.class);
-								intent.putExtra("num", number);
-								startActivity(intent);
+								xivoConnectionService.transfer(number);
 							}
 						} else {
 							Intent intent = new Intent(XletContactSearch.this, XletDialer.class);

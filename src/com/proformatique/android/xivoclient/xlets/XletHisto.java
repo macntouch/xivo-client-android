@@ -48,8 +48,6 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
-import com.proformatique.android.xivoclient.AttendedTransferActivity;
-import com.proformatique.android.xivoclient.BlindTransferActivity;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.service.HistoryProvider;
@@ -138,15 +136,10 @@ public class XletHisto extends XivoActivity {
 				if (xivoConnectionService.isOnThePhone()){
 					switch (menuItemIndex) {
 					case Constants.ATXFER_ITEM_INDEX:
-						Intent iAtxfer = new Intent(XletHisto.this, AttendedTransferActivity.class);
-						iAtxfer.putExtra("num", phoneString);
-						startActivity(iAtxfer);
+						xivoConnectionService.atxfer(phoneString);
 						break;
 					case Constants.TRANSFER_ITEM_INDEX:
-						Intent iBlindTransfer = new Intent(XletHisto.this,
-								BlindTransferActivity.class);
-						iBlindTransfer.putExtra("num", phoneString);
-						startActivity(iBlindTransfer);
+						xivoConnectionService.transfer(phoneString);
 						break;
 					}
 				} else {
