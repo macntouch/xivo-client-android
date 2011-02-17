@@ -177,7 +177,8 @@ public class XivoConnectionService extends Service {
      * @param phone
      */
     private void sendFeature(String feature, String value, String phone) {
-        sendLine(JSONMessageFactory.createJsonFeaturePut(feature, value, phone).toString());
+        sendLine(JSONMessageFactory.createJsonFeaturePut(
+                astId, xivoId, feature, value, phone).toString());
     }
     
     /**
@@ -459,27 +460,43 @@ public class XivoConnectionService extends Service {
         }
     }
     
+    @SuppressWarnings("unchecked")
     private int parseFeatures(JSONObject line) {
         Log.d(TAG, "Parsing features:\n" + line.toString());
         String[] features = {"enablednd", "callrecord", "incallfilter", "enablevoicemail",
             "busy", "rna", "unc"};
         try {
             JSONObject payload = line.getJSONObject("payload");
-            getContentResolver().delete(CapaservicesProvider.CONTENT_URI, null, null);
-            for (String feature: features) {
-                ContentValues values = new ContentValues();
-                values.put(CapaservicesProvider.SERVICE, feature);
-                values.put(CapaservicesProvider.ENABLED,
-                        payload.getJSONObject(feature).getBoolean("enabled") == true ? 1 : 0);
-                if (payload.getJSONObject(feature).has("number")) {
-                    values.put(CapaservicesProvider.NUMBER,
-                            payload.getJSONObject(feature).getString("number"));
+            if (line.has("function") && line.getString("function").equals("put")) {
+                for (Iterator<String> keyIter = payload.keys(); keyIter.hasNext(); ) {
+                    String feature = keyIter.next();
+                    ContentValues values = new ContentValues();
+                    values.put(CapaservicesProvider.ENABLED,
+                            payload.getJSONObject(feature).getBoolean("enabled") == true ? 1 : 0);
+                    if (payload.getJSONObject(feature).has("number")) {
+                        values.put(CapaservicesProvider.NUMBER,
+                                payload.getJSONObject(feature).getString("number"));
+                    }
+                    getContentResolver().update(CapaservicesProvider.CONTENT_URI, values,
+                            CapaservicesProvider.SERVICE + " = '" + feature + "'", null);
                 }
-                getContentResolver().insert(CapaservicesProvider.CONTENT_URI, values);
-                values.clear();
+            } else {
+                getContentResolver().delete(CapaservicesProvider.CONTENT_URI, null, null);
+                for (String feature: features) {
+                    ContentValues values = new ContentValues();
+                    values.put(CapaservicesProvider.SERVICE, feature);
+                    values.put(CapaservicesProvider.ENABLED,
+                            payload.getJSONObject(feature).getBoolean("enabled") == true ? 1 : 0);
+                    if (payload.getJSONObject(feature).has("number")) {
+                        values.put(CapaservicesProvider.NUMBER,
+                                payload.getJSONObject(feature).getString("number"));
+                    }
+                    getContentResolver().insert(CapaservicesProvider.CONTENT_URI, values);
+                    values.clear();
+                }
             }
         } catch (JSONException e) {
-            Log.d(TAG, "Could not get features payload");
+            Log.d(TAG, "Could not parse features");
         }
         return FEATURES_LOADED;
     }
