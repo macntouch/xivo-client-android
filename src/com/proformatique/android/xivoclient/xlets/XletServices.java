@@ -19,8 +19,6 @@
 
 package com.proformatique.android.xivoclient.xlets;
 
-import org.json.JSONObject;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -38,13 +36,12 @@ import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.service.CapaservicesProvider;
 import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.tools.Constants;
-import com.proformatique.android.xivoclient.tools.JSONMessageFactory;
 
 public class XletServices extends XivoActivity {
-
+	
 	private static final String LOG_TAG = "XLET SERVICES";
 	private IncomingReceiver receiver;
-
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -72,8 +69,7 @@ public class XletServices extends XivoActivity {
 		CheckBox checkbox = (CheckBox)v;
 		if (checkbox.isChecked()){
 			sendFeaturePut("callrecord", "1", null);
-		}
-		else {
+		} else {
 			sendFeaturePut("callrecord", "0", null);
 		}
 	}
@@ -82,8 +78,7 @@ public class XletServices extends XivoActivity {
 		CheckBox checkbox = (CheckBox)v;
 		if (checkbox.isChecked()){
 			sendFeaturePut("incallfilter", "1", null);
-		}
-		else {
+		} else {
 			sendFeaturePut("incallfilter", "0", null);
 		}
 	}
@@ -92,8 +87,7 @@ public class XletServices extends XivoActivity {
 		CheckBox checkbox = (CheckBox)v;
 		if (checkbox.isChecked()){
 			sendFeaturePut("enablednd", "1", null);
-		}
-		else {
+		} else {
 			sendFeaturePut("enablednd", "0", null);
 		}
 	}
@@ -105,8 +99,7 @@ public class XletServices extends XivoActivity {
 			Intent defineIntent = new Intent(this, XletServicesAsk.class);
 			defineIntent.putExtra("serviceType", "fwdrna");
 			startActivityForResult(defineIntent, Constants.CODE_SERVICE_ASK1);
-		}
-		else {
+		} else {
 			checkbox.setText(R.string.servicesFwdrna);
 			sendFeaturePut("enablerna", "0", 
 					InitialListLoader.getInstance().getFeaturesRna().get("number"));
@@ -120,13 +113,11 @@ public class XletServices extends XivoActivity {
 			Intent defineIntent = new Intent(this, XletServicesAsk.class);
 			defineIntent.putExtra("serviceType", "fwdbusy");
 			startActivityForResult(defineIntent, Constants.CODE_SERVICE_ASK2);
-		}
-		else {
+		} else {
 			checkbox.setText(R.string.servicesFwdbusy);
 			sendFeaturePut("enablebusy", "0", 
 					InitialListLoader.getInstance().getFeaturesBusy().get("number"));
 		}
-		
 	}
 	
 	public void clickOnFwdunc(View v){
@@ -136,56 +127,50 @@ public class XletServices extends XivoActivity {
 			Intent defineIntent = new Intent(this, XletServicesAsk.class);
 			defineIntent.putExtra("serviceType", "fwdunc");
 			startActivityForResult(defineIntent, Constants.CODE_SERVICE_ASK3);
-		}
-		else {
+		} else {
 			checkbox.setText(R.string.servicesFwdunc);
 			sendFeaturePut("enableunc", "0", 
 					InitialListLoader.getInstance().getFeaturesUnc().get("number"));
 		}
 	}
 	
-	 @Override
-	 protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		 super.onActivityResult(requestCode, resultCode, data);
-		 
-		 CheckBox checkbox;
-		 String textDisplay;
-		 String phoneNumber = data.getStringExtra("phoneNumber");
-		 
-		 if (requestCode == Constants.CODE_SERVICE_ASK1) {
-			 checkbox = (CheckBox) findViewById(R.id.fwdrna);
-			 textDisplay = getString(R.string.servicesFwdrna);
-			 setCheckboxDisplay(resultCode, checkbox, phoneNumber, textDisplay);
-			 if (resultCode  == Constants.OK)
-				 sendFeaturePut("enablerna", "1", phoneNumber);
-		}
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
 		
-		else if (requestCode == Constants.CODE_SERVICE_ASK2) {
-			 checkbox = (CheckBox) findViewById(R.id.fwdbusy);
-			 textDisplay = getString(R.string.servicesFwdbusy);
-			 setCheckboxDisplay(resultCode, checkbox, phoneNumber, textDisplay);
-			 if (resultCode  == Constants.OK)
-				 sendFeaturePut("enablebusy", "1", phoneNumber);
-		 }
+		CheckBox checkbox;
+		String textDisplay;
+		String phoneNumber = data.getStringExtra("phoneNumber");
 		
-		if (requestCode == Constants.CODE_SERVICE_ASK3) {
-			 checkbox = (CheckBox) findViewById(R.id.fwdunc);
-			 textDisplay = getString(R.string.servicesFwdunc);
-			 setCheckboxDisplay(resultCode, checkbox, phoneNumber, textDisplay);
-			 if (resultCode  == Constants.OK)
-				 sendFeaturePut("enableunc", "1", phoneNumber);
+		if (requestCode == Constants.CODE_SERVICE_ASK1) {
+			checkbox = (CheckBox) findViewById(R.id.fwdrna);
+			textDisplay = getString(R.string.servicesFwdrna);
+			setCheckboxDisplay(resultCode == Constants.OK, checkbox, phoneNumber, textDisplay);
+			if (resultCode  == Constants.OK)
+				sendFeaturePut("enablerna", "1", phoneNumber);
+		} else if (requestCode == Constants.CODE_SERVICE_ASK2) {
+			checkbox = (CheckBox) findViewById(R.id.fwdbusy);
+			textDisplay = getString(R.string.servicesFwdbusy);
+			setCheckboxDisplay(resultCode == Constants.OK, checkbox, phoneNumber, textDisplay);
+			if (resultCode  == Constants.OK)
+				sendFeaturePut("enablebusy", "1", phoneNumber);
+		} else if (requestCode == Constants.CODE_SERVICE_ASK3) {
+			checkbox = (CheckBox) findViewById(R.id.fwdunc);
+			textDisplay = getString(R.string.servicesFwdunc);
+			setCheckboxDisplay(resultCode == Constants.OK, checkbox, phoneNumber, textDisplay);
+			if (resultCode  == Constants.OK)
+				sendFeaturePut("enableunc", "1", phoneNumber);
 		}
 	}
 	
-	private void setCheckboxDisplay(int code, CheckBox checkbox, 
-			String phoneNumber, String textDisplay){
-		if (code == Constants.OK){
-			checkbox.setText(textDisplay + "\n"+getString(R.string.servicesPhone)+phoneNumber);
-			checkbox.setChecked(true);
+	private void setCheckboxDisplay(boolean checked, CheckBox checkbox, String phoneNumber,
+			String textDisplay){
+		if (checked) {
+			checkbox.setText(textDisplay + "\n" + getString(R.string.servicesPhone) + phoneNumber);
 		} else {
-			checkbox.setChecked(false);
 			checkbox.setText(textDisplay);
 		}
+		checkbox.setChecked(checked);
 		checkbox.setClickable(true);
 	}
 	
@@ -200,7 +185,7 @@ public class XletServices extends XivoActivity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			if (intent.getAction().equals(Constants.ACTION_LOAD_FEATURES)) {
-				Log.d( LOG_TAG , "Received Broadcast "+Constants.ACTION_LOAD_FEATURES);
+				Log.d(LOG_TAG, "Received Broadcast" + Constants.ACTION_LOAD_FEATURES);
 				refreshFeatures();
 			}
 		}
@@ -208,24 +193,26 @@ public class XletServices extends XivoActivity {
 	
 	public void refreshFeatures() {
 		Cursor c = getContentResolver().query(CapaservicesProvider.CONTENT_URI,
-				new String[]{ CapaservicesProvider._ID, CapaservicesProvider.SERVICE},
-				null, null, null);
+				null, null, null, null);
 		c.moveToFirst();
 		if (c.moveToFirst()) {
 			do {
+				CapaservicesProvider.cursorToString(c);
 				String service = c.getString(c.getColumnIndex(CapaservicesProvider.SERVICE));
-				if (service.equals("fwdbusy"))
-					enableFwdbusy(true);
-				else if (service.equals("fwdrna"))
-					enableFwdrna(true);
-				else if (service.equals("fwdunc"))
-					enableFwdunc(true);
+				boolean enabled = c.getInt(c.getColumnIndex(
+						CapaservicesProvider.ENABLED)) == 1 ? true : false;
+				if (service.equals("busy"))
+					enableFwdbusy(enabled);
+				else if (service.equals("rna"))
+					enableFwdrna(enabled);
+				else if (service.equals("unc"))
+					enableFwdunc(enabled);
 				else if (service.equals("enablednd"))
-					enableEnableDnd(true);
+					enableEnableDnd(enabled);
 				else if (service.equals("callrecord"))
-					enableCallrecord(true);
+					enableCallrecord(enabled);
 				else if (service.equals("incallfilter"))
-					enableIncallfilter(true);
+					enableIncallfilter(enabled);
 			} while (c.moveToNext());
 		}
 		c.close();
@@ -234,22 +221,19 @@ public class XletServices extends XivoActivity {
 	private void enableFwdbusy(final boolean status) {
 		CheckBox checkbox;
 		checkbox = (CheckBox) findViewById(R.id.fwdbusy);
-		setCheckboxDisplay(status == true ? Constants.OK : Constants.CANCEL, checkbox, "", 
-				getString(R.string.servicesFwdbusy));
+		setCheckboxDisplay(status, checkbox, "", getString(R.string.servicesFwdbusy));
 	}
 	
 	private void enableFwdrna(final boolean status) {
 		CheckBox checkbox;
 		checkbox = (CheckBox) findViewById(R.id.fwdrna);
-		setCheckboxDisplay(Constants.OK, checkbox, "", 
-				getString(R.string.servicesFwdrna));
+		setCheckboxDisplay(status, checkbox, "", getString(R.string.servicesFwdrna));
 	}
 	
 	private void enableFwdunc(final boolean status) {
 		CheckBox checkbox;
 		checkbox = (CheckBox) findViewById(R.id.fwdunc);
-		setCheckboxDisplay(Constants.OK, checkbox, "", 
-				getString(R.string.servicesFwdunc));
+		setCheckboxDisplay(status, checkbox, "", getString(R.string.servicesFwdunc));
 	}
 	
 	private void enableEnableDnd(final boolean status) {
