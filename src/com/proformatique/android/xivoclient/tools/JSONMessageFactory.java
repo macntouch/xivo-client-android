@@ -228,4 +228,17 @@ public class JSONMessageFactory {
             return null;
         }
     }
+    
+    public static JSONObject createJsonTransferObject(String klass, String src, String dest) {
+        JSONObject jsonTransfer = new JSONObject();
+        try {
+            jsonTransfer.accumulate("direction", Constants.XIVO_SERVER);
+            jsonTransfer.accumulate("class", klass);
+            jsonTransfer.accumulate("source", src);
+            jsonTransfer.accumulate("destination", "ext:" + dest);
+            return jsonTransfer;
+        } catch (JSONException e) {
+            return null;
+        }
+    }
 }

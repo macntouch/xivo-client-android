@@ -21,6 +21,8 @@ package com.proformatique.android.xivoclient;
 
 import org.json.JSONObject;
 
+import com.proformatique.android.xivoclient.tools.JSONMessageFactory;
+
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -70,7 +72,7 @@ public class BlindTransferActivity extends TransferActivity {
 		
 		@Override
 		protected Integer doInBackground(Void... params) {
-			JSONObject jTransferObject = createJsonTransferObject("transfer",
+			JSONObject jTransferObject = JSONMessageFactory.createJsonTransferObject("transfer",
 					//"chan:" + InitialListLoader.getInstance().getUserId() + ":"
 					//+ InitialListLoader.getInstance().getPeerChannelId(), number);
 					"", number);
