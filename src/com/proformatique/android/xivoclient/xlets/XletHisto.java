@@ -35,6 +35,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuItem;
@@ -52,7 +53,6 @@ import com.proformatique.android.xivoclient.BlindTransferActivity;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.service.HistoryProvider;
-import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
 
@@ -92,32 +92,33 @@ public class XletHisto extends XivoActivity {
 	}
 	
 	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v,
-			ContextMenuInfo menuInfo) {
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 		switch (v.getId()){
 		case R.id.history_list:
-			{
-				AdapterView.AdapterContextMenuInfo info =
+			AdapterView.AdapterContextMenuInfo info =
 					(AdapterView.AdapterContextMenuInfo)menuInfo;
-				menu.setHeaderTitle(getString(R.string.context_action));
-				if (InitialListLoader.getInstance().getThisChannelId() == null) {
-					String callAction = getString(R.string.context_action_call_short, 
-							xletList.get(info.position).get("fullname"));
-					menu.add(0, 1, 0, callAction);
-				} else {
+			menu.setHeaderTitle(getString(R.string.context_action));
+			try {
+				if (xivoConnectionService.isOnThePhone()) {
 					menu.add(Constants.TRANSFER_MENU, Constants.ATXFER_ITEM_INDEX, 0, 
 							getString(R.string.attended_transfer_title));
 					menu.add(Constants.TRANSFER_MENU, Constants.TRANSFER_ITEM_INDEX, 0, 
 							getString(R.string.blind_transfer_title));
+				} else {
+					String callAction = getString(R.string.context_action_call_short, 
+							xletList.get(info.position).get("fullname"));
+					menu.add(0, 1, 0, callAction);
 				}
-			}
+			} catch (RemoteException e) {}
+			break;
 		}
 		super.onCreateContextMenu(menu, v, menuInfo);
 	}
 	
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+		AdapterView.AdapterContextMenuInfo info =
+				(AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
 		int menuItemIndex = item.getItemId();
 		String fullname = xletList.get(info.position).get("fullname");
 		String phoneString = "";
@@ -126,33 +127,40 @@ public class XletHisto extends XivoActivity {
 			long phoneInt = Long.parseLong(fullname); 
 			phoneString = fullname;
 		} catch (Exception e) {
-			Pattern p = Pattern.compile(".*?<([^>]+)>",Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+			Pattern p = Pattern.compile(".*?<([^>]+)>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 			Matcher m = p.matcher(fullname);
-			if (m.find()) phoneString=m.group(1);
+			if (m.find())
+				phoneString=m.group(1);
 		}
 		
 		if (!phoneString.equals("")) {
-			if (InitialListLoader.getInstance().getThisChannelId() == null){
-				Intent iCall = new Intent(this, XletDialer.class);
-				iCall.putExtra("numToCall", phoneString);
-				startActivity(iCall);
-			} else {
-				switch (menuItemIndex) {
-				case Constants.ATXFER_ITEM_INDEX:
-					Intent iAtxfer = new Intent(XletHisto.this, AttendedTransferActivity.class);
-					iAtxfer.putExtra("num", phoneString);
-					startActivity(iAtxfer);
-					break;
-				case Constants.TRANSFER_ITEM_INDEX:
-					Intent iBlindTransfer = new Intent(XletHisto.this, BlindTransferActivity.class);
-					iBlindTransfer.putExtra("num", phoneString);
-					startActivity(iBlindTransfer);
-					break;
+			try {
+				if (xivoConnectionService.isOnThePhone()){
+					switch (menuItemIndex) {
+					case Constants.ATXFER_ITEM_INDEX:
+						Intent iAtxfer = new Intent(XletHisto.this, AttendedTransferActivity.class);
+						iAtxfer.putExtra("num", phoneString);
+						startActivity(iAtxfer);
+						break;
+					case Constants.TRANSFER_ITEM_INDEX:
+						Intent iBlindTransfer = new Intent(XletHisto.this,
+								BlindTransferActivity.class);
+						iBlindTransfer.putExtra("num", phoneString);
+						startActivity(iBlindTransfer);
+						break;
+					}
+				} else {
+					Intent iCall = new Intent(this, XletDialer.class);
+					iCall.putExtra("numToCall", phoneString);
+					startActivity(iCall);
 				}
+			} catch (RemoteException e) {
+				Toast.makeText(this, getString(R.string.remote_exception),
+						Toast.LENGTH_SHORT).show();
 			}
-		}
-		else
+		} else {
 			Toast.makeText(XletHisto.this, R.string.call_no_phone_number, Toast.LENGTH_LONG).show();
+		}
 		
 		return super.onContextItemSelected(item);
 	}
