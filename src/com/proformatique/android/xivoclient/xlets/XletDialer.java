@@ -19,9 +19,11 @@
 
 package com.proformatique.android.xivoclient.xlets;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.PorterDuff;
@@ -104,7 +106,45 @@ public class XletDialer extends XivoActivity {
 	public void clickOnCall(View v) {
 		try {
 			if (xivoConnectionService.isOnThePhone()) {
-				xivoConnectionService.hangup();
+				if (phoneNumber.getText().toString().equals("")) {
+					xivoConnectionService.hangup();
+				} else {
+					Log.d(LOG_TAG, "Transfering to " + phoneNumber.getText());
+					final String num = phoneNumber.getText().toString();
+					final String[] menu = new String[] {
+							String.format(getString(R.string.transfer_number), num),
+							String.format(getString(R.string.atxfer_number), num),
+							getString(R.string.hangup),
+							getString(R.string.cancel_label)};
+					new AlertDialog.Builder(this)
+					.setTitle(getString(R.string.context_action))
+					.setItems(menu,
+							new DialogInterface.OnClickListener() {
+								
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									try {
+										switch(which) {
+										case 0:
+											xivoConnectionService.transfer(num);
+											break;
+										case 1:
+											xivoConnectionService.atxfer(num);
+											break;
+										case 2:
+											xivoConnectionService.hangup();
+											break;
+										default:
+											Log.d(LOG_TAG, "Canceling");
+											break;
+										}
+									} catch (RemoteException e) {
+										Log.d(LOG_TAG, "Binding error");
+									}
+								}
+							}
+					).show();
+				}
 			} else {
 				if (!("").equals(phoneNumber.getText().toString())) {
 					callTask = new CallTask();
@@ -237,6 +277,7 @@ public class XletDialer extends XivoActivity {
 				Log.d(LOG_TAG, "OffHook action received");
 				setPhoneOffHook(true);
 				phoneNumber.setEnabled(true);
+				phoneNumber.setText("");
 				if (dialog != null)
 					dialog.dismiss();
 			} else if (intent.getAction().equals(Constants.ACTION_MWI_UPDATE)) {
@@ -256,6 +297,7 @@ public class XletDialer extends XivoActivity {
 								dialog = null;
 							}
 							phoneNumber.setEnabled(true);
+							phoneNumber.setText("");
 						}
 					} catch (RemoteException e) {
 						Log.d(LOG_TAG, "Remote exception");

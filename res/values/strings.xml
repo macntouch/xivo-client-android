@@ -29,6 +29,7 @@
     <string name="include_device_contacts">Include contacts from this device</string>
     <string name="attended_transfer_title">Attended transfer</string>
     <string name="blind_transfer_title">Blind transfer</string>
+    <string name="hangup">Hang up</string>
 
     <!-- Messages strings -->
     <string name="connection_failed">Connection failed</string>
@@ -65,6 +66,8 @@
     <string name="context_action_transfer">"Blind transfer %1$s (%2$s)"</string>
     <string name="context_action_atxfer">"Attended transfer %1$s (%2$s)"</string>
     <string name="context_action_call_short">"Call %s"</string>
+    <string name="transfer_number">Blind transfer to %1$s</string>
+    <string name="atxfer_number">Attended transfer to %1$s</string>
 
     <!-- Xlets descriptions
          IMPORTANT : use this file to put label and description
