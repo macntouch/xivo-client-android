@@ -12,8 +12,12 @@ import org.json.JSONObject;
 import com.proformatique.android.xivoclient.SettingsActivity;
 
 import android.content.Context;
+import android.util.Log;
 
 public class JSONMessageFactory {
+    
+    private final static String TAG = "JSONMessageFactory";
+    
     /**
      * Cannot be instanciated
      */
@@ -179,5 +183,49 @@ public class JSONMessageFactory {
                 jObj.accumulate("destination", phone);
         } catch (JSONException e) { }
         return jObj;
+    }
+    
+    /**
+     * Create an hangup JSON object
+     * "{
+     *   "class": "ipbxcommand",
+     *   "details": {
+     *     "channelids": "chan:xivo/17:SIP/4002-00000755",
+     *     "command": "hangup"
+     *   },
+     *   "direction": "xivoserver"
+     * }" 
+     * @return
+     */
+    public static JSONObject createJsonHangupObject(Context context, String source) {
+        JSONObject j = new JSONObject();
+        JSONObject details = new JSONObject();
+        /*
+        String source = "chan:" + l.getUserId() + ":";
+        if (SettingsActivity.getUseMobile(context)) {
+            if (l.getPeersPeerChannelId() != null
+                    && l.getPeersPeerChannelId().startsWith("Local") == false) {
+                source += l.getPeersPeerChannelId();
+            } else if (l.getThisChannelId() != null) {
+                source += l.getThisChannelId();
+            } else {
+                source += l.getPeerChannelId();
+            }
+        } else {
+            source += l.getThisChannelId();
+        }
+        */
+        try {
+            details.accumulate("command", "hangup");
+            details.accumulate("channelids", source);
+            j.accumulate("class", "ipbxcommand");
+            j.accumulate("direction", Constants.XIVO_SERVER);
+            j.accumulate("details", details);
+            return j;
+        } catch (JSONException e) {
+            Log.e(TAG, "JSONException");
+            e.printStackTrace();
+            return null;
+        }
     }
 }
