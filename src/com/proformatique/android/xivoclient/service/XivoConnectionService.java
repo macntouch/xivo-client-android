@@ -477,7 +477,8 @@ public class XivoConnectionService extends Service {
                         values.put(CapaservicesProvider.NUMBER,
                                 payload.getJSONObject(feature).getString("number"));
                     }
-                    feature = feature.replace("enable", "");
+                    if (!feature.equals("enablednd") && !feature.equals("enablevoicemail"))
+                        feature = feature.replace("enable", "");
                     getContentResolver().update(CapaservicesProvider.CONTENT_URI, values,
                             CapaservicesProvider.SERVICE + " = '" + feature + "'", null);
                     values.clear();
