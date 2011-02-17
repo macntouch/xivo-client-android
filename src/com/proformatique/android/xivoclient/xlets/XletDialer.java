@@ -19,8 +19,6 @@
 
 package com.proformatique.android.xivoclient.xlets;
 
-import org.json.JSONObject;
-
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -44,7 +42,7 @@ import com.proformatique.android.xivoclient.tools.Constants;
 
 public class XletDialer extends XivoActivity {
 	
-	private static final String LOG_TAG = "XLET DIALER";
+	private static final String LOG_TAG = "XiVO Dialer";
 	private final int VM_DISABLED_FILTER = 0xff555555;
 	
 	EditText phoneNumber;
@@ -106,7 +104,7 @@ public class XletDialer extends XivoActivity {
 	public void clickOnCall(View v) {
 		try {
 			if (xivoConnectionService.isOnThePhone()) {
-				new HangupJsonTask().execute();
+				xivoConnectionService.hangup();
 			} else {
 				if (!("").equals(phoneNumber.getText().toString())) {
 					callTask = new CallTask();
@@ -132,35 +130,6 @@ public class XletDialer extends XivoActivity {
 			((EditText)findViewById(R.id.number)).setEnabled(true);
 			if (dialog != null)
 				dialog.dismiss();
-		}
-	}
-	
-	/**
-	 * Creates and send an hangup command to the CTI server Asynchronously
-	 *
-	 */
-	private class HangupJsonTask extends AsyncTask<Void, Integer, Integer> {
-		
-		@Override
-		protected void onPreExecute() {
-			Log.d(LOG_TAG, "Hangup starting");
-		}
-		
-		@Override
-		protected Integer doInBackground(Void... params) {
-			//JSONObject jHangupObject = createJsonHangupObject();
-			JSONObject jHangupObject = new JSONObject();
-			if (jHangupObject != null) {
-				//Connection.getInstance(XletDialer.this).sendJsonString(jHangupObject);
-			} else {
-				Log.d(LOG_TAG, "Null hangup object");
-			}
-			return null;
-		}
-		
-		@Override
-		protected void onPostExecute(Integer res) {
-			setPhoneOffHook(false);
 		}
 	}
 	
