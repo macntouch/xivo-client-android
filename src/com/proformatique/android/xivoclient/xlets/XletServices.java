@@ -27,9 +27,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.Toast;
 
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
@@ -269,8 +271,11 @@ public class XletServices extends XivoActivity {
 	}
 	
 	private void sendFeaturePut(String feature, String value, String phone){
-		JSONObject jObj = JSONMessageFactory.createJsonFeaturePut(feature, value, phone);
-		//Connection.getInstance(getApplicationContext()).sendJsonString(jObj);
+		try {
+			xivoConnectionService.sendFeature(feature, value, phone);
+		} catch (RemoteException e) {
+			Toast.makeText(this, getString(R.string.remote_exception), Toast.LENGTH_SHORT).show();
+		}
 	}
 	
 	@Override

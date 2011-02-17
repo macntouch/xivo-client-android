@@ -162,7 +162,22 @@ public class XivoConnectionService extends Service {
         public void setState(String stateId) throws RemoteException {
             XivoConnectionService.this.setState(stateId);
         }
+        
+        @Override
+        public void sendFeature(String feature, String value, String phone) throws RemoteException {
+             XivoConnectionService.this.sendFeature(feature, value, phone);
+        }
     };
+    
+    /**
+     * Change a feature value
+     * @param feature
+     * @param value
+     * @param phone
+     */
+    private void sendFeature(String feature, String value, String phone) {
+        sendLine(JSONMessageFactory.createJsonFeaturePut(feature, value, phone).toString());
+    }
     
     /**
      * Sends an history reques to the CTI server

@@ -17,4 +17,5 @@ interface IXivoConnectionService {
     int call(String number);
     boolean isOnThePhone();
     void setState(String stateId);
+    void sendFeature(String feature, String value, String phone);
 }
