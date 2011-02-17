@@ -34,8 +34,9 @@ import android.widget.Toast;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.service.CapaservicesProvider;
-import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.tools.Constants;
+
+import static com.proformatique.android.xivoclient.service.CapaservicesProvider.getNumberForFeature;
 
 public class XletServices extends XivoActivity {
 	
@@ -97,12 +98,11 @@ public class XletServices extends XivoActivity {
 		if (checkbox.isChecked()){
 			checkbox.setClickable(false);
 			Intent defineIntent = new Intent(this, XletServicesAsk.class);
-			defineIntent.putExtra("serviceType", "fwdrna");
+			defineIntent.putExtra("serviceType", "rna");
 			startActivityForResult(defineIntent, Constants.CODE_SERVICE_ASK1);
 		} else {
 			checkbox.setText(R.string.servicesFwdrna);
-			sendFeaturePut("enablerna", "0", 
-					InitialListLoader.getInstance().getFeaturesRna().get("number"));
+			sendFeaturePut("enablerna", "0", getNumberForFeature(this, "rna"));
 		}
 	}
 	
@@ -111,12 +111,11 @@ public class XletServices extends XivoActivity {
 		if (checkbox.isChecked()){
 			checkbox.setClickable(false);
 			Intent defineIntent = new Intent(this, XletServicesAsk.class);
-			defineIntent.putExtra("serviceType", "fwdbusy");
+			defineIntent.putExtra("serviceType", "busy");
 			startActivityForResult(defineIntent, Constants.CODE_SERVICE_ASK2);
 		} else {
 			checkbox.setText(R.string.servicesFwdbusy);
-			sendFeaturePut("enablebusy", "0", 
-					InitialListLoader.getInstance().getFeaturesBusy().get("number"));
+			sendFeaturePut("enablebusy", "0", getNumberForFeature(this, "busy"));
 		}
 	}
 	
@@ -125,12 +124,11 @@ public class XletServices extends XivoActivity {
 		if (checkbox.isChecked()){
 			checkbox.setClickable(false);
 			Intent defineIntent = new Intent(this, XletServicesAsk.class);
-			defineIntent.putExtra("serviceType", "fwdunc");
+			defineIntent.putExtra("serviceType", "unc");
 			startActivityForResult(defineIntent, Constants.CODE_SERVICE_ASK3);
 		} else {
 			checkbox.setText(R.string.servicesFwdunc);
-			sendFeaturePut("enableunc", "0", 
-					InitialListLoader.getInstance().getFeaturesUnc().get("number"));
+			sendFeaturePut("enableunc", "0", getNumberForFeature(this, "unc"));
 		}
 	}
 	

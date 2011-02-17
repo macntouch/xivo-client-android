@@ -171,4 +171,16 @@ public class CapaservicesProvider extends ContentProvider {
 		Log.d(TAG, "Enabled: " + entry.getString(entry.getColumnIndex(ENABLED)));
 		Log.d(TAG, "Number: " + entry.getString(entry.getColumnIndex(NUMBER)));
 	}
+	
+	public static String getNumberForFeature(Context context, String service) {
+		Cursor row = context.getContentResolver().query(CONTENT_URI, new String[] {NUMBER, SERVICE},
+				SERVICE + " = '" + service + "'", null, null);
+		String number = "";
+		if (row.getCount() > 0) {
+			row.moveToFirst();
+			number = row.getString(row.getColumnIndex(NUMBER));
+		}
+		row.close();
+		return number;
+	}
 }
