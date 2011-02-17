@@ -195,7 +195,6 @@ public class XletServices extends XivoActivity {
 		c.moveToFirst();
 		if (c.moveToFirst()) {
 			do {
-				CapaservicesProvider.cursorToString(c);
 				String service = c.getString(c.getColumnIndex(CapaservicesProvider.SERVICE));
 				boolean enabled = c.getInt(c.getColumnIndex(
 						CapaservicesProvider.ENABLED)) == 1 ? true : false;
@@ -219,19 +218,22 @@ public class XletServices extends XivoActivity {
 	private void enableFwdbusy(final boolean status) {
 		CheckBox checkbox;
 		checkbox = (CheckBox) findViewById(R.id.fwdbusy);
-		setCheckboxDisplay(status, checkbox, "", getString(R.string.servicesFwdbusy));
+		setCheckboxDisplay(status, checkbox, getNumberForFeature(this, "busy"),
+				getString(R.string.servicesFwdbusy));
 	}
 	
 	private void enableFwdrna(final boolean status) {
 		CheckBox checkbox;
 		checkbox = (CheckBox) findViewById(R.id.fwdrna);
-		setCheckboxDisplay(status, checkbox, "", getString(R.string.servicesFwdrna));
+		setCheckboxDisplay(status, checkbox, getNumberForFeature(this, "rna"),
+				getString(R.string.servicesFwdrna));
 	}
 	
 	private void enableFwdunc(final boolean status) {
 		CheckBox checkbox;
 		checkbox = (CheckBox) findViewById(R.id.fwdunc);
-		setCheckboxDisplay(status, checkbox, "", getString(R.string.servicesFwdunc));
+		setCheckboxDisplay(status, checkbox, getNumberForFeature(this, "unc"),
+				getString(R.string.servicesFwdunc));
 	}
 	
 	private void enableEnableDnd(final boolean status) {
