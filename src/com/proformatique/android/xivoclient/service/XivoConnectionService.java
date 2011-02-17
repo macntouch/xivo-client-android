@@ -81,8 +81,6 @@ public class XivoConnectionService extends Service {
     private static final int HISTORY_LOADED = 8;
     private static final int FEATURES_LOADED = 9;
     
-    private static final String AVAILABLE_STATUS_CODE = "0";
-    
     /**
      * Implementation of the methods between the service and the activities
      */
@@ -162,7 +160,8 @@ public class XivoConnectionService extends Service {
         
         @Override
         public boolean isOnThePhone() throws RemoteException {
-            return phoneStatusCode == null ? false : !phoneStatusCode.equals(AVAILABLE_STATUS_CODE);
+            return phoneStatusCode == null ? false : !phoneStatusCode.equals(
+                    Constants.AVAILABLE_STATUS_CODE);
         }
         
         @Override
@@ -173,6 +172,14 @@ public class XivoConnectionService extends Service {
         @Override
         public void sendFeature(String feature, String value, String phone) throws RemoteException {
              XivoConnectionService.this.sendFeature(feature, value, phone);
+        }
+        
+        @Override
+        public boolean hasChannels() throws RemoteException {
+            // TODO: Add cases when using mobile
+            if (!SettingsActivity.getUseMobile(XivoConnectionService.this))
+                return true;
+            return false;
         }
     };
     

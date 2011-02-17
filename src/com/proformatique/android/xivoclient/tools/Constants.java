@@ -80,6 +80,8 @@ public final class Constants {
 	public static final String DEFAULT_HINT_CODE = "away";
 	public static final int MAX_PHONE_NUMBER_LEN = 7;
 	public static final int HINTSTATUS_AVAILABLE_CODE = 0;
+	public static final String AVAILABLE_STATUS_CODE = "0";
+	public static final String CALLING_STATUS_CODE = "1";
 	
 	/**
 	 * Intent actions

@@ -18,4 +18,5 @@ interface IXivoConnectionService {
     boolean isOnThePhone();
     void setState(String stateId);
     void sendFeature(String feature, String value, String phone);
+    boolean hasChannels();
 }
