@@ -21,8 +21,6 @@ package com.proformatique.android.xivoclient;
 
 import org.json.JSONObject;
 
-import com.proformatique.android.xivoclient.service.InitialListLoader;
-
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -73,8 +71,9 @@ public class BlindTransferActivity extends TransferActivity {
 		@Override
 		protected Integer doInBackground(Void... params) {
 			JSONObject jTransferObject = createJsonTransferObject("transfer",
-					"chan:" + InitialListLoader.getInstance().getUserId() + ":"
-					+ InitialListLoader.getInstance().getPeerChannelId(), number);
+					//"chan:" + InitialListLoader.getInstance().getUserId() + ":"
+					//+ InitialListLoader.getInstance().getPeerChannelId(), number);
+					"", number);
 			//Connection.getInstance(BlindTransferActivity.this).sendJsonString(jTransferObject);
 			return null;
 		}

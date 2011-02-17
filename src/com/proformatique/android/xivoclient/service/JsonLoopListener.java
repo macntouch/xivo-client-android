@@ -73,7 +73,7 @@ public class JsonLoopListener {
 					parseCommMobile(comm);
 				else
 					parseComm(comm);
-				InitialListLoader.getInstance().showChannels();
+				//InitialListLoader.getInstance().showChannels();
 			}
 		}
 	}
@@ -83,26 +83,30 @@ public class JsonLoopListener {
 		String thisChannel = comm.has("thischannel") ? comm.getString("thischannel") : null;
 		
 		if (thisChannel != null) {
-			String myNum = InitialListLoader.getInstance().getXivoPhoneNum();
+			String myNum = "";
 			String status = comm.getString("status");
 			String peerChannel = comm.has("peerchannel") ? comm.getString("peerchannel") : null;
 			if (myNum != null && thisChannel.contains(myNum)) {
 				if (status.equals("linked-caller")) {
 					sendOnThePhoneIntent();
+					/*
 					InitialListLoader.getInstance().setThisChannelId(thisChannel);
 					if (peerChannel != null)
 						InitialListLoader.getInstance().setPeerChannelId(peerChannel);
 					else
 						InitialListLoader.getInstance().setPeerChannelId(null);
+						*/
 				} else if (status.equals("unlinked-caller") || status.equals("hangup")) {
 					resetChannels();
 				}
 			} else if (myNum != null && status.equals("linked-caller") && peerChannel != null
 					&& peerChannel.contains(myNum)) {
+				/*
 				InitialListLoader l = InitialListLoader.getInstance();
 				l.setPeersPeerChannelId(comm.getString("peerchannel"));
 				l.setThisChannelId(comm.getString("peerchannel"));
 				l.setPeerChannelId(comm.getString("thischannel"));
+				*/
 				sendOnThePhoneIntent();
 			}
 		}
@@ -126,13 +130,15 @@ public class JsonLoopListener {
 		if (linenum == 1 && calleridnum != null && calleridnum.equals(mobileNumber)
 				&& status.equals("ringing")) {
 			sendOnThePhoneIntent();
+			/*
 			InitialListLoader l = InitialListLoader.getInstance();
 			l.setPeerChannelId(thisChannel);
 			l.setPeersPeerChannelId(peerChannel);
+			*/
 		} else if (linenum == 2 && status.equals("linked-caller") && thisChannel != null 
-				&& thisChannel.equals(InitialListLoader.getInstance().getPeerChannelId())) {
+				/*&& thisChannel.equals(InitialListLoader.getInstance().getPeerChannelId())*/) {
 			sendOnThePhoneIntent();
-			InitialListLoader.getInstance().setPeersPeerChannelId(peerChannel);
+			//InitialListLoader.getInstance().setPeersPeerChannelId(peerChannel);
 		} else if ((status.equals("unlinked-caller") || status.equals("hangup"))
 				&& (peerChannel != null && peerChannel.contains(mobileNumber)
 				|| calleridnum != null && calleridnum.equals(mobileNumber))) {
@@ -147,11 +153,12 @@ public class JsonLoopListener {
 		Intent iHangup = new Intent();
 		iHangup.setAction(Constants.ACTION_HANGUP);
 		context.sendBroadcast(iHangup);
-		
+		/*
 		InitialListLoader l = InitialListLoader.getInstance();
 		l.setThisChannelId(null);
 		l.setPeerChannelId(null);
 		l.setPeersPeerChannelId(null);
+		*/
 	}
 	
 	private void sendOnThePhoneIntent() {

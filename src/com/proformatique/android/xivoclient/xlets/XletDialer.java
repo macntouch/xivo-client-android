@@ -19,7 +19,6 @@
 
 package com.proformatique.android.xivoclient.xlets;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Dialog;
@@ -41,7 +40,6 @@ import android.widget.Toast;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.SettingsActivity;
 import com.proformatique.android.xivoclient.XivoActivity;
-import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 public class XletDialer extends XivoActivity {
@@ -144,7 +142,8 @@ public class XletDialer extends XivoActivity {
 		
 		@Override
 		protected Integer doInBackground(Void... params) {
-			JSONObject jHangupObject = createJsonHangupObject();
+			//JSONObject jHangupObject = createJsonHangupObject();
+			JSONObject jHangupObject = new JSONObject();
 			if (jHangupObject != null) {
 				//Connection.getInstance(XletDialer.this).sendJsonString(jHangupObject);
 			} else {
@@ -255,6 +254,7 @@ public class XletDialer extends XivoActivity {
 	 * }" 
 	 * @return
 	 */
+	/*
 	public JSONObject createJsonHangupObject() {
 		JSONObject j = new JSONObject();
 		JSONObject details = new JSONObject();
@@ -285,6 +285,7 @@ public class XletDialer extends XivoActivity {
 			return null;
 		}
 	}
+	*/
 	
 	/**
 	 * BroadcastReceiver, intercept Intents with action ACTION_XLET_DIAL_CALL

@@ -21,8 +21,6 @@ package com.proformatique.android.xivoclient;
 
 import org.json.JSONObject;
 
-import com.proformatique.android.xivoclient.service.InitialListLoader;
-
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -72,14 +70,16 @@ public class AttendedTransferActivity extends TransferActivity {
 		
 		@Override
 		protected Integer doInBackground(Void... params) {
-			String source ="chan:" + InitialListLoader.getInstance().getUserId() +
-			":";
+			//String source ="chan:" + InitialListLoader.getInstance().getUserId() +
+			String source = "chan:" + "userid" + ":";
 			if (SettingsActivity.getUseMobile(AttendedTransferActivity.this)) {
 				Log.i(LOG_TAG, "Using mobile");
-				source += InitialListLoader.getInstance().getPeersPeerChannelId();
+				//source += InitialListLoader.getInstance().getPeersPeerChannelId();
+				source += "peer's peer channel id";
 			} else {
 				Log.i(LOG_TAG, "Not using mobile");
-				source += InitialListLoader.getInstance().getThisChannelId();
+				//source += InitialListLoader.getInstance().getThisChannelId();
+				source += "this channel id";
 				
 			}
 			JSONObject jTransferObject = createJsonTransferObject("atxfer", source, number);
