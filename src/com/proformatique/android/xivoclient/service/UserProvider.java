@@ -248,4 +248,25 @@ public class UserProvider extends ContentProvider {
 		Log.d(TAG, "Name: " + user.getString(user.getColumnIndex(FULLNAME)));
 		Log.d(TAG, "StateId: " + user.getString(user.getColumnIndex(STATEID)));
 	}
+	
+	/**
+	 * Searches the DB for this user and return it's column id
+	 * @param astid
+	 * @param xivoid
+	 */
+	public static long getUserId(Context context, String astid, String xivoid) {
+		Cursor user = context.getContentResolver().query(UserProvider.CONTENT_URI,
+				new String[] {UserProvider._ID, UserProvider.ASTID, UserProvider.XIVO_USERID},
+				UserProvider.ASTID + " = '" + astid 
+				+ "' AND " + UserProvider.XIVO_USERID + " = '" + xivoid + "'", null, null);
+		if (user.getCount() > 0) {
+			user.moveToFirst();
+			long id = user.getLong(user.getColumnIndex(UserProvider._ID));
+			user.close();
+			return id;
+		} else {
+			user.close();
+			return -1;
+		}
+	}
 }

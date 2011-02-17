@@ -582,7 +582,7 @@ public class XivoConnectionService extends Service {
          * For all updates
          */
         try {
-            long id = getUserIdFromUpdate(line.getString("astid"),
+            long id = UserProvider.getUserId(this, line.getString("astid"),
                     line.getJSONObject("status").getString("id"));
             if (id > 0)
                 return updateUserHintStatus(id,
@@ -631,27 +631,6 @@ public class XivoConnectionService extends Service {
         sendBroadcast(iUpdateIntent);
         Log.d(TAG, "Update intent sent");
         return NO_MESSAGE;
-    }
-    
-    /**
-     * Searches the DB for this user and return it's column id
-     * @param astid
-     * @param xivoid
-     */
-    private long getUserIdFromUpdate(String astid, String xivoid) {
-        Cursor user = getContentResolver().query(UserProvider.CONTENT_URI,
-                new String[] {UserProvider._ID, UserProvider.ASTID, UserProvider.XIVO_USERID},
-                UserProvider.ASTID + " = '" + astid 
-                + "' AND " + UserProvider.XIVO_USERID + " = '" + xivoid + "'", null, null);
-        if (user.getCount() > 0) {
-            user.moveToFirst();
-            long id = user.getLong(user.getColumnIndex(UserProvider._ID));
-            user.close();
-            return id;
-        } else {
-            user.close();
-            return -1;
-        }
     }
     
     /**
