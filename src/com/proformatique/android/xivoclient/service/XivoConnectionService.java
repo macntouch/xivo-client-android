@@ -64,6 +64,9 @@ public class XivoConnectionService extends Service {
     private String phoneStatusLongname = null;
     private String phoneStatusColor = Constants.DEFAULT_HINT_COLOR;
     private String lastCalledNumber = null;
+    private String thisChannel = null;
+    private String peerChannel = null;
+    private String peersPeerChannel = null;
     
     // Messages from the loop to the handler
     private final static int NO_MESSAGE = 0;
@@ -1201,5 +1204,14 @@ public class XivoConnectionService extends Service {
         Log.d(TAG, "Client: " + line);
         output.println(line);
         return Constants.OK;
+    }
+    
+    /**
+     * Clears all channels
+     */
+    private void resetChannels() {
+        thisChannel = null;
+        peerChannel = null;
+        peersPeerChannel = null;
     }
 }
