@@ -19,12 +19,6 @@
 
 package com.proformatique.android.xivoclient.service;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 
@@ -72,7 +66,6 @@ public class JsonLoopListener {
 			instance = new JsonLoopListener(context);
 		} else if (cancel == true) {
 			instance.startJsonListener();
-			instance.sendListRefresh();
 		}
 		
 		return instance;
@@ -89,62 +82,6 @@ public class JsonLoopListener {
 	private JsonLoopListener(Context context) {
 		this.context = context;
 		startJsonListener();
-		sendListRefresh();
-	}
-	
-	private void sendListRefresh() {
-		new Thread(new Runnable() {
-			public void run() {
-				sendFeaturesListRefresh();
-				InitialListLoader.getInstance().clearHistoryList();
-				sendListHistoRefresh("0","10");
-				sendListHistoRefresh("1","10");
-				sendListHistoRefresh("2","10");
-			}
-		}).start();
-	}
-	
-	private void sendFeaturesListRefresh(){
-		JSONObject jObj = new JSONObject();
-		
-		try {
-			jObj.accumulate("direction", Constants.XIVO_SERVER);
-			jObj.accumulate("class","featuresget");
-			jObj.accumulate("userid", InitialListLoader.getInstance().getUserId());
-			
-			//PrintStream output = new PrintStream(
-			//		Connection.getInstance(context).getNetworkConnection().getOutputStream());
-			//output.println(jObj.toString());
-			Log.d( LOG_TAG , "Client : "+jObj.toString());
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private void sendListHistoRefresh(String mode, String elementsNumber){
-		JSONObject jObj = new JSONObject();
-		
-		try {
-			SimpleDateFormat sIso = new SimpleDateFormat("yyyy-MM-dd");
-			Date dDay = new Date();
-			Calendar c1 = new GregorianCalendar();
-			c1.setTime(dDay);
-			c1.add(Calendar.DAY_OF_MONTH, -30);
-			
-			jObj.accumulate("direction", Constants.XIVO_SERVER);
-			jObj.accumulate("class","history");
-			jObj.accumulate("peer", InitialListLoader.getInstance().getUserId());
-			jObj.accumulate("size",elementsNumber);
-			jObj.accumulate("mode",mode);
-			jObj.accumulate("morerecentthan",sIso.format(c1.getTime()));
-			
-			//PrintStream output = new PrintStream(
-			//		Connection.getInstance(context).getNetworkConnection().getOutputStream());
-			//output.println(jObj.toString());
-			Log.d( LOG_TAG , "Client : "+jObj.toString());
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
 	}
 	
 	/**
@@ -252,71 +189,7 @@ public class JsonLoopListener {
 							updateUserList(InitialListLoader.getInstance().getUsersList(), map, "presence");
 							
 							handler.sendEmptyMessage(1);
-						} else if (classRec.equals("users")) {
-							
-							String subclass = jObjCurrent.has("subclass") == true ?
-									jObjCurrent.getString("subclass") : null;
-							
-							// Check if it's voicemail update
-							if (subclass != null && subclass.equals("mwi")) {
-								updateVoicemail(jObjCurrent.getJSONArray("user"),
-										jObjCurrent.getJSONArray("payload"));
-							}
-						} else if (classRec.equals("phones")) {
-							HashMap<String, String> map = new HashMap<String, String>();
-							
-							if (jObjCurrent.has("status")) {
-								JSONObject jStatus = jObjCurrent.getJSONObject("status");
-								updatePhoneChannelStatus(jStatus);
-							
-								JSONObject jHintStatus = jStatus.getJSONObject("hintstatus");
-								map.put("xivo_userid", jStatus.getString("id"));
-								if (jHintStatus.has("code")){
-									map.put("hintstatus_color", jHintStatus.getString("color"));
-									map.put("hintstatus_code", jHintStatus.getString("code"));
-									map.put("hintstatus_longname", jHintStatus.getString("longname"));
-								}
-								else {
-									map.put("hintstatus_color", "");
-									map.put("hintstatus_code", "");
-									map.put("hintstatus_longname", "");
-								}
-								updateUserList(InitialListLoader.getInstance().getUsersList(), map, "phone");
-								handler.sendEmptyMessage(1);
-							}
 						}
-						
-						/**
-						 * Loading History of calls list
-						 */
-						if (classRec.equals("history")){
-							JSONArray jArr = jObjCurrent.getJSONArray("payload");
-							int len = jArr.length();
-							for(int j = 0; j < len; j++){
-								HashMap<String, String> map = new HashMap<String, String>();
-								JSONObject jObjCurrentList = jArr.getJSONObject(j);
-								
-								/**
-								 * Feed the useful fields in a map to store in the list
-								 */
-								map.put("duration", jObjCurrentList.getString("duration"));
-								map.put("termin", jObjCurrentList.getString("termin"));
-								map.put("direction", jObjCurrentList.getString("direction"));
-								map.put("fullname", jObjCurrentList.getString("fullname"));
-								map.put("ts", jObjCurrentList.getString("ts"));
-								InitialListLoader.getInstance().addHistoryList(map);
-							}
-							
-							/**
-							 * Sorting list
-							 */
-							if (InitialListLoader.getInstance().getHistoryList().size()!=0){
-								InitialListLoader.getInstance().sortHistoryList();
-							}
-							
-							handler.sendEmptyMessage(3);
-						}
-						
 						/**
 						 * Loading Features list
 						 */
@@ -419,26 +292,6 @@ public class JsonLoopListener {
 		thread.start();
 	}
 	
-	/**
-	 * Update the voicemail status
-	 * @param user
-	 * @param mwi
-	 */
-	protected void updateVoicemail(JSONArray user, JSONArray mwi) {
-		InitialListLoader l = InitialListLoader.getInstance();
-		try {
-			if (user.getString(0).equals(l.getAstId())
-					&& user.getString(1).equals(l.getXivoId())) {
-				Log.i(LOG_TAG, "Updating my voicemail");
-				l.setMwi(context, mwi.getInt(0), mwi.getInt(1), mwi.getInt(2));
-			}
-		} catch (JSONException e) {
-			Log.e(LOG_TAG, "MWI update without a user defined.");
-			e.printStackTrace();
-		}
-		
-	}
-
 	protected void updateUserList(List<HashMap<String,String>> usersList, HashMap<String,String> map, String typeMaj) {
 		int len = usersList.size();
 		for (int i = 0; i<len; i++){
