@@ -186,6 +186,16 @@ public class XivoConnectionService extends Service {
         public void hangup() throws RemoteException {
             XivoConnectionService.this.hangup();
         }
+        
+        @Override
+        public void atxfer(String number) throws RemoteException {
+            Log.d(TAG, "Atxfer " + number);
+        }
+        
+        @Override
+        public void transfer(String number) throws RemoteException {
+            Log.d(TAG, "Transfer " + number);
+        }
     };
     
     /**

@@ -20,4 +20,6 @@ interface IXivoConnectionService {
     void sendFeature(String feature, String value, String phone);
     boolean hasChannels();
     void hangup();
+    void transfer(String number);
+    void atxfer(String number);
 }
