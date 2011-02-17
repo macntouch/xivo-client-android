@@ -63,6 +63,7 @@ public class XivoConnectionService extends Service {
     private long stateId = 0L;
     private String phoneStatusLongname = null;
     private String phoneStatusColor = Constants.DEFAULT_HINT_COLOR;
+    private String phoneStatusCode = null;
     private String lastCalledNumber = null;
     private String thisChannel = null;
     private String peerChannel = null;
@@ -79,6 +80,8 @@ public class XivoConnectionService extends Service {
     private static final int PRESENCE_UPDATE = 7;
     private static final int HISTORY_LOADED = 8;
     private static final int FEATURES_LOADED = 9;
+    
+    private static final String AVAILABLE_STATUS_CODE = "0";
     
     /**
      * Implementation of the methods between the service and the activities
@@ -159,7 +162,7 @@ public class XivoConnectionService extends Service {
         
         @Override
         public boolean isOnThePhone() throws RemoteException {
-            return false;
+            return phoneStatusCode == null ? false : !phoneStatusCode.equals(AVAILABLE_STATUS_CODE);
         }
         
         @Override
@@ -600,10 +603,13 @@ public class XivoConnectionService extends Service {
      * @throws JSONException
      */
     private void sendMyNewHintstatus(JSONObject hintstatus) throws JSONException {
+        phoneStatusCode = hintstatus.getString("code");
+        phoneStatusColor = hintstatus.getString("color");
+        phoneStatusLongname = hintstatus.getString("longname");
         Intent i = new Intent();
         i.setAction(Constants.ACTION_MY_PHONE_CHANGE);
-        i.putExtra("color", hintstatus.getString("color"));
-        i.putExtra("longname", hintstatus.getString("longname"));
+        i.putExtra("color", phoneStatusColor);
+        i.putExtra("longname", phoneStatusLongname);
         sendBroadcast(i);
     }
     
@@ -637,6 +643,7 @@ public class XivoConnectionService extends Service {
      * Parses phones update for a call from the user (not using his mobile)
      * @param line
      */
+    @SuppressWarnings("unchecked")
     private void parseMyPhoneUpdate(JSONObject line) {
         Log.d(TAG, "Parsing my phone update");
         /*
@@ -655,6 +662,19 @@ public class XivoConnectionService extends Service {
         /*
          * Save channels
          */
+        try {
+            JSONObject comms = line.getJSONObject("status").getJSONObject("comms");
+            for (Iterator<String> iterKey = comms.keys(); iterKey.hasNext(); ) {
+                String key = iterKey.next();
+                JSONObject comm = comms.getJSONObject(key);
+                if (comm.has("thischannel"))
+                    thisChannel = comm.getString("thischannel");
+                if (comm.has("peerchannel"))
+                    peerChannel = comm.getString("peerchannel");
+            }
+        } catch (JSONException e) {
+            Log.d(TAG, "Could not parse channels");
+        }
     }
     
     /**
@@ -736,6 +756,7 @@ public class XivoConnectionService extends Service {
             try {
                 phoneStatusLongname = jPhoneStatus.getString("longname");
                 phoneStatusColor = jPhoneStatus.getString("color");
+                phoneStatusCode = jPhoneStatus.getString("code");
                 Intent i = new Intent();
                 i.setAction(Constants.ACTION_MY_PHONE_CHANGE);
                 i.putExtra("color", phoneStatusColor);
