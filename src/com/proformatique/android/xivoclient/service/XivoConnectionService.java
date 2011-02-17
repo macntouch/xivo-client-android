@@ -75,6 +75,7 @@ public class XivoConnectionService extends Service {
     private static final int PHONES_LOADED = 6;
     private static final int PRESENCE_UPDATE = 7;
     private static final int HISTORY_LOADED = 8;
+    private static final int FEATURES_LOADED = 9;
     
     /**
      * Implementation of the methods between the service and the activities
@@ -321,7 +322,7 @@ public class XivoConnectionService extends Service {
     private void refreshFeatures() {
         if (thread == null)
             startLooping(getApplicationContext());
-        sendLine(JSONMessageFactory.getJsonFeaturesRefresh(xivoId).toString());
+        sendLine(JSONMessageFactory.getJsonFeaturesRefresh(astId, xivoId).toString());
     }
     
     /**
@@ -389,6 +390,11 @@ public class XivoConnectionService extends Service {
                     iLoadHistory.setAction(Constants.ACTION_LOAD_HISTORY_LIST);
                     sendBroadcast(iLoadHistory);
                     break;
+                case FEATURES_LOADED:
+                    Intent iLoadFeatures = new Intent();
+                    iLoadFeatures.setAction(Constants.ACTION_LOAD_FEATURES);
+                    sendBroadcast(iLoadFeatures);
+                    break;
                 case NO_MESSAGE:
                     break;
                 case JSON_EXCEPTION:
@@ -434,7 +440,7 @@ public class XivoConnectionService extends Service {
             else if (classRec.equals("history"))
                 return parseHistory(line);
             else if (classRec.equals("features"))
-                return parsePhones(line);
+                return parseFeatures(line);
             else if (classRec.equals("groups"))
                 return parseGroups(line);
             else if (classRec.equals("disconn"))
@@ -451,6 +457,31 @@ public class XivoConnectionService extends Service {
             e.printStackTrace();
             return JSON_EXCEPTION;
         }
+    }
+    
+    private int parseFeatures(JSONObject line) {
+        Log.d(TAG, "Parsing features:\n" + line.toString());
+        String[] features = {"enablednd", "callrecord", "incallfilter", "enablevoicemail",
+            "busy", "rna", "unc"};
+        try {
+            JSONObject payload = line.getJSONObject("payload");
+            getContentResolver().delete(CapaservicesProvider.CONTENT_URI, null, null);
+            for (String feature: features) {
+                ContentValues values = new ContentValues();
+                values.put(CapaservicesProvider.SERVICE, feature);
+                values.put(CapaservicesProvider.ENABLED,
+                        payload.getJSONObject(feature).getBoolean("enabled") == true ? 1 : 0);
+                if (payload.getJSONObject(feature).has("number")) {
+                    values.put(CapaservicesProvider.NUMBER,
+                            payload.getJSONObject(feature).getString("number"));
+                }
+                getContentResolver().insert(CapaservicesProvider.CONTENT_URI, values);
+                values.clear();
+            }
+        } catch (JSONException e) {
+            Log.d(TAG, "Could not get features payload");
+        }
+        return FEATURES_LOADED;
     }
     
     private int parseHistory(JSONObject line) {
@@ -880,35 +911,12 @@ public class XivoConnectionService extends Service {
                 parseCapapresence(jCapa.getJSONObject("capapresence"));
             }
             
-            if (jCapa.has("capaservices")) {
-                parseCapaservices(jCapa.getJSONArray("capaservices"));
-            }
-            
             xivoNotif = new XivoNotification(getApplicationContext());
             xivoNotif.createNotification();
         } catch (JSONException e) {
             return Constants.JSON_POPULATE_ERROR;
         }
         return Constants.OK;
-    }
-    
-    /**
-     * Parses capaservices and update the DB
-     */
-    private void parseCapaservices(JSONArray jServices) {
-        Log.d(TAG, "parsing capaservices");
-        // Remove old entries
-        getContentResolver().delete(CapaservicesProvider.CONTENT_URI, null, null);
-        ContentValues values = new ContentValues();
-        for (int i = 0; i < jServices.length(); i++) {
-            try {
-                values.put(CapaservicesProvider.SERVICE, jServices.getString(i));
-                getContentResolver().insert(CapaservicesProvider.CONTENT_URI, values);
-                values.clear();
-            } catch (JSONException e) {
-                Log.d(TAG, "Could not parse capaservices");
-            }
-        }
     }
     
     /**

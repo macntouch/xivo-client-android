@@ -31,6 +31,8 @@ public class CapaservicesProvider extends ContentProvider {
 	 */
 	public static final String _ID = "_id";
 	public static final String SERVICE = "name";
+	public static final String ENABLED = "enabled";
+	public static final String NUMBER = "number";
 	
 	/*
 	 * uri matchers
@@ -50,11 +52,14 @@ public class CapaservicesProvider extends ContentProvider {
 	private SQLiteDatabase capaservicesDB;
 	private static final String DATABASE_NAME = "capaservices";
 	private static final String DATABASE_TABLE = "capaservices";
-	private static final int DATABASE_VERSION = 1;
+	private static final int DATABASE_VERSION = 3;
 	private static final String DATABASE_CREATE =
 		"create table " + DATABASE_TABLE + " (" +
 		_ID + " integer primary key autoincrement, " +
-		SERVICE + " text not null);";
+		SERVICE + " text not null, " +
+		ENABLED + " integer default 0, " +
+		NUMBER  + " text " +
+		");";
 	
 	@Override
 	public int delete(Uri uri, String selection, String[] selectionArgs) {
@@ -159,6 +164,11 @@ public class CapaservicesProvider extends ContentProvider {
 			db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE);
 			onCreate(db);
 		}
-		
+	}
+	
+	public static void cursorToString(Cursor entry) {
+		Log.d(TAG, "Name: " + entry.getString(entry.getColumnIndex(SERVICE)));
+		Log.d(TAG, "Enabled: " + entry.getString(entry.getColumnIndex(ENABLED)));
+		Log.d(TAG, "Number: " + entry.getString(entry.getColumnIndex(NUMBER)));
 	}
 }
