@@ -19,7 +19,6 @@
 
 package com.proformatique.android.xivoclient.xlets;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.BroadcastReceiver;
@@ -37,6 +36,7 @@ import com.proformatique.android.xivoclient.XivoActivity;
 import com.proformatique.android.xivoclient.service.CapaservicesProvider;
 import com.proformatique.android.xivoclient.service.InitialListLoader;
 import com.proformatique.android.xivoclient.tools.Constants;
+import com.proformatique.android.xivoclient.tools.JSONMessageFactory;
 
 public class XletServices extends XivoActivity {
 
@@ -56,6 +56,8 @@ public class XletServices extends XivoActivity {
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(Constants.ACTION_LOAD_FEATURES);
 		registerReceiver(receiver, new IntentFilter(filter));
+		
+		registerButtons();
 	}
 	
 	@Override
@@ -83,7 +85,7 @@ public class XletServices extends XivoActivity {
 			sendFeaturePut("incallfilter", "0", null);
 		}
 	}
-
+	
 	public void clickOnEnablednd(View v){
 		CheckBox checkbox = (CheckBox)v;
 		if (checkbox.isChecked()){
@@ -93,7 +95,7 @@ public class XletServices extends XivoActivity {
 			sendFeaturePut("enablednd", "0", null);
 		}
 	}
-
+	
 	public void clickOnFwdrna(View v){
 		CheckBox checkbox = (CheckBox)v;
 		if (checkbox.isChecked()){
@@ -121,11 +123,10 @@ public class XletServices extends XivoActivity {
 			checkbox.setText(R.string.servicesFwdbusy);
 			sendFeaturePut("enablebusy", "0", 
 					InitialListLoader.getInstance().getFeaturesBusy().get("number"));
-
 		}
 		
 	}
-
+	
 	public void clickOnFwdunc(View v){
 		CheckBox checkbox = (CheckBox)v;
 		if (checkbox.isChecked()){
@@ -148,62 +149,60 @@ public class XletServices extends XivoActivity {
 		 CheckBox checkbox;
 		 String textDisplay;
 		 String phoneNumber = data.getStringExtra("phoneNumber");
-
+		 
 		 if (requestCode == Constants.CODE_SERVICE_ASK1) {
 			 checkbox = (CheckBox) findViewById(R.id.fwdrna);
 			 textDisplay = getString(R.string.servicesFwdrna);
 			 setCheckboxDisplay(resultCode, checkbox, phoneNumber, textDisplay);
 			 if (resultCode  == Constants.OK)
 				 sendFeaturePut("enablerna", "1", phoneNumber);
-		 }
-
-		 else if (requestCode == Constants.CODE_SERVICE_ASK2) {
+		}
+		
+		else if (requestCode == Constants.CODE_SERVICE_ASK2) {
 			 checkbox = (CheckBox) findViewById(R.id.fwdbusy);
 			 textDisplay = getString(R.string.servicesFwdbusy);
 			 setCheckboxDisplay(resultCode, checkbox, phoneNumber, textDisplay);
 			 if (resultCode  == Constants.OK)
 				 sendFeaturePut("enablebusy", "1", phoneNumber);
 		 }
-
-		 if (requestCode == Constants.CODE_SERVICE_ASK3) {
+		
+		if (requestCode == Constants.CODE_SERVICE_ASK3) {
 			 checkbox = (CheckBox) findViewById(R.id.fwdunc);
 			 textDisplay = getString(R.string.servicesFwdunc);
 			 setCheckboxDisplay(resultCode, checkbox, phoneNumber, textDisplay);
 			 if (resultCode  == Constants.OK)
 				 sendFeaturePut("enableunc", "1", phoneNumber);
-		 }
-
-	 }
-	 
-	 private void setCheckboxDisplay(int code, CheckBox checkbox, 
+		}
+	}
+	
+	private void setCheckboxDisplay(int code, CheckBox checkbox, 
 			String phoneNumber, String textDisplay){
-		 if (code == Constants.OK){
-			 checkbox.setText(textDisplay + "\n"+getString(R.string.servicesPhone)+phoneNumber);
-			 checkbox.setChecked(true);
-		 } else {
-			 checkbox.setChecked(false);
-			 checkbox.setText(textDisplay);
-		 }
+		if (code == Constants.OK){
+			checkbox.setText(textDisplay + "\n"+getString(R.string.servicesPhone)+phoneNumber);
+			checkbox.setChecked(true);
+		} else {
+			checkbox.setChecked(false);
+			checkbox.setText(textDisplay);
+		}
 		checkbox.setClickable(true);
-
-	 }
-	 
-		/**
-		 * BroadcastReceiver, intercept Intents with action ACTION_LOAD_HISTORY_LIST
-		 * to perform an reload of the displayed list
-		 * @author cquaquin
-		 *
-		 */
-		private class IncomingReceiver extends BroadcastReceiver {
-
-			@Override
-			public void onReceive(Context context, Intent intent) {
-		        if (intent.getAction().equals(Constants.ACTION_LOAD_FEATURES)) {
-		        	Log.d( LOG_TAG , "Received Broadcast "+Constants.ACTION_LOAD_FEATURES);
-		        	refreshFeatures();
-		        }
+	}
+	
+	/**
+	 * BroadcastReceiver, intercept Intents with action ACTION_LOAD_HISTORY_LIST
+	 * to perform an reload of the displayed list
+	 * @author cquaquin
+	 *
+	 */
+	private class IncomingReceiver extends BroadcastReceiver {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if (intent.getAction().equals(Constants.ACTION_LOAD_FEATURES)) {
+				Log.d( LOG_TAG , "Received Broadcast "+Constants.ACTION_LOAD_FEATURES);
+				refreshFeatures();
 			}
 		}
+	}
 	
 	public void refreshFeatures() {
 		Cursor c = getContentResolver().query(CapaservicesProvider.CONTENT_URI,
@@ -213,18 +212,18 @@ public class XletServices extends XivoActivity {
 		if (c.moveToFirst()) {
 			do {
 				String service = c.getString(c.getColumnIndex(CapaservicesProvider.SERVICE));
-			if (service.equals("fwdbusy"))
-				enableFwdbusy(true);
-			else if (service.equals("fwdrna"))
-				enableFwdrna(true);
-			else if (service.equals("fwdunc"))
-				enableFwdunc(true);
-			else if (service.equals("enablednd"))
-				enableEnableDnd(true);
-			else if (service.equals("callrecord"))
-				enableCallrecord(true);
-			else if (service.equals("incallfilter"))
-				enableIncallfilter(true);
+				if (service.equals("fwdbusy"))
+					enableFwdbusy(true);
+				else if (service.equals("fwdrna"))
+					enableFwdrna(true);
+				else if (service.equals("fwdunc"))
+					enableFwdunc(true);
+				else if (service.equals("enablednd"))
+					enableEnableDnd(true);
+				else if (service.equals("callrecord"))
+					enableCallrecord(true);
+				else if (service.equals("incallfilter"))
+					enableIncallfilter(true);
 			} while (c.moveToNext());
 		}
 		c.close();
@@ -269,33 +268,14 @@ public class XletServices extends XivoActivity {
 		checkbox.setChecked(status);
 	}
 	
-		private JSONObject createJsonFeaturePut(String feature, String value, String phone) {
-			JSONObject jObj = new JSONObject();
-			try {
-				jObj.accumulate("direction", Constants.XIVO_SERVER);
-				jObj.accumulate("class", "featuresput");
-				jObj.accumulate("userid", InitialListLoader.getInstance().getUserId());
-				jObj.accumulate("function", feature);
-				jObj.accumulate("value", value);
-				if (phone != null) jObj.accumulate("destination", phone);
-				
-				return jObj;
-			} catch (JSONException e) {
-				return null;
-			}
-
-		}
-
-		private void sendFeaturePut(String feature, String value, String phone){
-			JSONObject jObj = createJsonFeaturePut(feature, value, phone);
-			//Connection.getInstance(getApplicationContext()).sendJsonString(jObj);
-		}
-
-		@Override
-		protected void onDestroy() {
-			unregisterReceiver(receiver);
-			super.onDestroy();
-		}
-
-
+	private void sendFeaturePut(String feature, String value, String phone){
+		JSONObject jObj = JSONMessageFactory.createJsonFeaturePut(feature, value, phone);
+		//Connection.getInstance(getApplicationContext()).sendJsonString(jObj);
+	}
+	
+	@Override
+	protected void onDestroy() {
+		unregisterReceiver(receiver);
+		super.onDestroy();
+	}
 }
