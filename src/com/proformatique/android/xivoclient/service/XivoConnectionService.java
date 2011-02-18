@@ -67,7 +67,6 @@ public class XivoConnectionService extends Service {
     private String lastCalledNumber = null;
     private String thisChannel = null;
     private String peerChannel = null;
-    private String peersPeerChannel = null;
     
     // Messages from the loop to the handler
     private final static int NO_MESSAGE = 0;
@@ -160,8 +159,12 @@ public class XivoConnectionService extends Service {
         
         @Override
         public boolean isOnThePhone() throws RemoteException {
-            return phoneStatusCode == null ? false : !phoneStatusCode.equals(
-                    Constants.AVAILABLE_STATUS_CODE);
+            if (SettingsActivity.getUseMobile(XivoConnectionService.this)) {
+                return thisChannel != null && peerChannel != null;
+            } else {
+                return phoneStatusCode == null ? false : !phoneStatusCode.equals(
+                        Constants.AVAILABLE_STATUS_CODE);
+            }
         }
         
         @Override
@@ -220,13 +223,16 @@ public class XivoConnectionService extends Service {
     
     /**
      * Hang-up the current call
+     * If we have a Local/ channel we hang-up our peer's channel
      */
     private void hangup() {
-        if (!SettingsActivity.getUseMobile(this) 
-                && thisChannel != null && !thisChannel.contains("Local/")) {
-            String channel = "chan:" + astId + "/" + xivoId + ":" + thisChannel;
-            sendLine(JSONMessageFactory.createJsonHangupObject(this, channel).toString());
+        String channel = null;
+        if (thisChannel != null && !thisChannel.contains("Local/")) {
+            channel = "chan:" + astId + "/" + xivoId + ":" + thisChannel;
+        } else {
+            channel = "chan:" + astId + "/" + xivoId + ":" + peerChannel;
         }
+        sendLine(JSONMessageFactory.createJsonHangupObject(this, channel).toString());
     }
     
     /**
@@ -664,6 +670,8 @@ public class XivoConnectionService extends Service {
         i.putExtra("color", phoneStatusColor);
         i.putExtra("longname", phoneStatusLongname);
         sendBroadcast(i);
+        if (this.phoneStatusCode.equals(Constants.AVAILABLE_STATUS_CODE))
+            resetChannels();
     }
     
     /**
@@ -736,6 +744,34 @@ public class XivoConnectionService extends Service {
      */
     private void parseMyMobilePhoneUpdate(JSONObject line) {
         Log.d(TAG, "Parsing my mobile phone update");
+        JSONObject comm = JSONParserHelper.getMyComm(this, line);
+        
+        try {
+            // Since we are looking at the peer's phone update we save peer into this and vice versa
+            if (comm.has("peerchannel"))
+                this.thisChannel = comm.getString("peerchannel");
+            if (comm.has("thischannel"))
+                this.peerChannel = comm.getString("thischannel");
+        } catch (JSONException e) {}
+        
+        try {
+            if (line.getJSONObject("status").getJSONObject("hintstatus")
+                    .getString("code").equals(Constants.CALLING_STATUS_CODE)) {
+                Intent iOnGoingCall = new Intent();
+                iOnGoingCall.setAction(Constants.ACTION_ONGOING_CALL);
+                sendBroadcast(iOnGoingCall);
+            }
+        } catch (JSONException e) {}
+        
+        try {
+            if (comm.getString("status").equals("hangup")) {
+                resetChannels();
+                Intent iStatusUpdate = new Intent();
+                iStatusUpdate.setAction(Constants.ACTION_CALL_PROGRESS);
+                iStatusUpdate.putExtra("code", Constants.AVAILABLE_STATUS_CODE);
+                sendBroadcast(iStatusUpdate);
+            }
+        } catch (JSONException e) {}
     }
     
     /**
@@ -1265,6 +1301,6 @@ public class XivoConnectionService extends Service {
     private void resetChannels() {
         thisChannel = null;
         peerChannel = null;
-        peersPeerChannel = null;
+        lastCalledNumber = null;
     }
 }
