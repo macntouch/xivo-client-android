@@ -48,6 +48,7 @@ public class XletDialer extends XivoActivity {
 	private final int VM_DISABLED_FILTER = 0xff555555;
 	
 	EditText phoneNumber;
+	ImageButton dialButton;
 	IncomingReceiver receiver;
 	Dialog dialog;
 	
@@ -58,8 +59,11 @@ public class XletDialer extends XivoActivity {
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.xlet_dialer);
-		setPhoneOffHook(false);
+		
 		phoneNumber = (EditText) findViewById(R.id.number);
+		dialButton = (ImageButton) findViewById(R.id.dialButton);
+		
+		setPhoneOffHook(false);
 		
 		Bundle bundle = getIntent().getExtras();
 		if (bundle != null) {
@@ -78,6 +82,7 @@ public class XletDialer extends XivoActivity {
 		filter.addAction(Constants.ACTION_OFFHOOK);
 		filter.addAction(Constants.ACTION_MWI_UPDATE);
 		filter.addAction(Constants.ACTION_CALL_PROGRESS);
+		filter.addAction(Constants.ACTION_ONGOING_CALL);
 		registerReceiver(receiver, new IntentFilter(filter));
 		
 		registerButtons();
@@ -162,11 +167,10 @@ public class XletDialer extends XivoActivity {
 	 */
 	public void setPhoneOffHook(boolean offHook) {
 		if (offHook) {
-			((ImageButton)findViewById(R.id.dialButton)).setImageDrawable(getResources()
+			dialButton.setImageDrawable(getResources()
 					.getDrawable(R.drawable.ic_dial_action_hangup));
 		} else {
-			((ImageButton)findViewById(R.id.dialButton)).setImageDrawable(getResources()
-					.getDrawable(R.drawable.ic_dial_action_call));
+			dialButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_dial_action_call));
 			((EditText)findViewById(R.id.number)).setEnabled(true);
 			if (dialog != null)
 				dialog.dismiss();
@@ -238,13 +242,11 @@ public class XletDialer extends XivoActivity {
 		
 		@Override
 		protected void onPostExecute(Integer result) {
-			Log.d(LOG_TAG, "Call completed");
 			if (dialog != null)
 				dialog.dismiss();
 			phoneNumber.setEnabled(true);
 			switch (result) {
 			case Constants.OK:
-				Log.i(LOG_TAG, "Call completed succesfully");
 				break;
 			case Constants.REMOTE_EXCEPTION:
 				showToast(R.string.remote_exception);
@@ -291,7 +293,6 @@ public class XletDialer extends XivoActivity {
 				if (code.equals(Constants.CALLING_STATUS_CODE)) {
 					try {
 						if (xivoConnectionService.hasChannels()) {
-							Log.d(LOG_TAG, "Dismissing dialogs");
 							if (dialog != null) {
 								dialog.dismiss();
 								dialog = null;
@@ -303,13 +304,23 @@ public class XletDialer extends XivoActivity {
 						Log.d(LOG_TAG, "Remote exception");
 					}
 				}
-				Log.d(LOG_TAG, "New call progress received: " + status + " code: " + code);
 				if (callTask != null) {
 					if (Integer.parseInt(code) == Constants.HINTSTATUS_AVAILABLE_CODE)
 						callTask.completeOrCancel = true;
 					callTask.progress = status;
 					callTask.onProgressUpdate();
 				}
+				if (code.equals(Constants.AVAILABLE_STATUS_CODE)) {
+					setPhoneOffHook(false);
+				}
+			} else if (intent.getAction().equals(Constants.ACTION_ONGOING_CALL)) {
+				setPhoneOffHook(true);
+				if (dialog != null) {
+					dialog.dismiss();
+					dialog = null;
+				}
+				phoneNumber.setEnabled(true);
+				phoneNumber.setText("");
 			}
 		}
 	}
