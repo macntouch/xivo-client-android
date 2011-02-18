@@ -85,7 +85,7 @@ public class AttendedTransferActivity extends TransferActivity {
 				
 			}
 			JSONObject jTransferObject =
-				JSONMessageFactory.createJsonTransferObject("atxfer", source, number);
+				JSONMessageFactory.createJsonTransfer("atxfer", source, number);
 			//Connection.getInstance(AttendedTransferActivity.this).sendJsonString(jTransferObject);
 			return null;
 		}

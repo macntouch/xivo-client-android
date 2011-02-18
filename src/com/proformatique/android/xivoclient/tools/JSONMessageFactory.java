@@ -229,11 +229,11 @@ public class JSONMessageFactory {
         }
     }
     
-    public static JSONObject createJsonTransferObject(String klass, String src, String dest) {
+    public static JSONObject createJsonTransfer(String type, String src, String dest) {
         JSONObject jsonTransfer = new JSONObject();
         try {
             jsonTransfer.accumulate("direction", Constants.XIVO_SERVER);
-            jsonTransfer.accumulate("class", klass);
+            jsonTransfer.accumulate("class", type);
             jsonTransfer.accumulate("source", src);
             jsonTransfer.accumulate("destination", "ext:" + dest);
             return jsonTransfer;
