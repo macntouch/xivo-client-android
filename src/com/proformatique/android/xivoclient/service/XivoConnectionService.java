@@ -189,14 +189,34 @@ public class XivoConnectionService extends Service {
         
         @Override
         public void atxfer(String number) throws RemoteException {
-            Log.d(TAG, "Atxfer " + number);
+            XivoConnectionService.this.atxfer(number);
         }
         
         @Override
         public void transfer(String number) throws RemoteException {
-            Log.d(TAG, "Transfer " + number);
+        	XivoConnectionService.this.transfer(number);
         }
     };
+    
+    private void transfer(String number) {
+        Log.d(TAG, "Blind transfer to " + number);
+        if (!SettingsActivity.getUseMobile(this)) {
+            String src = "chan:" + astId + "/" + xivoId + ":" + this.peerChannel;
+            sendLine(JSONMessageFactory.createJsonTransfer("transfer", src, number).toString());
+        } else {
+            Log.d(TAG, "Transfer from a mobile");
+        }
+    }
+    
+    private void atxfer(String number) {
+        Log.d(TAG, "Attended transfer to " + number);
+        if (!SettingsActivity.getUseMobile(this)) {
+            String src = "chan:" + astId + "/" + xivoId + ":" + this.thisChannel;
+            sendLine(JSONMessageFactory.createJsonTransfer("atxfer", src, number).toString());
+        } else {
+            Log.d(TAG, "Atxfer from a mobile");
+        }
+    }
     
     /**
      * Hang-up the current call
