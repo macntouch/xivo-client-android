@@ -103,12 +103,13 @@ public class JSONMessageFactory {
     public static String getCalledIdNum(JSONObject line) {
         try {
             JSONObject comms = line.getJSONObject("status").getJSONObject("comms");
+            String key = null;
             for (Iterator<String> iter = comms.keys(); iter.hasNext(); )
-                return comms.getJSONObject(iter.toString()).getString("calleridnum");
+                key = iter.next();
+                return comms.getJSONObject(key).getString("calleridnum");
         } catch (JSONException e) {
             return "";
         }
-        return "";
     }
     
     /**
