@@ -356,9 +356,9 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 					try {
 						if (xivoConnectionService.isOnThePhone()) {
 							if (i % 2 == 1) {
-								xivoConnectionService.atxfer(number);
-							} else {
 								xivoConnectionService.transfer(number);
+							} else {
+								xivoConnectionService.atxfer(number);
 							}
 						} else {
 							Intent intent = new Intent(XletContactSearch.this, XletDialer.class);
