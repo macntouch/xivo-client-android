@@ -36,5 +36,22 @@ public class JSONParserHelper {
 		}
 		return comm;
 	}
-
+	
+	/**
+	 * Parses a phone update and retuns the calleridnum
+	 * @param line
+	 * @return calleridnum or ""
+	 */
+	@SuppressWarnings("unchecked")
+	public static String getCalledIdNum(JSONObject line) {
+		try {
+			JSONObject comms = line.getJSONObject("status").getJSONObject("comms");
+			String key = null;
+			for (Iterator<String> iter = comms.keys(); iter.hasNext(); )
+				key = iter.next();
+			return comms.getJSONObject(key).getString("calleridnum");
+		} catch (JSONException e) {
+			return "";
+		}
+	}
 }

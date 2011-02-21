@@ -654,7 +654,7 @@ public class XivoConnectionService extends Service {
         if (lastCalledNumber != null) {
             if (SettingsActivity.getUseMobile(this)) {
                 if (lastCalledNumber.length() < Constants.MAX_PHONE_NUMBER_LEN) {
-                    if (JSONMessageFactory.getCalledIdNum(line).equals(
+                    if (JSONParserHelper.getCalledIdNum(line).equals(
                             SettingsActivity.getMobileNumber(this))) {
                         parseMyMobilePhoneUpdate(line);
                     }

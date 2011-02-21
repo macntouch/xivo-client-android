@@ -95,24 +95,6 @@ public class JSONMessageFactory {
     }
     
     /**
-     * Parses a phone update and retuns the calleridnum
-     * @param line
-     * @return calleridnum or ""
-     */
-    @SuppressWarnings("unchecked")
-    public static String getCalledIdNum(JSONObject line) {
-        try {
-            JSONObject comms = line.getJSONObject("status").getJSONObject("comms");
-            String key = null;
-            for (Iterator<String> iter = comms.keys(); iter.hasNext(); )
-                key = iter.next();
-                return comms.getJSONObject(key).getString("calleridnum");
-        } catch (JSONException e) {
-            return "";
-        }
-    }
-    
-    /**
      * Parses a phone update and check if it matches a given astId and xivoId
      * @param line
      * @param astId
@@ -201,21 +183,6 @@ public class JSONMessageFactory {
     public static JSONObject createJsonHangupObject(Context context, String source) {
         JSONObject j = new JSONObject();
         JSONObject details = new JSONObject();
-        /*
-        String source = "chan:" + l.getUserId() + ":";
-        if (SettingsActivity.getUseMobile(context)) {
-            if (l.getPeersPeerChannelId() != null
-                    && l.getPeersPeerChannelId().startsWith("Local") == false) {
-                source += l.getPeersPeerChannelId();
-            } else if (l.getThisChannelId() != null) {
-                source += l.getThisChannelId();
-            } else {
-                source += l.getPeerChannelId();
-            }
-        } else {
-            source += l.getThisChannelId();
-        }
-        */
         try {
             details.accumulate("command", "hangup");
             details.accumulate("channelids", source);
