@@ -97,7 +97,8 @@ public class XivoConnectionService extends Service {
         
         @Override
         public boolean isConnected() throws RemoteException {
-            return (networkConnection != null && networkConnection.isConnected());
+            return (networkConnection != null && networkConnection.isConnected()
+                    && inputBuffer != null);
         }
         
         @Override
@@ -358,6 +359,7 @@ public class XivoConnectionService extends Service {
      * @return connection status
      */
     private int connectToServer() {
+        authenticationComplete = false;
         int port = Constants.XIVO_DEFAULT_PORT;
         try {
             port = Integer.parseInt(prefs.getString("server_port",
@@ -366,8 +368,14 @@ public class XivoConnectionService extends Service {
             Log.d(TAG, "Port number cannot be parsed to int, using default port");
         }
         String host = prefs.getString("server_adress", "");
-        if (thread != null && thread.isAlive())
-            thread.interrupt();
+        stopThread();
+        while (thread != null && thread.isAlive()) {
+            try {
+                wait(100);
+            } catch (InterruptedException e) {
+                Log.d(TAG, "Wait interrupted");
+            }
+        }
         try {
             Log.d(TAG, "Connecting to " + host + " " + port);
             networkConnection = new Socket(host, port);
@@ -410,6 +418,14 @@ public class XivoConnectionService extends Service {
         }
         resetState();
         authenticationComplete = false;
+        if (inputBuffer != null) {
+             try {
+                inputBuffer.close();
+                inputBuffer = null;
+             } catch (IOException e) {
+                Log.d(TAG, "Failed to close the inputBuffer");
+                }
+        }
         return Constants.OK;
     }
     
