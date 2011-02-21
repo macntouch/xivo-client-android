@@ -124,6 +124,12 @@ public class XivoActivity extends Activity implements OnClickListener {
 	}
 	
 	@Override
+	protected void onPause() {
+		releaseXivoConnectionService();
+		super.onPause();
+	}
+	
+	@Override
 	protected void onDestroy() {
 		releaseXivoConnectionService();
 		unregisterReceiver(receiver);
