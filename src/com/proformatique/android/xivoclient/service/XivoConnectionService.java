@@ -196,6 +196,13 @@ public class XivoConnectionService extends Service {
         public void transfer(String number) throws RemoteException {
         	XivoConnectionService.this.transfer(number);
         }
+        
+        @Override
+        public boolean killDialer() throws RemoteException {
+            return SettingsActivity.getUseMobile(XivoConnectionService.this)
+                && lastCalledNumber != null
+                && lastCalledNumber.length() < Constants.MAX_PHONE_NUMBER_LEN;
+        }
     };
     
     private void transfer(String number) {

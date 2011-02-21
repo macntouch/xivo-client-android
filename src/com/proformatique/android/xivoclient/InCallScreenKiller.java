@@ -70,8 +70,7 @@ public class InCallScreenKiller extends Service {
 				Log.d(LOG_TAG, "onCallStateChanged called");
 				try {
 					if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
-						if (SettingsActivity.getUseMobile(InCallScreenKiller.this)
-							&& xivoConnectionService.hasChannels()) {
+						if (xivoConnectionService.killDialer()) {
 							Intent i = new Intent(getApplicationContext(), XletDialer.class);
 							i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 							try {
@@ -102,6 +101,13 @@ public class InCallScreenKiller extends Service {
 	public void onDestroy() {
 		// Stop listening
 		telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
+		if (con != null) {
+			unbindService(con);
+			con = null;
+			Log.d(LOG_TAG, "XiVO connection service released");
+		} else {
+			Log.d(LOG_TAG, "XiVO connection service not binded");
+		}
 		super.onDestroy();
 	}
 	

@@ -22,4 +22,5 @@ interface IXivoConnectionService {
     void hangup();
     void transfer(String number);
     void atxfer(String number);
+    boolean killDialer();
 }
