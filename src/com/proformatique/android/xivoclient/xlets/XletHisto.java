@@ -87,6 +87,8 @@ public class XletHisto extends XivoActivity {
 		filter.addAction(Constants.ACTION_LOAD_HISTORY_LIST);
 		registerReceiver(receiver, new IntentFilter(filter));
 		registerForContextMenu(lv);
+		
+		registerButtons();
 	}
 	
 	@Override

@@ -157,7 +157,8 @@ public class XivoActivity extends Activity implements OnClickListener {
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.statusContact:
-			Toast.makeText(this, "Status button clicked", Toast.LENGTH_LONG).show();
+			if (!this.getClass().getName().equals(HomeActivity.class.getName()))
+				startActivity(new Intent(this, HomeActivity.class));
 			break;
 		case R.id.identityClickZone:
 			startActivity(new Intent(this, XletIdentityStateList.class));
