@@ -113,4 +113,5 @@
     <string name="default_hint_longname">Away</string>
     <string name="xivo_phone_type_lbl">XiVO</string>
     <string name="binding">Binding</string>
+    <string name="time_unit_seconds">sec</string>
 </resources>

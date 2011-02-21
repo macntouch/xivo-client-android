@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="45dp"
-    android:orientation="horizontal">
-
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="45dp"
+  android:orientation="horizontal">
+  <TextView
     android:layout_width="120dp"
     android:layout_height="wrap_content"
     android:id="@+id/history_fullname"
@@ -13,13 +12,14 @@
     android:textSize="14sp"
     android:maxLines="2"
     android:ellipsize="end"
-    android:text="number">
-</TextView>
-<ImageView android:id="@+id/callStatus"
+    android:gravity="left"
+    android:text="number" />
+  <ImageView
+    android:id="@+id/callStatus"
     android:layout_width="30dp"
     android:layout_height="30dp"
-    android:layout_gravity="center_vertical" />
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:gravity="center_vertical" />
+  <TextView
     android:layout_width="90dp"
     android:layout_height="wrap_content"
     android:id="@+id/history_date"
@@ -27,17 +27,24 @@
     android:textSize="14sp"
     android:maxLines="2"
     android:ellipsize="end"
-    android:text="date">
-</TextView>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="60dp"
+    android:gravity="center"
+    android:text="date" />
+  <TextView
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:id="@+id/history_duration"
     android:padding="1dp"
     android:textSize="14sp"
     android:maxLines="1"
-    android:ellipsize="end"
     android:singleLine="true"
-    android:text="duration">
-</TextView>
+    android:gravity="right"
+    android:layout_gravity="right"
+    android:text="0" />
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:paddingLeft="5dp"
+    android:text="@string/time_unit_seconds"
+    android:gravity="right"
+    android:layout_gravity="right" />
 </LinearLayout>
