@@ -96,6 +96,10 @@ public class XivoActivity extends Activity implements OnClickListener {
 		
 		settings = PreferenceManager.getDefaultSharedPreferences(this);
 		
+		if (settings.getString("login", "").equals("")
+				|| settings.getString("server_adress", "").equals(""))
+			startActivity(new Intent(this, SettingsActivity.class));
+		
 		if (settings.getBoolean("use_fullscreen", false)) {
 			this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 					WindowManager.LayoutParams.FLAG_FULLSCREEN);
