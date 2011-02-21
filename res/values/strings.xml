@@ -56,7 +56,7 @@
     <string name="authenticating">Authenticating</string>
     <string name="json_exception">Internal error</string>
     <string name="algo_exception">Authentication failed: missing libraries</string>
-    <string name="login_ko">Authentication failed</string>
+    <string name="login_ko">Authentication error</string>
     <string name="binding_error">Failed to bind to the service</string>
     <string name="unhandled_click">Unhandled click</string>
     <string name="authentication_timeout">Authentication timedout</string>
