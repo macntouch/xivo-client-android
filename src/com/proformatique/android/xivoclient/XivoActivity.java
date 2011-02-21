@@ -212,9 +212,9 @@ public class XivoActivity extends Activity implements OnClickListener {
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		if (isXivoServiceRunning()) {
-			connectButton.setTitle("Disconnect");
+			connectButton.setTitle(R.string.disconnect);
 		} else {
-			connectButton.setTitle("Connect");
+			connectButton.setTitle(R.string.connect);
 		}
 		return true;
 	}
@@ -234,9 +234,15 @@ public class XivoActivity extends Activity implements OnClickListener {
 	}
 	
 	private void menuDisconnect() {
-		//disconnect();
-		HomeActivity.stopInCallScreenKiller(this);
-		stopXivoConnectionService();
+		if (isXivoServiceRunning()) {
+			HomeActivity.stopInCallScreenKiller(this);
+			stopXivoConnectionService();
+			con = null;
+		} else {
+			startXivoConnectionService();
+			bindXivoConnectionService();
+			HomeActivity.startInCallScreenKiller(this);
+		}
 	}
 	
 	private void menuAbout() {
