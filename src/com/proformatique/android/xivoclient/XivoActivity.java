@@ -19,6 +19,7 @@
 
 package com.proformatique.android.xivoclient;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -31,6 +32,7 @@ import com.proformatique.android.xivoclient.tools.GraphicsManager;
 import com.proformatique.android.xivoclient.xlets.XletIdentityStateList;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -86,6 +88,7 @@ public class XivoActivity extends Activity implements OnClickListener {
 	private ImageView statusButton;
 	private ProgressDialog dialog;
 	private FrameLayout status;
+	private MenuItem connectButton;
 	
 	/*
 	 * Activity lifecycle
@@ -201,14 +204,39 @@ public class XivoActivity extends Activity implements OnClickListener {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.menu_settings, menu);
-		MenuItem mi = menu.findItem(R.id.menu_disconnect);
-		mi.setVisible(true);
-		
+		connectButton = menu.findItem(R.id.menu_disconnect);
+		connectButton.setVisible(true);
 		return true;
 	}
 	
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		if (isXivoServiceRunning()) {
+			connectButton.setTitle("Disconnect");
+		} else {
+			connectButton.setTitle("Connect");
+		}
+		return true;
+	}
+	
+	private boolean isXivoServiceRunning() {
+		ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+		List<ActivityManager.RunningServiceInfo> rs = am.getRunningServices(100);
+		for (int i = 0; i < rs.size(); i++) {
+			ActivityManager.RunningServiceInfo info = rs.get(i);
+			if (info.service.getClassName().equals(XivoConnectionService.class.getName())) {
+				Log.d(TAG, "Running == true");
+				return true;
+			}
+		}
+		Log.d(TAG, "Running == false");
+		return false;
+	}
+	
 	private void menuDisconnect() {
-		disconnect();
+		//disconnect();
+		HomeActivity.stopInCallScreenKiller(this);
+		stopXivoConnectionService();
 	}
 	
 	private void menuAbout() {
@@ -248,6 +276,20 @@ public class XivoActivity extends Activity implements OnClickListener {
 		iStartXivoService.setClassName(Constants.PACK, XivoConnectionService.class.getName());
 		startService(iStartXivoService);
 		Log.d(TAG, "Starting XiVO connection service");
+	}
+	
+	/**
+	 * Stops the XivoConnectionService
+	 */
+	private void stopXivoConnectionService() {
+		try {
+			xivoConnectionService.disconnect();
+		} catch (RemoteException e) {}
+		releaseXivoConnectionService();
+		Intent iStopXivoService = new Intent();
+		iStopXivoService.setClassName(Constants.PACK, XivoConnectionService.class.getName());
+		stopService(iStopXivoService);
+		Log.d(TAG, "Stopping XiVO connection service");
 	}
 	
 	/**

@@ -313,13 +313,39 @@ public class XivoConnectionService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
+        stopThread();
+        if (networkConnection != null) {
+            try {
+                networkConnection.shutdownInput();
+                networkConnection.shutdownOutput();
+                networkConnection.close();
+                networkConnection = null;
+            } catch (IOException e) {
+                Log.d(TAG, "Could not shutdown the network connection properly");
+            }
+        }
         super.onDestroy();
+    }
+    
+    private void stopThread() {
+        cancel = true;
+        if (thread != null) {
+            Thread dead = thread;
+            thread = null;
+            dead.interrupt();
+        }
     }
     
     @Override
     public void onStart(Intent i, int startId) {
         super.onStart(i, startId);
         Log.d(TAG, "XiVO connection service started");
+    }
+    
+    @Override
+    public boolean onUnbind(Intent i) {
+        Log.d(TAG, "Unbind called");
+        return super.onUnbind(i);
     }
     
     @Override
@@ -370,21 +396,20 @@ public class XivoConnectionService extends Service {
     
     private int disconnectFromServer() {
         Log.d(TAG, "Disconnecting");
+        stopThread();
         if (networkConnection != null) {
             try {
                 networkConnection.shutdownOutput();
+                networkConnection.shutdownInput();
                 networkConnection.close();
                 networkConnection = null;
                 return Constants.OK;
             } catch (IOException e) {
-                return Constants.NO_NETWORK_AVAILABLE;
+                Log.d(TAG, "Failed to shutdown the network connection");
             }
         }
         resetState();
         authenticationComplete = false;
-        cancel = true;
-        if (thread != null)
-            thread.interrupt();
         return Constants.OK;
     }
     
@@ -496,6 +521,8 @@ public class XivoConnectionService extends Service {
      * @return
      */
     protected int parseIncomingJson(JSONObject line) {
+        if (cancel || line == null)
+            return NO_MESSAGE;
         try {
             String classRec = line.has("class") ? line.getString("class") : null;
             if (classRec == null)
