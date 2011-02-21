@@ -203,21 +203,20 @@ public class XivoConnectionService extends Service {
     
     private void transfer(String number) {
         Log.d(TAG, "Blind transfer to " + number);
-        if (!SettingsActivity.getUseMobile(this)) {
+        if (this.peerChannel != null) {
             String src = "chan:" + astId + "/" + xivoId + ":" + this.peerChannel;
             sendLine(JSONMessageFactory.createJsonTransfer("transfer", src, number).toString());
         } else {
-            Log.d(TAG, "Transfer from a mobile");
+            Log.d(TAG, "Cannot transfer from a null channel");
         }
     }
     
     private void atxfer(String number) {
-        Log.d(TAG, "Attended transfer to " + number);
-        if (!SettingsActivity.getUseMobile(this)) {
+        if (this.thisChannel != null) {
             String src = "chan:" + astId + "/" + xivoId + ":" + this.thisChannel;
             sendLine(JSONMessageFactory.createJsonTransfer("atxfer", src, number).toString());
         } else {
-            Log.d(TAG, "Atxfer from a mobile");
+            Log.d(TAG, "Cannot atxfer from a null of Local/ channel");
         }
     }
     
