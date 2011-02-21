@@ -179,10 +179,7 @@ public class XivoConnectionService extends Service {
         
         @Override
         public boolean hasChannels() throws RemoteException {
-            // TODO: Add cases when using mobile
-            if (!SettingsActivity.getUseMobile(XivoConnectionService.this))
-                return true;
-            return false;
+            return thisChannel != null && peerChannel != null;
         }
         
         @Override
