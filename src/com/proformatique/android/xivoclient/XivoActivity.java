@@ -69,6 +69,7 @@ import android.widget.Toast;
 public class XivoActivity extends Activity implements OnClickListener {
 	
 	private final static String TAG = "XivoActivity";
+	private static boolean askedToDisconnect = false;
 	
 	/*
 	 * Service
@@ -119,8 +120,10 @@ public class XivoActivity extends Activity implements OnClickListener {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		startXivoConnectionService();
-		bindXivoConnectionService();
+		if (!askedToDisconnect) {
+			startXivoConnectionService();
+			bindXivoConnectionService();
+		}
 	}
 	
 	@Override
@@ -217,11 +220,14 @@ public class XivoActivity extends Activity implements OnClickListener {
 	
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		if (isXivoServiceRunning()) {
-			connectButton.setTitle(R.string.disconnect);
-		} else {
-			connectButton.setTitle(R.string.connect);
-		}
+		try {
+			if (isXivoServiceRunning() && xivoConnectionService != null
+					&& xivoConnectionService.isAuthenticated()) {
+				connectButton.setTitle(R.string.disconnect);
+			} else {
+				connectButton.setTitle(R.string.connect);
+			}
+		} catch (RemoteException e) {}
 		return true;
 	}
 	
@@ -240,15 +246,20 @@ public class XivoActivity extends Activity implements OnClickListener {
 	}
 	
 	private void menuDisconnect() {
-		if (isXivoServiceRunning()) {
-			HomeActivity.stopInCallScreenKiller(this);
-			stopXivoConnectionService();
-			con = null;
-		} else {
-			startXivoConnectionService();
-			bindXivoConnectionService();
-			HomeActivity.startInCallScreenKiller(this);
-		}
+		try {
+			if (isXivoServiceRunning() && xivoConnectionService != null
+					&& xivoConnectionService.isAuthenticated()) {
+				askedToDisconnect = true;
+				HomeActivity.stopInCallScreenKiller(this);
+				stopXivoConnectionService();
+				con = null;
+			} else {
+				askedToDisconnect = false;
+				startXivoConnectionService();
+				bindXivoConnectionService();
+				HomeActivity.startInCallScreenKiller(this);
+			}
+		} catch (RemoteException e) {}
 	}
 	
 	private void menuAbout() {
