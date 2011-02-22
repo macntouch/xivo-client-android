@@ -1,13 +1,15 @@
 package com.proformatique.android.xivoclient.service;
 
+import android.content.Context;
+
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.proformatique.android.xivoclient.SettingsActivity;
-
-import android.content.Context;
 
 public class JSONParserHelper {
 	
@@ -36,7 +38,34 @@ public class JSONParserHelper {
 		}
 		return comm;
 	}
-	
+    
+    /**
+     * Returns a list of comms containing the user's mobile number as calleridnum in a of
+     * List<JSONObject> returns an empty List when no comms match the number
+     * @param context
+     * @param line -- JSON line
+     * @return List
+     */
+    public static List<JSONObject> getMyComms(Context context, JSONObject line) {
+        try {
+            JSONObject jComms = line.getJSONObject("status").getJSONObject("comms");
+            List<JSONObject> commList = new ArrayList<JSONObject>(jComms.length());
+            String number = SettingsActivity.getMobileNumber(context);
+            String key = null;
+            @SuppressWarnings("unchecked")
+            Iterator<String> iter = jComms.keys();
+            while (iter.hasNext()) {
+                key = iter.next();
+                if (jComms.getJSONObject(key).getString("calledidnum").equals(number)) {
+                    commList.add(jComms.getJSONObject(key));
+                }
+            }
+            return commList;
+        } catch (JSONException e) {
+            return new ArrayList<JSONObject>();
+        }
+    }
+    
 	/**
 	 * Parses a phone update and retuns the calleridnum
 	 * @param line
