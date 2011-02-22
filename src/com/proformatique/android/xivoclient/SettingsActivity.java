@@ -19,7 +19,6 @@
 
 package com.proformatique.android.xivoclient;
 
-import com.proformatique.android.xivoclient.service.JsonLoopListener;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.content.Context;
@@ -98,12 +97,6 @@ public class SettingsActivity extends PreferenceActivity{
 						editor.commit();
 						
 					}
-				} else if (key.equals(USE_MOBILE_OPTION)) {
-					JsonLoopListener.setUseMobile(getUseMobile(getApplicationContext()));
-					if (getUseMobile(getApplicationContext()))
-						JsonLoopListener.setMobileNumber(getMobileNumber(getApplicationContext()));
-				} else if (key.equals(MOBILE_PHONE_NUMBER)) {
-					JsonLoopListener.setMobileNumber(getMobileNumber(getApplicationContext()));
 				}
 			}
 		});
