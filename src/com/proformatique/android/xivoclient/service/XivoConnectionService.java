@@ -18,7 +18,6 @@ import org.json.JSONObject;
 
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.SettingsActivity;
-import com.proformatique.android.xivoclient.XivoNotification;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.JSONMessageFactory;
 
@@ -56,7 +55,6 @@ public class XivoConnectionService extends Service {
     private String astId = null;
     private String userId = null;
     private String fullname = null;
-    private XivoNotification xivoNotif = null;
     private List<HashMap<String, String>> usersList = null;
     private int[] mwi = new int[3];
     private JSONArray capalist = null;
@@ -1068,9 +1066,6 @@ public class XivoConnectionService extends Service {
             if (jCapa.has("capapresence")) {
                 parseCapapresence(jCapa.getJSONObject("capapresence"));
             }
-            
-            xivoNotif = new XivoNotification(getApplicationContext());
-            xivoNotif.createNotification();
         } catch (JSONException e) {
             return Constants.JSON_POPULATE_ERROR;
         }
@@ -1150,7 +1145,6 @@ public class XivoConnectionService extends Service {
         authenticationComplete = false;
         sessionId = null;
         astId = null;
-        xivoNotif = null;
         usersList = null;
         
     }
