@@ -329,7 +329,11 @@ public class XivoActivity extends Activity implements OnClickListener {
      */
     private void releaseXivoConnectionService() {
         if (con != null) {
-            unbindService(con);
+            try {
+                unbindService(con);
+            } catch (IllegalArgumentException e) {
+                // Can't unbind if not binded.
+            }
             con = null;
             Log.d(TAG, "XiVO connection service released");
         } else {
