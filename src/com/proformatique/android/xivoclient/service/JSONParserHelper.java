@@ -1,7 +1,6 @@
 package com.proformatique.android.xivoclient.service;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -13,8 +12,6 @@ import org.json.JSONObject;
 import com.proformatique.android.xivoclient.SettingsActivity;
 
 public class JSONParserHelper {
-    
-    private final static String TAG = "JSON parser";
 	
 	/**
 	 * Searches a phone update message and returns the comm that contains the user's mobile number
