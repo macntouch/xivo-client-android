@@ -1,6 +1,7 @@
 package com.proformatique.android.xivoclient.service;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -12,6 +13,8 @@ import org.json.JSONObject;
 import com.proformatique.android.xivoclient.SettingsActivity;
 
 public class JSONParserHelper {
+    
+    private final static String TAG = "JSON parser";
 	
 	/**
 	 * Searches a phone update message and returns the comm that contains the user's mobile number
@@ -56,13 +59,42 @@ public class JSONParserHelper {
             Iterator<String> iter = jComms.keys();
             while (iter.hasNext()) {
                 key = iter.next();
-                if (jComms.getJSONObject(key).getString("calledidnum").equals(number)) {
+                if (jComms.getJSONObject(key).getString("calleridnum").equals(number)) {
                     commList.add(jComms.getJSONObject(key));
                 }
             }
             return commList;
         } catch (JSONException e) {
             return new ArrayList<JSONObject>();
+        }
+    }
+    
+    /**
+     * Returns the status of a comm
+     * @param comm
+     * @return status
+     */
+    public static String getChannelStatus(JSONObject comm) {
+        try {
+            return comm.getString("status");
+        } catch (JSONException e) {
+            return "";
+        }
+    }
+    
+    /**
+     * Checks if the channels in this comm matches the supplied thisChannel and peerChannel
+     * @param comm
+     * @param thisChannel
+     * @param peerChannel
+     * @return true if they match
+     */
+    public static boolean channelsMatch(JSONObject comm, String thisChannel, String peerChannel) {
+        try {
+            return comm.getString("thischannel").equals(thisChannel)
+                    && comm.getString("peerchannel").equals(peerChannel);
+        } catch (JSONException e) {
+            return false;
         }
     }
     
