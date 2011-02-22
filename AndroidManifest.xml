@@ -19,7 +19,8 @@
         android:label="@string/app_name"
         android:theme="@android:style/Theme.NoTitleBar">
     <activity android:name=".HomeActivity"
-        android:label="@string/app_name">
+        android:label="@string/app_name"
+        android:launchMode="singleTask">
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
@@ -33,23 +34,26 @@
             android:label="@string/attended_transfer_title"
             android:theme="@android:style/Theme.Dialog"/>-->
         <activity android:name=".SettingsActivity"
-                  android:label="@string/app_name">
+                  android:label="@string/app_name"
+                  android:launchMode="singleTask">
         </activity>
         <activity android:name=".AboutActivity"
-                  android:label="@string/app_name">
+                  android:label="@string/app_name"
+                  android:launchMode="singleTask">
         </activity>
         <activity android:name=".xlets.XletIdentityStateList"
-                  android:label="@string/app_name"/>
+                  android:label="@string/app_name"
+                  android:launchMode="singleTask"/>
         <activity
             android:name=".xlets.XletDialer"
             android:label="@string/xlet_dial_label"
             android:description="@string/xlet_dial_desc"
-            android:launchMode="standard"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait"/>
         <activity android:name=".xlets.XletContactSearch"
                   android:label="@string/xlet_search_label"
                   android:description="@string/xlet_search_desc"
-                  android:launchMode="standard">
+                  android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="xivo.intent.action.LOAD_USER_LIST" />
             </intent-filter>
@@ -57,14 +61,15 @@
         <activity android:name=".xlets.XletServices"
                   android:label="@string/xlet_features_label"
                   android:description="@string/xlet_features_desc"
-                  android:launchMode="standard">
+                  android:launchMode="singleTask">
         </activity>
         <activity android:name=".xlets.XletHisto"
                   android:label="@string/xlet_history_label"
                   android:description="@string/xlet_history_desc"
-                  android:launchMode="standard"/>
+                  android:launchMode="singleTask"/>
         <activity android:name=".xlets.XletServicesAsk" 
-            android:theme="@android:style/Theme.Dialog"/>
+            android:theme="@android:style/Theme.Dialog"
+            android:launchMode="singleTask"/>
         <!-- Services -->
         <service android:name=".service.XivoConnectionService"/>
         <service android:name=".InCallScreenKiller"></service>
