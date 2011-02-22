@@ -70,7 +70,7 @@ public class InCallScreenKiller extends Service {
 				Log.d(LOG_TAG, "onCallStateChanged called");
 				try {
 					if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
-						if (xivoConnectionService.killDialer()) {
+						if (xivoConnectionService != null && xivoConnectionService.killDialer()) {
 							Intent i = new Intent(getApplicationContext(), XletDialer.class);
 							i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 							try {
