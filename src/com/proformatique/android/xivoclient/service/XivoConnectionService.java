@@ -68,6 +68,7 @@ public class XivoConnectionService extends Service {
     private String lastCalledNumber = null;
     private String thisChannel = null;
     private String peerChannel = null;
+    private String oldChannel = null;
     
     // Messages from the loop to the handler
     private final static int NO_MESSAGE = 0;
@@ -251,6 +252,8 @@ public class XivoConnectionService extends Service {
             channel = "chan:" + astId + "/" + xivoId + ":" + thisChannel;
         } else if (peerChannel != null){
             channel = "chan:" + astId + "/" + xivoId + ":" + peerChannel;
+        } else if (oldChannel != null) {
+            channel = "chan:" + astId + "/" + xivoId + ":" + oldChannel;
         } else {
             Log.d(TAG, "Can't hang-up from the service");
             return;
@@ -818,6 +821,9 @@ public class XivoConnectionService extends Service {
         try {
             if (comm.has("thischannel")) {
                 if (myChannel) {
+                    if (thisChannel != null && !thisChannel.startsWith("Local/")) {
+                        oldChannel = thisChannel;
+                    }
                     thisChannel = comm.getString("thischannel");
                 } else {
                     peerChannel = comm.getString("thischannel");
@@ -828,6 +834,9 @@ public class XivoConnectionService extends Service {
                 if (myChannel) {
                     peerChannel = comm.getString("peerchannel");
                 } else {
+                    if (thisChannel != null && !thisChannel.startsWith("Local/")) {
+                        oldChannel = thisChannel;
+                    }
                     thisChannel = comm.getString("peerchannel");
                 }
             }
@@ -843,9 +852,7 @@ public class XivoConnectionService extends Service {
     private void parseMyMobilePhoneUpdate(JSONObject line) {
         Log.d(TAG, "Parsing my mobile phone update");
         List<JSONObject> comms = JSONParserHelper.getMyComms(this, line);
-        Log.d(TAG, "Comms size: " + comms.size());
         for (JSONObject comm: comms) {
-            Log.d(TAG, "Checking a comm:\n" + comm.toString());
             String status = JSONParserHelper.getChannelStatus(comm);
             if (status.equals("ringing") || status.equals("linked-called")) {
                 updateChannels(comm, false);
@@ -1395,6 +1402,9 @@ public class XivoConnectionService extends Service {
      * Clears all channels
      */
     private void resetChannels() {
+        if (thisChannel != null && !thisChannel.startsWith("Local/")) {
+            oldChannel = thisChannel;
+        }
         thisChannel = null;
         peerChannel = null;
         lastCalledNumber = null;
