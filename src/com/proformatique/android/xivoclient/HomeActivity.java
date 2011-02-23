@@ -72,6 +72,7 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Thread.setDefaultUncaughtExceptionHandler(new FileDumpExceptionHandler());
         super.onCreate(savedInstanceState);
         Log.i(LOG_TAG, "onCreate");
         setContentView(R.layout.home_activity);
