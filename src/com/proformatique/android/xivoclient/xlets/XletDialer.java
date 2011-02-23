@@ -125,6 +125,12 @@ public class XletDialer extends XivoActivity {
     
     public void clickOnCall(View v) {
         try {
+            if (xivoConnectionService != null &&
+                    (!xivoConnectionService.isConnected()
+                            || !xivoConnectionService.isAuthenticated())) {
+                Toast.makeText(this, R.string.service_not_ready, Toast.LENGTH_SHORT).show();
+                return;
+            }
             if (xivoConnectionService.isOnThePhone()) {
                 if (phoneNumber.getText().toString().equals("")) {
                     xivoConnectionService.hangup();

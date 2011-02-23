@@ -60,6 +60,7 @@
     <string name="binding_error">Failed to bind to the service</string>
     <string name="unhandled_click">Unhandled click</string>
     <string name="authentication_timeout">Authentication timedout</string>
+    <string name="service_not_ready">XiVO service not ready</string>
    
     <!-- Others -->
     <string name="context_action">Action</string>
