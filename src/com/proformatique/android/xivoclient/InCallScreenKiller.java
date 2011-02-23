@@ -83,9 +83,6 @@ public class InCallScreenKiller extends Service {
 							startActivity(i);
 						} else {
 							Log.d(LOG_TAG, "Not killing this dialer.");
-							Log.d(LOG_TAG, "Using mobile: " + SettingsActivity.getUseMobile(
-									InCallScreenKiller.this));
-							Log.d(LOG_TAG, "hasChannels: " + xivoConnectionService.hasChannels());
 						}
 					}
 				} catch (RemoteException e) {
