@@ -18,6 +18,7 @@ import org.json.JSONObject;
 
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.SettingsActivity;
+import com.proformatique.android.xivoclient.XivoNotification;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.JSONMessageFactory;
 
@@ -34,6 +35,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 public class XivoConnectionService extends Service {
@@ -47,6 +49,7 @@ public class XivoConnectionService extends Service {
     private Thread thread = null;
     private long bytesReceived = 0L;
     private boolean cancel = false;
+    private XivoNotification xivoNotif;
     
     // Informations that is relevant to a specific connection
     private boolean authenticationComplete = false;
@@ -159,7 +162,7 @@ public class XivoConnectionService extends Service {
         @Override
         public boolean isOnThePhone() throws RemoteException {
             if (SettingsActivity.getUseMobile(XivoConnectionService.this)) {
-                return thisChannel != null && peerChannel != null;
+                return XivoConnectionService.this.isMobileOffHook();
             } else {
                 return phoneStatusCode == null ? false : !phoneStatusCode.equals(
                         Constants.AVAILABLE_STATUS_CODE);
@@ -204,6 +207,21 @@ public class XivoConnectionService extends Service {
         }
     };
     
+    /**
+     * Check the phone status returns true if it's off hook
+     * @return
+     */
+    private boolean isMobileOffHook() {
+        switch (((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE))
+                .getCallState()) {
+        case TelephonyManager.CALL_STATE_OFFHOOK:
+        case TelephonyManager.CALL_STATE_RINGING:
+            return true;
+        default:
+            return false;
+        }
+    }
+    
     private void transfer(String number) {
         Log.d(TAG, "Blind transfer to " + number);
         if (this.peerChannel != null) {
@@ -229,10 +247,13 @@ public class XivoConnectionService extends Service {
      */
     private void hangup() {
         String channel = null;
-        if (thisChannel != null && !thisChannel.contains("Local/")) {
+        if (thisChannel != null) {
             channel = "chan:" + astId + "/" + xivoId + ":" + thisChannel;
-        } else {
+        } else if (peerChannel != null){
             channel = "chan:" + astId + "/" + xivoId + ":" + peerChannel;
+        } else {
+            Log.d(TAG, "Can't hang-up from the service");
+            return;
         }
         sendLine(JSONMessageFactory.createJsonHangupObject(this, channel).toString());
     }
@@ -307,6 +328,8 @@ public class XivoConnectionService extends Service {
         super.onCreate();
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         phoneStatusLongname = getString(R.string.default_hint_longname);
+        xivoNotif = new XivoNotification(getApplicationContext());
+        xivoNotif.createNotification();
     }
     
     @Override
@@ -323,6 +346,7 @@ public class XivoConnectionService extends Service {
                 Log.d(TAG, "Could not shutdown the network connection properly");
             }
         }
+        xivoNotif.removeNotif();
         super.onDestroy();
     }
     
@@ -783,39 +807,71 @@ public class XivoConnectionService extends Service {
     }
     
     /**
+     * Updates channels from the information contained in a given comm.
+     * @param comm -- JSON comm
+     * @param myChannel 
+     *      True if the update is coming for my userid
+     *      False if it's the peer's update
+     */
+    private void updateChannels(final JSONObject comm, final boolean myChannel) {
+        Log.d(TAG, "Updating channels");
+        try {
+            if (comm.has("thischannel")) {
+                if (myChannel) {
+                    thisChannel = comm.getString("thischannel");
+                } else {
+                    peerChannel = comm.getString("thischannel");
+                }
+            }
+            
+            if (comm.has("peerchannel")) {
+                if (myChannel) {
+                    peerChannel = comm.getString("peerchannel");
+                } else {
+                    thisChannel = comm.getString("peerchannel");
+                }
+            }
+        } catch (JSONException e) {
+            // We can ignore this exception since we tested with .has before getting
+        }
+    }
+    
+    /**
      * Parses phones for a call from the user's mobile
      * @param line
      */
     private void parseMyMobilePhoneUpdate(JSONObject line) {
         Log.d(TAG, "Parsing my mobile phone update");
-        JSONObject comm = JSONParserHelper.getMyComm(this, line);
-        
-        try {
-            // Since we are looking at the peer's phone update we save peer into this and vice versa
-            if (comm.has("peerchannel"))
-                this.thisChannel = comm.getString("peerchannel");
-            if (comm.has("thischannel"))
-                this.peerChannel = comm.getString("thischannel");
-        } catch (JSONException e) {}
-        
-        try {
-            if (line.getJSONObject("status").getJSONObject("hintstatus")
-                    .getString("code").equals(Constants.CALLING_STATUS_CODE)) {
-                Intent iOnGoingCall = new Intent();
-                iOnGoingCall.setAction(Constants.ACTION_ONGOING_CALL);
-                sendBroadcast(iOnGoingCall);
+        List<JSONObject> comms = JSONParserHelper.getMyComms(this, line);
+        Log.d(TAG, "Comms size: " + comms.size());
+        for (JSONObject comm: comms) {
+            Log.d(TAG, "Checking a comm:\n" + comm.toString());
+            String status = JSONParserHelper.getChannelStatus(comm);
+            if (status.equals("ringing") || status.equals("linked-called")) {
+                updateChannels(comm, false);
             }
-        } catch (JSONException e) {}
-        
-        try {
-            if (comm.getString("status").equals("hangup")) {
-                resetChannels();
-                Intent iStatusUpdate = new Intent();
-                iStatusUpdate.setAction(Constants.ACTION_CALL_PROGRESS);
-                iStatusUpdate.putExtra("code", Constants.AVAILABLE_STATUS_CODE);
-                sendBroadcast(iStatusUpdate);
+        }
+        for (JSONObject comm: comms) {
+            if (JSONParserHelper.channelsMatch(comm, peerChannel, thisChannel)) {
+                try {
+                    if (line.getJSONObject("status").getJSONObject("hintstatus")
+                            .getString("code").equals(Constants.CALLING_STATUS_CODE)) {
+                        Intent iOnGoingCall = new Intent();
+                        iOnGoingCall.setAction(Constants.ACTION_ONGOING_CALL);
+                        sendBroadcast(iOnGoingCall);
+                    }
+                } catch (JSONException e) {
+                    // Nothing to do if there's no status or hintstatus
+                }
+                if (JSONParserHelper.getChannelStatus(comm).equals("hangup")) {
+                    resetChannels();
+                    Intent iStatusUpdate = new Intent();
+                    iStatusUpdate.setAction(Constants.ACTION_CALL_PROGRESS);
+                    iStatusUpdate.putExtra("code", Constants.AVAILABLE_STATUS_CODE);
+                    sendBroadcast(iStatusUpdate);
+                }
             }
-        } catch (JSONException e) {}
+        }
     }
     
     /**

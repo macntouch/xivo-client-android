@@ -58,7 +58,6 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
      */
     private GridView grid;
     private Handler handler = new Handler();
-    private XivoNotification xivoNotif;
     
     /*
      * xlets
@@ -87,8 +86,6 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
                 new XletObserver());
         grid.setAdapter(xletsAdapter);
         grid.setOnItemClickListener(this);
-        xivoNotif = new XivoNotification(getApplicationContext());
-        xivoNotif.createNotification();
     }
     
     @Override
@@ -104,7 +101,6 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
         Log.d(LOG_TAG, "DESTROY");
         stopInCallScreenKiller(this);
         super.onDestroy();
-        xivoNotif.removeNotif();
     }
     
     /**
