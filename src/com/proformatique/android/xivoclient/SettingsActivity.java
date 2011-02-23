@@ -22,6 +22,7 @@ package com.proformatique.android.xivoclient;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
@@ -98,6 +99,9 @@ public class SettingsActivity extends PreferenceActivity{
 						
 					}
 				}
+				Intent prefChanged = new Intent();
+				prefChanged.setAction(Constants.ACTION_SETTINGS_CHANGE);
+				sendBroadcast(prefChanged);
 			}
 		});
 	}

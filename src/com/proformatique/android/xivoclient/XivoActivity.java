@@ -30,6 +30,8 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -70,6 +72,7 @@ public class XivoActivity extends Activity implements OnClickListener {
     
     private final static String TAG = "XivoActivity";
     private static boolean askedToDisconnect = false;
+    private static boolean wrongLoginInfo = false;
     
     /*
      * Service
@@ -115,13 +118,16 @@ public class XivoActivity extends Activity implements OnClickListener {
         filter.addAction(Constants.ACTION_MY_STATUS_CHANGE);
         filter.addAction(Constants.ACTION_MY_PHONE_CHANGE);
         filter.addAction(Constants.ACTION_UPDATE_IDENTITY);
+        filter.addAction(Constants.ACTION_SETTINGS_CHANGE);
+        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        filter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
         registerReceiver(receiver, new IntentFilter(filter));
     }
     
     @Override
     protected void onResume() {
         super.onResume();
-        if (!askedToDisconnect) {
+        if (!askedToDisconnect && !wrongLoginInfo) {
             startXivoConnectionService();
             bindXivoConnectionService();
         }
@@ -616,14 +622,17 @@ public class XivoActivity extends Activity implements OnClickListener {
             case Constants.LOGIN_PASSWORD_ERROR:
                 Toast.makeText(XivoActivity.this, getString(R.string.bad_login_password),
                         Toast.LENGTH_LONG).show();
+                wrongLoginInfo = true;
                 break;
             case Constants.CTI_SERVER_NOT_SUPPORTED:
                 Toast.makeText(XivoActivity.this, getString(R.string.cti_not_supported),
                         Toast.LENGTH_LONG).show();
+                wrongLoginInfo = true;
                 break;
             case Constants.VERSION_MISMATCH:
                 Toast.makeText(XivoActivity.this, getString(R.string.version_mismatch),
                         Toast.LENGTH_LONG).show();
+                wrongLoginInfo = true;
                 break;
             case Constants.ALGORITH_NOT_AVAILABLE:
                 Toast.makeText(XivoActivity.this, getString(R.string.algo_exception),
@@ -697,10 +706,12 @@ public class XivoActivity extends Activity implements OnClickListener {
             case Constants.NOT_CTI_SERVER:
                 Toast.makeText(XivoActivity.this, getString(R.string.not_cti_server),
                         Toast.LENGTH_LONG).show();
+                wrongLoginInfo = true;
                 break;
             case Constants.BAD_HOST:
                 Toast.makeText(XivoActivity.this, getString(R.string.bad_host), Toast.LENGTH_LONG)
                         .show();
+                wrongLoginInfo = true;
                 break;
             case Constants.NO_NETWORK_AVAILABLE:
                 Toast.makeText(XivoActivity.this, getString(R.string.no_web_connection),
@@ -728,13 +739,18 @@ public class XivoActivity extends Activity implements OnClickListener {
         
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(Constants.ACTION_MY_STATUS_CHANGE)) {
+            final String action = intent.getAction();
+            if (action.equals(Constants.ACTION_MY_STATUS_CHANGE)) {
                 updateMyStatus(intent.getLongExtra("id", 0));
-            } else if (intent.getAction().equals(Constants.ACTION_MY_PHONE_CHANGE)) {
+            } else if (action.equals(Constants.ACTION_MY_PHONE_CHANGE)) {
                 updatePhoneStatus(intent.getStringExtra("color"),
                         intent.getStringExtra("longname"));
-            } else if (intent.getAction().equals(Constants.ACTION_UPDATE_IDENTITY)) {
+            } else if (action.equals(Constants.ACTION_UPDATE_IDENTITY)) {
                 updateFullname(intent.getStringExtra("fullname"));
+            } else if (action.equals(Constants.ACTION_SETTINGS_CHANGE)
+                    || action.equals(ConnectivityManager.CONNECTIVITY_ACTION)
+                    || action.equals(WifiManager.WIFI_STATE_CHANGED_ACTION)) {
+                wrongLoginInfo = false;
             }
         }
     }
