@@ -114,11 +114,7 @@ public class XletDialer extends XivoActivity {
 		try {
 			if (xivoConnectionService.isOnThePhone()) {
 				if (phoneNumber.getText().toString().equals("")) {
-					if (xivoConnectionService.hasChannels()) {
-					    xivoConnectionService.hangup();
-					} else {
-					    finish();
-					}
+					xivoConnectionService.hangup();
 				} else {
 					Log.d(LOG_TAG, "Transfering to " + phoneNumber.getText());
 					final String num = phoneNumber.getText().toString();
