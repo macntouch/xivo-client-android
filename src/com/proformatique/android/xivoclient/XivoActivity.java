@@ -137,6 +137,10 @@ public class XivoActivity extends Activity implements OnClickListener {
     protected void onDestroy() {
         releaseXivoConnectionService();
         unregisterReceiver(receiver);
+        if (dialog != null) {
+            dialog.dismiss();
+            dialog = null;
+        }
         super.onDestroy();
     }
     
