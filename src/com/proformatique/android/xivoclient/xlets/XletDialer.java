@@ -30,6 +30,7 @@ import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -63,7 +64,7 @@ public class XletDialer extends XivoActivity {
 		phoneNumber = (EditText) findViewById(R.id.number);
 		dialButton = (ImageButton) findViewById(R.id.dialButton);
 		
-		setPhoneOffHook(false);
+		refreshHangupButton();
 		
 		Bundle bundle = getIntent().getExtras();
 		if (bundle != null) {
@@ -95,6 +96,7 @@ public class XletDialer extends XivoActivity {
 		} catch (RemoteException e) {
 			newVoiceMail(false);
 		}
+		refreshHangupButton();
 		super.onBindingComplete();
 	}
 	
@@ -112,7 +114,11 @@ public class XletDialer extends XivoActivity {
 		try {
 			if (xivoConnectionService.isOnThePhone()) {
 				if (phoneNumber.getText().toString().equals("")) {
-					xivoConnectionService.hangup();
+					if (xivoConnectionService.hasChannels()) {
+					    xivoConnectionService.hangup();
+					} else {
+					    finish();
+					}
 				} else {
 					Log.d(LOG_TAG, "Transfering to " + phoneNumber.getText());
 					final String num = phoneNumber.getText().toString();
@@ -137,7 +143,11 @@ public class XletDialer extends XivoActivity {
 											xivoConnectionService.atxfer(num);
 											break;
 										case 2:
-											xivoConnectionService.hangup();
+										    if (xivoConnectionService.hasChannels()) {
+										        xivoConnectionService.hangup();
+										    } else {
+										        finish();
+										    }
 											break;
 										default:
 											Log.d(LOG_TAG, "Canceling");
@@ -176,7 +186,38 @@ public class XletDialer extends XivoActivity {
 				dialog.dismiss();
 		}
 	}
-	
+    
+    /**
+     * Check if our phone is Off hook and if we have active channels
+     */
+    private void refreshHangupButton() {
+        if (SettingsActivity.getUseMobile(this)) {
+            setPhoneOffHook(isMobileOffHook());
+        } else {
+            try {
+                setPhoneOffHook(xivoConnectionService != null
+                        && xivoConnectionService.hasChannels());
+            } catch (RemoteException e) {
+                setPhoneOffHook(false);
+            }
+        }
+    }
+    
+    /**
+     * Check the phone status returns true if it's off hook
+     * @return
+     */
+    private boolean isMobileOffHook() {
+        switch (((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE))
+                .getCallState()) {
+        case TelephonyManager.CALL_STATE_OFFHOOK:
+        case TelephonyManager.CALL_STATE_RINGING:
+            return true;
+        default:
+            return false;
+        }
+    }
+    
 	/**
 	 * Creating a AsyncTask to run call process
 	 * @author cquaquin
@@ -271,13 +312,13 @@ public class XletDialer extends XivoActivity {
 		public void onReceive(Context context, Intent intent) {
 			if (intent.getAction().equals(Constants.ACTION_HANGUP)) {
 				Log.d(LOG_TAG, "Hangup action received");
-				setPhoneOffHook(false);
+				refreshHangupButton();
 				phoneNumber.setEnabled(true);
 				if (dialog != null)
 					dialog.dismiss();
 			} else if (intent.getAction().equals(Constants.ACTION_OFFHOOK)) {
 				Log.d(LOG_TAG, "OffHook action received");
-				setPhoneOffHook(true);
+				refreshHangupButton();
 				phoneNumber.setEnabled(true);
 				phoneNumber.setText("");
 				if (dialog != null)
@@ -289,7 +330,7 @@ public class XletDialer extends XivoActivity {
 			} else if (intent.getAction().equals(Constants.ACTION_CALL_PROGRESS)) {
 				String status = intent.getStringExtra("status");
 				String code = intent.getStringExtra("code");
-				setPhoneOffHook(!code.equals(Constants.AVAILABLE_STATUS_CODE));
+				refreshHangupButton();
 				if (code.equals(Constants.CALLING_STATUS_CODE)) {
 					try {
 						if (xivoConnectionService.hasChannels()) {
@@ -310,11 +351,8 @@ public class XletDialer extends XivoActivity {
 					callTask.progress = status;
 					callTask.onProgressUpdate();
 				}
-				if (code.equals(Constants.AVAILABLE_STATUS_CODE)) {
-					setPhoneOffHook(false);
-				}
 			} else if (intent.getAction().equals(Constants.ACTION_ONGOING_CALL)) {
-				setPhoneOffHook(true);
+				refreshHangupButton();
 				if (dialog != null) {
 					dialog.dismiss();
 					dialog = null;
