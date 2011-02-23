@@ -33,6 +33,7 @@ public class FileDumpExceptionHandler implements UncaughtExceptionHandler {
         traceDirectory.mkdirs();
         File outputFile = new File(traceDirectory, file);
         try {
+            outputFile.createNewFile();
             FileOutputStream fos = new FileOutputStream(outputFile);
             fos.write(stacktrace.getBytes());
             fos.flush();
