@@ -30,6 +30,7 @@ import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -54,6 +55,8 @@ public class XletDialer extends XivoActivity {
 	Dialog dialog;
 	
 	private CallTask callTask = null;
+	private PhoneStateListener phoneStateListener = null;
+	private TelephonyManager telephonyManager = null;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +75,16 @@ public class XletDialer extends XivoActivity {
 			callTask = new CallTask();
 			callTask.execute();
 		}
-		
+        
+        phoneStateListener = new PhoneStateListener() {
+            public void onCallStateChanged(int state, String incomingNumber) {
+                refreshHangupButton();
+            }
+        };
+        
+        telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+        
 		receiver = new IncomingReceiver();
 		
 		/**
@@ -204,8 +216,9 @@ public class XletDialer extends XivoActivity {
      * @return
      */
     private boolean isMobileOffHook() {
-        switch (((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE))
-                .getCallState()) {
+        if (telephonyManager == null)
+            return false;
+        switch (telephonyManager.getCallState()) {
         case TelephonyManager.CALL_STATE_OFFHOOK:
         case TelephonyManager.CALL_STATE_RINGING:
             return true;
@@ -442,6 +455,7 @@ public class XletDialer extends XivoActivity {
 	@Override
 	protected void onDestroy() {
 		unregisterReceiver(receiver);
+		telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
 		if (dialog != null)
 			dialog.dismiss();
 		super.onDestroy();
