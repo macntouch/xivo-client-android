@@ -58,7 +58,6 @@
     <string name="algo_exception">Authentication failed: missing libraries</string>
     <string name="login_ko">Authentication error</string>
     <string name="binding_error">Failed to bind to the service</string>
-    <string name="unhandled_click">Unhandled click</string>
     <string name="authentication_timeout">Authentication timedout</string>
     <string name="service_not_ready">XiVO service not ready</string>
     <string name="connection_timedout">Connection timed out</string>
