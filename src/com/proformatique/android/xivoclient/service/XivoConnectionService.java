@@ -463,8 +463,8 @@ public class XivoConnectionService extends Service {
                 inputBuffer.close();
                 inputBuffer = null;
              } catch (IOException e) {
-                Log.d(TAG, "Failed to close the inputBuffer");
-                }
+                 Log.d(TAG, "Failed to close the inputBuffer");
+             }
         }
         return Constants.OK;
     }
