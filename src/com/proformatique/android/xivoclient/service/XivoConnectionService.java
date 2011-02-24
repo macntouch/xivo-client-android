@@ -23,12 +23,16 @@ import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.JSONMessageFactory;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -50,6 +54,7 @@ public class XivoConnectionService extends Service {
     private long bytesReceived = 0L;
     private boolean cancel = false;
     private XivoNotification xivoNotif;
+    private IntentReceiver receiver = null;
     
     // Informations that is relevant to a specific connection
     private boolean authenticationComplete = false;
@@ -69,6 +74,7 @@ public class XivoConnectionService extends Service {
     private String thisChannel = null;
     private String peerChannel = null;
     private String oldChannel = null;
+    private boolean wrongHostPort = false;
     
     // Messages from the loop to the handler
     private final static int NO_MESSAGE = 0;
@@ -329,6 +335,12 @@ public class XivoConnectionService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        receiver = new IntentReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Constants.ACTION_SETTINGS_CHANGE);
+        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        filter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
+        registerReceiver(receiver, new IntentFilter(filter));
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         phoneStatusLongname = getString(R.string.default_hint_longname);
         xivoNotif = new XivoNotification(getApplicationContext());
@@ -350,6 +362,7 @@ public class XivoConnectionService extends Service {
             }
         }
         xivoNotif.removeNotif();
+        unregisterReceiver(receiver);
         super.onDestroy();
     }
     
@@ -384,6 +397,7 @@ public class XivoConnectionService extends Service {
      * @return connection status
      */
     private int connectToServer() {
+        if (wrongHostPort) return Constants.BAD_HOST;
         authenticationComplete = false;
         int port = Constants.XIVO_DEFAULT_PORT;
         try {
@@ -406,9 +420,10 @@ public class XivoConnectionService extends Service {
             networkConnection = new Socket(host, port);
         } catch (UnknownHostException e) {
             Log.d(TAG, "Unknown host " + host);
+            wrongHostPort = true;
             return Constants.BAD_HOST;
         } catch (IOException e) {
-            return Constants.BAD_HOST;
+            return Constants.NO_NETWORK_AVAILABLE;
         }
         bytesReceived = 0L;
         try {
@@ -1441,5 +1456,19 @@ public class XivoConnectionService extends Service {
         thisChannel = null;
         peerChannel = null;
         lastCalledNumber = null;
+    }
+    
+    private class IntentReceiver extends BroadcastReceiver {
+        
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (action.equals(Constants.ACTION_SETTINGS_CHANGE)
+                    || action.equals(ConnectivityManager.CONNECTIVITY_ACTION)
+                    || action.equals(WifiManager.WIFI_STATE_CHANGED_ACTION)) {
+                wrongHostPort = false;
+            }
+        }
+        
     }
 }
