@@ -19,6 +19,8 @@
     android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
   <uses-permission
     android:name="android.permission.DISABLE_KEYGUARD" />
+  <uses-permission
+    android:name="android.permission.CALL_PHONE" />
   <supports-screens
     android:largeScreens="true"
     android:normalScreens="true"
