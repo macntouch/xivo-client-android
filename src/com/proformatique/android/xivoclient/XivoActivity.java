@@ -50,8 +50,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.proformatique.android.xivoclient.service.CapapresenceProvider;
@@ -163,7 +161,15 @@ public class XivoActivity extends Activity implements OnClickListener {
         } catch (RemoteException e) {
             Log.d(TAG, "Could not set my state id");
         }
-        launchCTIConnection();
+        try {
+            waitForConnection();
+        } catch (InterruptedException e) {
+            Log.d(TAG, "Connection interrupted");
+            e.printStackTrace();
+        } catch (TimeoutException e) {
+            Log.d(TAG, "Connection timedout");
+            e.printStackTrace();
+        }
     }
     
     /*
@@ -327,14 +333,6 @@ public class XivoActivity extends Activity implements OnClickListener {
     }
     
     /**
-     * Makes sure the service is authenticated and that data are loaded
-     */
-    private void launchCTIConnection() {
-        waitForConnection();
-        waitForAuthentication();
-    }
-    
-    /**
      * Releases the service before leaving
      */
     private void releaseXivoConnectionService() {
@@ -353,8 +351,11 @@ public class XivoActivity extends Activity implements OnClickListener {
     
     /**
      * Starts a connection task and wait until it's connected
+     * 
+     * @throws TimeoutException
+     * @throws InterruptedException
      */
-    private void waitForConnection() {
+    private void waitForConnection() throws InterruptedException, TimeoutException {
         try {
             if (xivoConnectionService != null && xivoConnectionService.isConnected()
                     && xivoConnectionService.isAuthenticated())
@@ -364,42 +365,27 @@ public class XivoActivity extends Activity implements OnClickListener {
         }
         connectTask = new ConnectTask();
         connectTask.execute();
-        try {
-            connectTask.get(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            e.printStackTrace();
-        }
     }
     
     /**
      * Starts an authentication task and wait until it's authenticated
+     * 
+     * @throws TimeoutException
+     * @throws InterruptedException
      */
-    private void waitForAuthentication() {
+    private void waitForAuthentication() throws InterruptedException, TimeoutException {
         try {
             if (!(xivoConnectionService.isConnected())) {
                 Log.d(TAG, "Cannot start authenticating if not connected");
                 return;
             }
-            if (xivoConnectionService.isAuthenticated()) return;
+            if (xivoConnectionService.isAuthenticated())
+                return;
         } catch (RemoteException e) {
             dieOnBindFail();
         }
         authenticationTask = new AuthenticationTask();
         authenticationTask.execute();
-        try {
-            authenticationTask.get(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            Toast.makeText(this, getString(R.string.authentication_timeout), Toast.LENGTH_SHORT)
-                    .show();
-        }
     }
     
     /**
@@ -553,7 +539,7 @@ public class XivoActivity extends Activity implements OnClickListener {
     
     /**
      * Kills the app and display a message when the binding to the service
-     * cannot be astablished ___This should NOT happen___
+     * cannot be established ___This should NOT happen___
      */
     private void dieOnBindFail() {
         Toast.makeText(this, getString(R.string.binding_error), Toast.LENGTH_LONG).show();
@@ -698,6 +684,15 @@ public class XivoActivity extends Activity implements OnClickListener {
             }
             switch (result) {
             case Constants.CONNECTION_OK:
+                try {
+                    waitForAuthentication();
+                } catch (InterruptedException e) {
+                    Log.d(TAG, "Authentication interrupted");
+                    e.printStackTrace();
+                } catch (TimeoutException e) {
+                    Log.d(TAG, "Authentication timedout");
+                    e.printStackTrace();
+                }
                 break;
             case Constants.REMOTE_EXCEPTION:
                 Toast.makeText(XivoActivity.this, getString(R.string.remote_exception),
