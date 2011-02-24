@@ -199,9 +199,7 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
             
             if (position >= availXlets.size()) {
                 Log.d(LOG_TAG, "Tried to acces an xlet over the array size");
-                return v;
-            }
-            if (availXlets.get(position).equals("dial")) {
+            } else if (availXlets.get(position).equals("dial")) {
                 tv.setText(getString(R.string.dialer_btn_lbl));
                 iv.setImageResource(R.drawable.ic_menu_call);
             } else if (availXlets.get(position).equals("search")) {
