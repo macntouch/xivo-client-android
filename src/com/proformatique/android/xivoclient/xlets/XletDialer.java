@@ -42,6 +42,7 @@ import android.widget.Toast;
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.SettingsActivity;
 import com.proformatique.android.xivoclient.XivoActivity;
+import com.proformatique.android.xivoclient.tools.AndroidTools;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 public class XletDialer extends XivoActivity {
@@ -113,6 +114,14 @@ public class XletDialer extends XivoActivity {
         super.onBindingComplete();
     }
     
+    private boolean isServiceReady() {
+        try {
+            return xivoConnectionService != null && xivoConnectionService.isAuthenticated();
+        } catch (RemoteException e) {
+            return false;
+        }
+    }
+    
     private void newVoiceMail(final boolean status) {
         ImageButton vm_button = (ImageButton) findViewById(R.id.voicemailButton);
         vm_button.setEnabled(true);
@@ -123,63 +132,129 @@ public class XletDialer extends XivoActivity {
         }
     }
     
-    public void clickOnCall(View v) {
-        try {
-            if (xivoConnectionService != null &&
-                    (!xivoConnectionService.isConnected()
-                            || !xivoConnectionService.isAuthenticated())) {
-                Toast.makeText(this, R.string.service_not_ready, Toast.LENGTH_SHORT).show();
+    /**
+     * Hang up a call using the most appropriate method
+     */
+    private void hangup() {
+        if (SettingsActivity.getUseMobile(this)) {
+            if (isMobileOffHook()) {
+                if (AndroidTools.hangup(this)) return;
+            } else {
                 return;
             }
-            if (xivoConnectionService.isOnThePhone()) {
-                if (phoneNumber.getText().toString().equals("")) {
+        }
+        try {
+            if (xivoConnectionService != null && xivoConnectionService.isAuthenticated()) {
+                if (xivoConnectionService.isOnThePhone()) {
                     xivoConnectionService.hangup();
-                } else {
-                    Log.d(LOG_TAG, "Transfering to " + phoneNumber.getText());
-                    final String num = phoneNumber.getText().toString();
-                    final String[] menu = new String[] {
-                            String.format(getString(R.string.transfer_number), num),
-                            String.format(getString(R.string.atxfer_number), num),
-                            getString(R.string.hangup), getString(R.string.cancel_label) };
-                    new AlertDialog.Builder(this).setTitle(getString(R.string.context_action))
-                            .setItems(menu, new DialogInterface.OnClickListener() {
-                                
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    try {
-                                        switch (which) {
-                                        case 0:
-                                            xivoConnectionService.transfer(num);
-                                            break;
-                                        case 1:
-                                            xivoConnectionService.atxfer(num);
-                                            break;
-                                        case 2:
-                                            if (xivoConnectionService.hasChannels()) {
-                                                xivoConnectionService.hangup();
-                                            } else {
-                                                finish();
-                                            }
-                                            break;
-                                        default:
-                                            Log.d(LOG_TAG, "Canceling");
-                                            break;
-                                        }
-                                    } catch (RemoteException e) {
-                                        Log.d(LOG_TAG, "Binding error");
-                                    }
-                                }
-                            }).show();
                 }
-            } else {
-                if (!("").equals(phoneNumber.getText().toString())) {
-                    callTask = new CallTask();
-                    callTask.execute();
-                }
+                return;
             }
         } catch (RemoteException e) {
-            Toast.makeText(this, getString(R.string.remote_exception), Toast.LENGTH_SHORT).show();
+            // Handled with other failure after the catch
         }
+        Log.d(LOG_TAG, "Service not ready to hang-up");
+        Toast.makeText(this, getString(R.string.service_not_ready), Toast.LENGTH_SHORT).show();
+    }
+    
+    /**
+     * Starts a new CallTask
+     */
+    private void call() {
+        if (isServiceReady()) {
+            callTask = new CallTask();
+            callTask.execute();
+        } else {
+            Toast.makeText(this, getString(R.string.service_not_ready), Toast.LENGTH_SHORT).show();
+            Log.d(LOG_TAG, "Calling before the service is ready, aborting");
+        }
+    }
+    
+    private void transfer() {
+        if (isServiceReady()) {
+            try {
+                xivoConnectionService.transfer(phoneNumber.getText().toString());
+                return;
+            } catch (RemoteException e) {
+                // Checked by isServiceReady
+                e.printStackTrace();
+            }
+        }
+        Toast.makeText(this, getString(R.string.service_not_ready), Toast.LENGTH_SHORT).show();
+    }
+    
+    private void atxfer() {
+        if (isServiceReady()) {
+            try {
+                xivoConnectionService.atxfer(phoneNumber.getText().toString());
+                return;
+            } catch (RemoteException e) {
+                // Checked by isServiceReady
+                e.printStackTrace();
+            }
+        }
+        Toast.makeText(this, getString(R.string.service_not_ready), Toast.LENGTH_SHORT).show();
+    }
+    
+    public void clickOnCall(View v) {
+        if (phoneNumber.getText().toString().equals("")) {
+            hangup();
+        } else {
+            callOrTransfer();
+        }
+    }
+    
+    private void callOrTransfer() {
+        // Not on the phone, call
+        if (SettingsActivity.getUseMobile(this)) {
+            if (!isMobileOffHook()) {
+                call();
+                return;
+            }
+        } else {
+            try {
+                if (isServiceReady() && !xivoConnectionService.isOnThePhone()) {
+                    call();
+                    return;
+                }
+            } catch (RemoteException e) {
+                Toast.makeText(this, getString(R.string.service_not_ready),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+        // On the phone
+        if (!(isServiceReady())) {
+            Log.d(LOG_TAG, "Trying to call or transfer before the service is ready");
+            Toast.makeText(this, getString(R.string.service_not_ready), Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        final String num = phoneNumber.getText().toString();
+        final String[] menu = new String[] {
+                String.format(getString(R.string.transfer_number), num),
+                String.format(getString(R.string.atxfer_number), num),
+                getString(R.string.hangup), getString(R.string.cancel_label) };
+        new AlertDialog.Builder(this).setTitle(getString(R.string.context_action))
+                .setItems(menu, new DialogInterface.OnClickListener() {
+                    
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                        case 0:
+                            transfer();
+                            break;
+                        case 1:
+                            atxfer();
+                            break;
+                        case 2:
+                            hangup();
+                            break;
+                        default:
+                            Log.d(LOG_TAG, "Canceling");
+                            break;
+                        }
+                    }
+                }).show();
     }
     
     /**
