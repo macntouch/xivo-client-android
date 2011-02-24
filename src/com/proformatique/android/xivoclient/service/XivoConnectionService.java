@@ -585,6 +585,8 @@ public class XivoConnectionService extends Service {
             // Sheets are ignored at the moment
             else if (classRec.equals("sheet"))
                 return NO_MESSAGE;
+            else if (classRec.equals("meetme"))
+                return parseMeetme(line);
             else {
                 Log.d(TAG, "Unknown classrec: " + classRec);
                 return UNKNOWN;
@@ -594,6 +596,17 @@ public class XivoConnectionService extends Service {
             e.printStackTrace();
             return JSON_EXCEPTION;
         }
+    }
+    
+    private int parseMeetme(JSONObject line) {
+        try {
+            if (line.getString("function").equals("update")) {
+                loadList("users");
+            }
+        } catch (JSONException e) {
+            // no function
+        }
+        return NO_MESSAGE;
     }
     
     @SuppressWarnings("unchecked")
@@ -908,6 +921,8 @@ public class XivoConnectionService extends Service {
             }
         }
         
+        // logAllPhones(jAllPhones);
+        
         /**
          * For each users in the userslist, find the corresponding phone and update the user's
          * status
@@ -928,6 +943,24 @@ public class XivoConnectionService extends Service {
         } while (user.moveToNext());
         user.close();
         return PHONES_LOADED;
+    }
+    
+    @SuppressWarnings("unused")
+    private void logAllPhones(JSONArray list) {
+        try {
+            for (int i = 0; i < list.length(); i++) {
+                Log.d(TAG, "XiVO #" + i + "\n---------------------------------------");
+                JSONObject xivo = list.getJSONObject(i);
+                @SuppressWarnings("unchecked")
+                Iterator<String> iterator = xivo.keys();
+                while (iterator.hasNext()) {
+                    String key = iterator.next();
+                    Log.d(TAG, key + ": " + xivo.getJSONObject(key).toString());
+                }
+            }
+        } catch (JSONException e) {
+            Log.d(TAG, "JSON exception while logging phones");
+        }
     }
     
     private void setPhoneForUser(Cursor user, JSONObject jPhone) {
