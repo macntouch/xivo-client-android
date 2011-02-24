@@ -36,6 +36,7 @@ public final class Constants {
 	public static final int CONNECTION_FAILED = -10;
 	public static final int ALGORITH_NOT_AVAILABLE = -11;
 	public static final int REMOTE_EXCEPTION = -12;
+	public static final int CONNECTION_TIMEDOUT = -13;
 	public static final int LOGIN_KO = 0;
 	public static final int OK = 1;
 	public static final int CONNECTION_OK = 2;

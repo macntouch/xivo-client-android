@@ -61,6 +61,7 @@
     <string name="unhandled_click">Unhandled click</string>
     <string name="authentication_timeout">Authentication timedout</string>
     <string name="service_not_ready">XiVO service not ready</string>
+    <string name="connection_timedout">Connection timed out</string>
    
     <!-- Others -->
     <string name="context_action">Action</string>

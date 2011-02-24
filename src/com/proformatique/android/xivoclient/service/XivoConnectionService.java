@@ -423,7 +423,7 @@ public class XivoConnectionService extends Service {
             wrongHostPort = true;
             return Constants.BAD_HOST;
         } catch (IOException e) {
-            return Constants.NO_NETWORK_AVAILABLE;
+            return Constants.CONNECTION_TIMEDOUT;
         }
         bytesReceived = 0L;
         try {

@@ -45,6 +45,7 @@
     <string name="call_no_phone_number">Appel impossible : pas de numéro disponible</string>
     <string name="calling">Appel en cours du numéro %s ...</string>
     <string name="forced_disconnect">Déconnexion forcée</string>
+    <string name="connection_timedout">Temps de connection dépasé</string>
     
     <!-- Others -->
     <string name="context_action">Action</string>

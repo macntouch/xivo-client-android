@@ -712,6 +712,10 @@ public class XivoActivity extends Activity implements OnClickListener {
                 Toast.makeText(XivoActivity.this, getString(R.string.no_web_connection),
                         Toast.LENGTH_LONG).show();
                 break;
+            case Constants.CONNECTION_TIMEDOUT:
+                Toast.makeText(XivoActivity.this, getString(R.string.connection_timedout),
+                        Toast.LENGTH_SHORT).show();
+                break;
             default:
                 Toast.makeText(XivoActivity.this, getString(R.string.connection_failed),
                         Toast.LENGTH_LONG).show();
