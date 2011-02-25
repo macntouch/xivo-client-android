@@ -1290,7 +1290,7 @@ public class XivoConnectionService extends Service {
         
         JSONObject ctiAnswer = readJsonObjectCTI();
         try {
-            if (ctiAnswer != null & ctiAnswer.has("class") &&
+            if (ctiAnswer != null && ctiAnswer.has("class") &&
                     ctiAnswer.getString("class").equals(Constants.XIVO_PASSWORD_OK)) {
                 capalist = ctiAnswer.getJSONArray("capalist");
                 return Constants.OK;
