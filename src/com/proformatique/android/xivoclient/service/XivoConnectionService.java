@@ -249,7 +249,7 @@ public class XivoConnectionService extends Service {
     }
     
     /**
-     * Hang-up the current call
+     * Hang-up the current call if AndroidTools.hangup did not work
      * If we have a Local/ channel we hang-up our peer's channel
      */
     private void hangup() {
@@ -624,7 +624,6 @@ public class XivoConnectionService extends Service {
         return NO_MESSAGE;
     }
     
-    @SuppressWarnings("unchecked")
     private int parseFeatures(JSONObject line) {
         Log.d(TAG, "Parsing features:\n" + line.toString());
         String[] features = {"enablednd", "callrecord", "incallfilter", "enablevoicemail",
@@ -632,7 +631,8 @@ public class XivoConnectionService extends Service {
         try {
             JSONObject payload = line.getJSONObject("payload");
             if (line.has("function") && line.getString("function").equals("put")) {
-                for (Iterator<String> keyIter = payload.keys(); keyIter.hasNext(); ) {
+                for (@SuppressWarnings("unchecked") Iterator<String> keyIter = payload.keys();
+                        keyIter.hasNext(); ) {
                     String feature = keyIter.next();
                     ContentValues values = new ContentValues();
                     values.put(CapaservicesProvider.ENABLED,
@@ -664,6 +664,7 @@ public class XivoConnectionService extends Service {
             }
         } catch (JSONException e) {
             Log.d(TAG, "Could not parse features");
+            return JSON_EXCEPTION;
         }
         return FEATURES_LOADED;
     }
@@ -686,6 +687,7 @@ public class XivoConnectionService extends Service {
             }
         } catch (JSONException e) {
             Log.d(TAG, "Could not parse incoming history payload");
+            return JSON_EXCEPTION;
         }
         return HISTORY_LOADED;
     }
@@ -705,7 +707,6 @@ public class XivoConnectionService extends Service {
             }
         } catch (JSONException e) {
             Log.d(TAG, "Phone class without function");
-            return NO_MESSAGE;
         }
         return NO_MESSAGE;
     }
@@ -734,7 +735,9 @@ public class XivoConnectionService extends Service {
                     try {
                         sendMyNewHintstatus(line.getJSONObject("status")
                                 .getJSONObject("hintstatus"));
-                    } catch (JSONException e) {}
+                    } catch (JSONException e) {
+                        // No update to send if there's no status or hintstatus
+                    }
                 }
             }
         }
@@ -750,7 +753,6 @@ public class XivoConnectionService extends Service {
                         line.getJSONObject("status").getJSONObject("hintstatus"));
         } catch (JSONException e) {
             Log.d(TAG, "Could not find and astid and an id for this update");
-            return NO_MESSAGE;
         }
         return NO_MESSAGE;
     }
@@ -803,7 +805,6 @@ public class XivoConnectionService extends Service {
      * Parses phones update for a call from the user (not using his mobile)
      * @param line
      */
-    @SuppressWarnings("unchecked")
     private void parseMyPhoneUpdate(JSONObject line) {
         Log.d(TAG, "Parsing my phone update");
         /*
@@ -824,7 +825,8 @@ public class XivoConnectionService extends Service {
          */
         try {
             JSONObject comms = line.getJSONObject("status").getJSONObject("comms");
-            for (Iterator<String> iterKey = comms.keys(); iterKey.hasNext(); ) {
+            for (@SuppressWarnings("unchecked") Iterator<String> iterKey = comms.keys();
+                    iterKey.hasNext(); ) {
                 String key = iterKey.next();
                 JSONObject comm = comms.getJSONObject(key);
                 if (comm.has("thischannel"))
@@ -914,8 +916,7 @@ public class XivoConnectionService extends Service {
      * @param line
      * @return Message to the handler
      */
-	@SuppressWarnings("unchecked")
-	private int parsePhoneList(JSONObject line) {
+    private int parsePhoneList(JSONObject line) {
         Log.d(TAG, "Parsing phone list");
         if (line.has("payload") == false)
             return NO_MESSAGE;
@@ -927,7 +928,8 @@ public class XivoConnectionService extends Service {
             return JSON_EXCEPTION;
         }
         JSONArray jAllPhones = new JSONArray();
-        for (Iterator<String> keyIter = payloads.keys(); keyIter.hasNext(); ) {
+        for (@SuppressWarnings("unchecked") Iterator<String> keyIter = payloads.keys();
+                keyIter.hasNext(); ) {
             try {
                 jAllPhones.put(payloads.getJSONObject(keyIter.next()));
             } catch (JSONException e) {
