@@ -36,6 +36,7 @@ public class SettingsActivity extends PreferenceActivity{
 	private final static String USE_MOBILE_OPTION = "use_mobile_number";
 	private final static String START_ON_BOOT = "start_on_boot";
 	private final static String KEEP_RUNNING = "keep_running";
+	private final static String ALWAYS_CONNECTED = "always_connected";
 	private final static boolean USE_MOBILE_DEFAULT = false;
 	private static final String MOBILE_PHONE_NUMBER = "mobile_number";
 	private static final String DEFAULT_MOBILE_PHONE_NUMBER = "";
@@ -152,6 +153,11 @@ public class SettingsActivity extends PreferenceActivity{
     
     public static boolean getStartOnBoot(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context)
-        .getBoolean(START_ON_BOOT, false);
+                .getBoolean(START_ON_BOOT, false);
+    }
+    
+    public static boolean getAlwaysConnected(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+                .getBoolean(ALWAYS_CONNECTED, false);
     }
 }

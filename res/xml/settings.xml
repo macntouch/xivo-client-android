@@ -32,10 +32,14 @@
       android:defaultValue="false"
       android:summary="@string/service_bandwidth_warning" />
     <CheckBoxPreference
+        android:key="always_connected"
+        android:title="@string/always_connected"
+        android:defaultValue="false"
+        android:summary="@string/service_bandwidth_warning" />
+    <CheckBoxPreference
       android:key="keep_running"
       android:title="@string/keep_running"
-      android:defaultValue="false"
-      android:summary="@string/service_bandwidth_warning" />
+      android:defaultValue="false" />
   </PreferenceCategory>
   <PreferenceCategory
     android:title="@string/calling_settings">

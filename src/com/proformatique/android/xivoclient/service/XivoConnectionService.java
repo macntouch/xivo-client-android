@@ -57,7 +57,6 @@ public class XivoConnectionService extends Service {
     private IntentReceiver receiver = null;
     
     // Informations that is relevant to a specific connection
-    private boolean authenticationComplete = false;
     private String sessionId = null;
     private String xivoId = null;
     private String astId = null;
@@ -75,6 +74,10 @@ public class XivoConnectionService extends Service {
     private String peerChannel = null;
     private String oldChannel = null;
     private boolean wrongHostPort = false;
+    private boolean connected = false;
+    private boolean connecting = false;
+    private boolean authenticated = false;
+    private boolean wrongLoginInfo = false;
     
     // Messages from the loop to the handler
     private final static int NO_MESSAGE = 0;
@@ -95,7 +98,7 @@ public class XivoConnectionService extends Service {
         
         @Override
         public int connect() throws RemoteException {
-            return connectToServer();
+            return XivoConnectionService.this.connect();
         }
         
         @Override
@@ -116,7 +119,7 @@ public class XivoConnectionService extends Service {
         
         @Override
         public boolean isAuthenticated() throws RemoteException {
-            return authenticationComplete;
+            return authenticated;
         }
         
         @Override
@@ -349,16 +352,7 @@ public class XivoConnectionService extends Service {
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
         stopThread();
-        if (networkConnection != null) {
-            try {
-                networkConnection.shutdownInput();
-                networkConnection.shutdownOutput();
-                networkConnection.close();
-                networkConnection = null;
-            } catch (IOException e) {
-                Log.d(TAG, "Could not shutdown the network connection properly");
-            }
-        }
+        connectionCleanup();
         if (xivoNotif != null) xivoNotif.removeNotif();
         unregisterReceiver(receiver);
         super.onDestroy();
@@ -379,6 +373,68 @@ public class XivoConnectionService extends Service {
         Log.d(TAG, "XiVO connection service started");
         xivoNotif = new XivoNotification(getApplicationContext());
         xivoNotif.createNotification();
+        if (SettingsActivity.getAlwaysConnected(this)) {
+            while (!connected && !authenticated && !wrongHostPort && !wrongLoginInfo) {
+                autoLogin();
+            }
+        }
+    }
+    
+    private void autoLogin() {
+        Log.d(TAG, "Trying to auto-logon");
+        if (!connected) connect();
+        //if (connected && !authenticated) authenticate();
+        //if (connected && authenticated) refreshLists();
+    }
+    
+    private int connect() {
+        connected = false;
+        if (connecting == true) return Constants.ALREADY_CONNECTING;
+        connecting = true;
+        int res = connectToServer();
+        connecting = false;
+        switch (res) {
+        case Constants.CONNECTION_OK:
+            connected = true;
+            break;
+        case Constants.BAD_HOST:
+            wrongHostPort = true;
+            break;
+        default:
+            connectionCleanup();
+        }
+        return res;
+    }
+    
+    /**
+     * Clean up the network connection and input/output streams
+     */
+    private void connectionCleanup() {
+        connected = false;
+        authenticated = false;
+        if (inputBuffer != null) {
+            try {
+                inputBuffer.close();
+            } catch (IOException e) {
+                Log.d(TAG, "inputBuffer was already closed");
+            }
+            inputBuffer = null;
+        }
+        if (networkConnection != null) {
+            try {
+                try {
+                    networkConnection.shutdownOutput();
+                    networkConnection.shutdownInput();
+                } catch (IOException e) {
+                    Log.d(TAG, "Input and output were already closed");
+                }
+                networkConnection.close();
+                networkConnection = null;
+            } catch (IOException e) {
+                Log.e(TAG, "Error while cleaning up the network connection");
+                e.printStackTrace();
+            }
+        }
     }
     
     @Override
@@ -398,7 +454,7 @@ public class XivoConnectionService extends Service {
      */
     private int connectToServer() {
         if (wrongHostPort) return Constants.BAD_HOST;
-        authenticationComplete = false;
+        authenticated = false;
         int port = Constants.XIVO_DEFAULT_PORT;
         try {
             port = Integer.parseInt(prefs.getString("server_port",
@@ -445,27 +501,8 @@ public class XivoConnectionService extends Service {
     private int disconnectFromServer() {
         Log.d(TAG, "Disconnecting");
         stopThread();
-        if (networkConnection != null) {
-            try {
-                networkConnection.shutdownOutput();
-                networkConnection.shutdownInput();
-                networkConnection.close();
-                networkConnection = null;
-                return Constants.OK;
-            } catch (IOException e) {
-                Log.d(TAG, "Failed to shutdown the network connection");
-            }
-        }
+        connectionCleanup();
         resetState();
-        authenticationComplete = false;
-        if (inputBuffer != null) {
-             try {
-                inputBuffer.close();
-                inputBuffer = null;
-             } catch (IOException e) {
-                 Log.d(TAG, "Failed to close the inputBuffer");
-             }
-        }
         return Constants.OK;
     }
     
@@ -1151,7 +1188,7 @@ public class XivoConnectionService extends Service {
                     jsonCapas.getString("class").equals(Constants.XIVO_LOGIN_CAPAS_OK)) {
                 res = parseCapas(jsonCapas);
                 if (res != Constants.OK) return res;
-                authenticationComplete = true;
+                authenticated = true;
                 return Constants.AUTHENTICATION_OK;
             } else {
                 return parseLoginError(jsonCapas);
@@ -1256,7 +1293,7 @@ public class XivoConnectionService extends Service {
      */
     private void resetState() {
         xivoId = null;
-        authenticationComplete = false;
+        authenticated = false;
         sessionId = null;
         astId = null;
         usersList = null;
@@ -1352,7 +1389,7 @@ public class XivoConnectionService extends Service {
      */
     private int parseLoginError(JSONObject jsonObject) {
         try {
-            if (jsonObject.has("errorstring")) {
+            if (jsonObject != null && jsonObject.has("errorstring")) {
                 String error = jsonObject.getString("errorstring");
                 if (error.equals(Constants.XIVO_LOGIN_PASSWORD)
                         || error.equals(Constants.XIVO_LOGIN_UNKNOWN_USER)) {
@@ -1362,12 +1399,13 @@ public class XivoConnectionService extends Service {
                 } else if (error.equals(Constants.XIVO_VERSION_NOT_COMPATIBLE)) {
                     return Constants.VERSION_MISMATCH;
                 }
-            } else if (jsonObject.has("class") && jsonObject.getString("class").equals("disconn")) {
+            } else if (jsonObject != null && jsonObject.has("class")
+                    && jsonObject.getString("class").equals("disconn")) {
                 lostConnectionEvent();
                 return Constants.FORCED_DISCONNECT;
             }
         } catch (JSONException e) {
-            Log.d(TAG, "JSON exception while parsing error strin");
+            Log.d(TAG, "JSON exception while parsing error string");
         }
         return Constants.LOGIN_KO;
     }
@@ -1405,11 +1443,10 @@ public class XivoConnectionService extends Service {
      * Handles a connection lost
      */
     private void lostConnectionEvent() {
-        resetState();
+        Log.d(TAG, "lostConnectionEvent");
         disconnectFromServer();
         // TODO: Send an intent to warn activities about the connection lost
         // TODO: try to reconnect
-        authenticationComplete = false;
     }
     
     /**

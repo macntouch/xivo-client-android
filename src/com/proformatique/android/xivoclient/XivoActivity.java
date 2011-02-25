@@ -79,6 +79,7 @@ public class XivoActivity extends Activity implements OnClickListener {
     private XivoConnectionServiceConnection con = null;
     protected IXivoConnectionService xivoConnectionService = null;
     private ConnectTask connectTask = null;
+    private DisconnectTask disconnectTask = null;
     private AuthenticationTask authenticationTask = null;
     private IntentReceiver receiver = null;
     
@@ -312,15 +313,8 @@ public class XivoActivity extends Activity implements OnClickListener {
      * Stops the XivoConnectionService
      */
     protected void stopXivoConnectionService() {
-        try {
-            xivoConnectionService.disconnect();
-        } catch (RemoteException e) {
-            // If we are not binded we don't need to unbind anyway
-        }
-        releaseXivoConnectionService();
-        Intent iStopXivoService = new Intent();
-        iStopXivoService.setClassName(Constants.PACK, XivoConnectionService.class.getName());
-        stopService(iStopXivoService);
+        disconnectTask = new DisconnectTask();
+        disconnectTask.execute();
         Log.d(TAG, "Stopping XiVO connection service");
     }
     
@@ -722,6 +716,41 @@ public class XivoActivity extends Activity implements OnClickListener {
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
+            }
+        }
+    }
+    
+    private class DisconnectTask extends AsyncTask<Void, Void, Integer> {
+        
+        @Override
+        protected void onPreExecute() {
+            if (dialog == null)
+                dialog = new ProgressDialog(XivoActivity.this);
+            dialog.setCancelable(true);
+            dialog.setMessage(getString(R.string.disconnecting));
+            dialog.show();
+        }
+        
+        @Override
+        protected Integer doInBackground(Void... params) {
+            try {
+                if (xivoConnectionService != null) xivoConnectionService.disconnect();
+                releaseXivoConnectionService();
+                Intent iStopXivoService = new Intent();
+                iStopXivoService.setClassName(Constants.PACK, XivoConnectionService.class.getName());
+                stopService(iStopXivoService);
+            } catch (RemoteException e) {
+                Log.d(TAG, "Could not contact the xivo connection service");
+            }
+            return 0;
+        }
+        
+        @Override
+        protected void onPostExecute(Integer result) {
+            Log.d(TAG, "Disconnected");
+            if (dialog != null) {
+                dialog.dismiss();
+                dialog = null;
             }
         }
     }
