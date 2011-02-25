@@ -31,7 +31,11 @@
     <string name="attended_transfer_title">Attended transfer</string>
     <string name="blind_transfer_title">Blind transfer</string>
     <string name="hangup">Hang up</string>
-
+    <string name="start_on_boot">Start on boot</string>
+    <string name="service_settings_title">Background service</string>
+    <string name="keep_running">Keep service running</string>
+    <string name="service_bandwidth_warning">Will consume ALOT of energy and bandwidth</string>
+    
     <!-- Messages strings -->
     <string name="connection_failed">Connection failed</string>
     <string name="bad_host">Connection failed : bad server or port</string>
