@@ -1,6 +1,8 @@
 package com.proformatique.android.xivoclient.tools;
 
+import android.app.KeyguardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.RemoteException;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -19,8 +21,32 @@ public class AndroidTools {
     
     private final static String TAG = "XiVO android tools";
     
-    private AndroidTools() {
-    };
+    private AndroidTools() { }
+    
+    /**
+     * Shows an Activity over the Android dialer when receiving a call.
+     * 
+     * @param context
+     * @param cls   - The activity to start
+     * @param wait  - Time to wait before starting the new activity after answering
+     */
+    public static void showOverDialer(Context context, Class<?> cls, long wait) {
+        Intent i = new Intent(context, cls);
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (wait > 0L) {
+            try {
+                Thread.sleep(wait);
+            } catch (InterruptedException e) {
+                Log.d(TAG, "Interrupted before killing hiding the Android dialer");
+                e.printStackTrace();
+            }
+        }
+        final KeyguardManager.KeyguardLock kmkl =
+                ((KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE))
+                .newKeyguardLock("kCaller");
+        kmkl.disableKeyguard();
+        context.startActivity(i);
+    }
     
     /**
      * Hang-up the phone

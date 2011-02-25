@@ -21,10 +21,10 @@ package com.proformatique.android.xivoclient;
 
 import com.proformatique.android.xivoclient.service.IXivoConnectionService;
 import com.proformatique.android.xivoclient.service.XivoConnectionService;
+import com.proformatique.android.xivoclient.tools.AndroidTools;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.xlets.XletDialer;
 
-import android.app.KeyguardManager;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -59,8 +59,6 @@ public class InCallScreenKiller extends Service {
 	public void onCreate() {
 		super.onCreate();
 		telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-		KeyguardManager km = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
-		final KeyguardManager.KeyguardLock kmkl = km.newKeyguardLock("kCaller");
 		phoneStateListener = new PhoneStateListener() {
 			/**
 			 * Waits 2 seconds after answering a call and launch the XletsContainerTabActivity
@@ -71,16 +69,8 @@ public class InCallScreenKiller extends Service {
 				try {
 					if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
 						if (xivoConnectionService != null && xivoConnectionService.killDialer()) {
-							Intent i = new Intent(getApplicationContext(), XletDialer.class);
-							i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-							try {
-								Thread.sleep(2000);
-								kmkl.disableKeyguard();
-							} catch (Exception e) {
-								Log.d(LOG_TAG, "Exception: " + e);
-							}
-							Log.d(LOG_TAG, "Putting the android dialer screen in background");
-							startActivity(i);
+							AndroidTools.showOverDialer(getApplicationContext(),
+							            XletDialer.class, 2000);
 						} else {
 							Log.d(LOG_TAG, "Not killing this dialer.");
 						}
