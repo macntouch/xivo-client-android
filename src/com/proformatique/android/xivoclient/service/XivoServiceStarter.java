@@ -1,13 +1,11 @@
 package com.proformatique.android.xivoclient.service;
 
-import com.proformatique.android.xivoclient.tools.Constants;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.util.Log;
+
+import com.proformatique.android.xivoclient.SettingsActivity;
 
 public class XivoServiceStarter extends BroadcastReceiver {
     
@@ -16,8 +14,7 @@ public class XivoServiceStarter extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "Intent received");
-        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(context);
-        if (p.getBoolean(Constants.AUTO_START_SERVICE, false)) {
+        if (SettingsActivity.getStartOnBoot(context)) {
             Log.d(TAG, "Starting the XiVO service");
             Intent iServiceStarter = new Intent();
             iServiceStarter.setAction(XivoConnectionService.class.getName());

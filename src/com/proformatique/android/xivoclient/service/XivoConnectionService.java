@@ -343,8 +343,6 @@ public class XivoConnectionService extends Service {
         registerReceiver(receiver, new IntentFilter(filter));
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         phoneStatusLongname = getString(R.string.default_hint_longname);
-        xivoNotif = new XivoNotification(getApplicationContext());
-        xivoNotif.createNotification();
     }
     
     @Override
@@ -379,6 +377,8 @@ public class XivoConnectionService extends Service {
     public void onStart(Intent i, int startId) {
         super.onStart(i, startId);
         Log.d(TAG, "XiVO connection service started");
+        xivoNotif = new XivoNotification(getApplicationContext());
+        xivoNotif.createNotification();
     }
     
     @Override

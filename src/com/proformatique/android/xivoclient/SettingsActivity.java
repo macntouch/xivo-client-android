@@ -33,7 +33,6 @@ import android.view.WindowManager;
 
 public class SettingsActivity extends PreferenceActivity{
 	
-	private static final String LOG_TAG = "SETTINGS";
 	private final static String USE_MOBILE_OPTION = "use_mobile_number";
 	private final static String START_ON_BOOT = "start_on_boot";
 	private final static String KEEP_RUNNING = "keep_running";
@@ -149,5 +148,10 @@ public class SettingsActivity extends PreferenceActivity{
     public static boolean getKeepRunning(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(KEEP_RUNNING, false);
+    }
+    
+    public static boolean getStartOnBoot(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+        .getBoolean(START_ON_BOOT, false);
     }
 }
