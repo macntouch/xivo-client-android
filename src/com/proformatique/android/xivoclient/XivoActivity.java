@@ -610,6 +610,9 @@ public class XivoActivity extends Activity implements OnClickListener {
                 Toast.makeText(XivoActivity.this, getString(R.string.algo_exception),
                         Toast.LENGTH_LONG).show();
                 break;
+            case Constants.ALREADY_AUTHENTICATING:
+                Log.d(TAG, "Already authenticating");
+                break;
             default:
                 Log.e(TAG, "Unhandled result " + result);
                 Toast.makeText(XivoActivity.this, getString(R.string.login_ko), Toast.LENGTH_LONG)

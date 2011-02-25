@@ -77,6 +77,7 @@ public class XivoConnectionService extends Service {
     private boolean connected = false;
     private boolean connecting = false;
     private boolean authenticated = false;
+    private boolean authenticating = false;
     private boolean wrongLoginInfo = false;
     
     // Messages from the loop to the handler
@@ -114,7 +115,7 @@ public class XivoConnectionService extends Service {
         
         @Override
         public int authenticate() throws RemoteException {
-            return loginCTI();
+            return XivoConnectionService.this.authenticate();
         }
         
         @Override
@@ -383,8 +384,18 @@ public class XivoConnectionService extends Service {
     private void autoLogin() {
         Log.d(TAG, "Trying to auto-logon");
         if (!connected) connect();
-        //if (connected && !authenticated) authenticate();
+        if (connected && !authenticated) authenticate();
         //if (connected && authenticated) refreshLists();
+    }
+    
+    private int authenticate() {
+        authenticated = false;
+        if (authenticating) return Constants.ALREADY_AUTHENTICATING;
+        authenticating = true;
+        int res = loginCTI();
+        authenticating = false;
+        if (res == Constants.AUTHENTICATION_OK) authenticated = true;
+        return res;
     }
     
     private int connect() {
