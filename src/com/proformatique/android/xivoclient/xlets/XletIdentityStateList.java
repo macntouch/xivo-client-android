@@ -101,6 +101,7 @@ public class XletIdentityStateList extends XivoActivity {
 				clickLine(line.get("stateid"), line.get("longname"), line.get("color"));
 			}
 		});
+		registerButtons();
 	}
 	
 	/**
