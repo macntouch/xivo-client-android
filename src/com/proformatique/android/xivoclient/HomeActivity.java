@@ -101,6 +101,10 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
     protected void onDestroy() {
         Log.d(LOG_TAG, "DESTROY");
         stopInCallScreenKiller(this);
+        if (!SettingsActivity.getKeepRunning(this)) {
+            Log.d(LOG_TAG, "Stoping XiVO connection service");
+            stopXivoConnectionService();
+        }
         super.onDestroy();
     }
     

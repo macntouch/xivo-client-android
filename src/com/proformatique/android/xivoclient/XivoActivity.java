@@ -311,7 +311,7 @@ public class XivoActivity extends Activity implements OnClickListener {
     /**
      * Stops the XivoConnectionService
      */
-    private void stopXivoConnectionService() {
+    protected void stopXivoConnectionService() {
         try {
             xivoConnectionService.disconnect();
         } catch (RemoteException e) {
