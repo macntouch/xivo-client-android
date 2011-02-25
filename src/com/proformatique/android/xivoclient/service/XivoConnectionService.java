@@ -1247,6 +1247,8 @@ public class XivoConnectionService extends Service {
                 Log.d(TAG, "Could not parse capaxlets");
             }
         }
+        Intent i = new Intent();
+        i.setAction(Constants.ACTION_LOAD_XLETS);
     }
     
     /**

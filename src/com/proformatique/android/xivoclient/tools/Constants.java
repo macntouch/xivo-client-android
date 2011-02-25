@@ -90,6 +90,7 @@ public final class Constants {
      * Intent actions
      */
     public static final String ACTION_LOAD_USER_LIST = "xivo.intent.action.LOAD_USER_LIST";
+    public static final String ACTION_LOAD_XLETS = "xivo.intent.action.LOAD_XLETS";
     public static final String ACTION_DISCONNECT = "xivo.intent.action.ACTION_DISCONNECT";
     public static final String ACTION_LOAD_PHONE_STATUS = "xivo.intent.action.LOAD_PHONE_STATUS";
     public static final String ACTION_LOAD_HISTORY_LIST = "xivo.intent.action.LOAD_HISTORY_LIST";

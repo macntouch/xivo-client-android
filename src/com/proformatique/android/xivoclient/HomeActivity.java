@@ -19,8 +19,10 @@
 
 package com.proformatique.android.xivoclient;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -64,8 +66,16 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
      */
     private List<String> availXlets = null;
     private List<String> implementedXlets = null;
-    
     private XletsAdapter xletsAdapter = null;
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(Constants.ACTION_LOAD_XLETS)) {
+                xletsAdapter.updateAvailableXlets();
+            }
+        }
+    };
     
     /**
      * Activity life cycle
@@ -83,10 +93,11 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
          */
         grid = (GridView) findViewById(R.id.grid);
         xletsAdapter = new XletsAdapter();
-        getContentResolver().registerContentObserver(CapaxletsProvider.CONTENT_URI, true,
-                new XletObserver());
         grid.setAdapter(xletsAdapter);
         grid.setOnItemClickListener(this);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Constants.ACTION_LOAD_XLETS);
+        registerReceiver(receiver, filter);
     }
     
     @Override
@@ -105,6 +116,7 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
             Log.d(LOG_TAG, "Stoping XiVO connection service");
             stopXivoConnectionService();
         }
+        unregisterReceiver(receiver);
         super.onDestroy();
     }
     
@@ -240,19 +252,6 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
             startActivity(new Intent(this, XletHisto.class));
         } else {
             Log.d(LOG_TAG, "Unhandled click");
-        }
-    }
-    
-    private class XletObserver extends android.database.ContentObserver {
-        
-        public XletObserver() {
-            super(null);
-        }
-        
-        @Override
-        public void onChange(boolean selfChange) {
-            super.onChange(selfChange);
-            xletsAdapter.updateAvailableXlets();
         }
     }
 }
