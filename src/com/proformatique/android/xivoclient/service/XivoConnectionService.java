@@ -1188,7 +1188,6 @@ public class XivoConnectionService extends Service {
     /**
      * Parses the incoming capapresence message and update the DB
      */
-    @SuppressWarnings("unchecked")
     private void parseCapapresence(JSONObject jPresence) {
         /*
          * Fill the DB
@@ -1197,8 +1196,8 @@ public class XivoConnectionService extends Service {
         getContentResolver().delete(CapapresenceProvider.CONTENT_URI, null, null);
         try {
             ContentValues presence = new ContentValues();
-            for (Iterator<String> keyIter = jPresence.getJSONObject("names").keys();
-                    keyIter.hasNext(); ) {
+            for (@SuppressWarnings("unchecked") Iterator<String> keyIter =
+                    jPresence.getJSONObject("names").keys(); keyIter.hasNext(); ) {
                 String key = keyIter.next();
                 presence.put(CapapresenceProvider.NAME, key);
                 presence.put(CapapresenceProvider.COLOR,
