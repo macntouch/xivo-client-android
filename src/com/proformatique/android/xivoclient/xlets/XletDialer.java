@@ -93,7 +93,6 @@ public class XletDialer extends XivoActivity {
          * Register a BroadcastReceiver for Intent action that trigger a call
          */
         IntentFilter filter = new IntentFilter();
-        filter.addAction(Constants.ACTION_HANGUP);
         filter.addAction(Constants.ACTION_OFFHOOK);
         filter.addAction(Constants.ACTION_MWI_UPDATE);
         filter.addAction(Constants.ACTION_CALL_PROGRESS);
@@ -390,25 +389,17 @@ public class XletDialer extends XivoActivity {
     }
     
     /**
-     * BroadcastReceiver, intercept Intents with action ACTION_XLET_DIAL_CALL to
-     * perform a call
+     * BroadcastReceiver, intercept Intents
      * 
      * @author cquaquin
      * 
      */
-    public class IncomingReceiver extends BroadcastReceiver {
+    private class IncomingReceiver extends BroadcastReceiver {
         
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(Constants.ACTION_HANGUP)) {
-                Log.d(LOG_TAG, "Hangup action received");
-                refreshHangupButton();
-                phoneNumber.setEnabled(true);
-                if (dialog != null) {
-                    dialog.dismiss();
-                    dialog = null;
-                }
-            } else if (intent.getAction().equals(Constants.ACTION_OFFHOOK)) {
+            final String action = intent.getAction();
+            if (action.equals(Constants.ACTION_OFFHOOK)) {
                 Log.d(LOG_TAG, "OffHook action received");
                 refreshHangupButton();
                 phoneNumber.setEnabled(true);
@@ -417,27 +408,21 @@ public class XletDialer extends XivoActivity {
                     dialog.dismiss();
                     dialog = null;
                 }
-            } else if (intent.getAction().equals(Constants.ACTION_MWI_UPDATE)) {
+            } else if (action.equals(Constants.ACTION_MWI_UPDATE)) {
                 Log.d(LOG_TAG, "MWI update received");
                 int[] mwi = intent.getExtras().getIntArray("mwi");
                 newVoiceMail(mwi[0] == 1);
-            } else if (intent.getAction().equals(Constants.ACTION_CALL_PROGRESS)) {
+            } else if (action.equals(Constants.ACTION_CALL_PROGRESS)) {
                 final String status = intent.getStringExtra("status");
                 final String code = intent.getStringExtra("code");
                 refreshHangupButton();
                 if (code.equals(Constants.CALLING_STATUS_CODE)) {
-                    try {
-                        if (xivoConnectionService.hasChannels()) {
-                            if (dialog != null) {
-                                dialog.dismiss();
-                                dialog = null;
-                            }
-                            phoneNumber.setEnabled(true);
-                            phoneNumber.setText("");
-                        }
-                    } catch (RemoteException e) {
-                        Log.d(LOG_TAG, "Remote exception");
+                    if (dialog != null) {
+                        dialog.dismiss();
+                        dialog = null;
                     }
+                    phoneNumber.setEnabled(true);
+                    phoneNumber.setText("");
                 }
                 if (callTask != null) {
                     if (Integer.parseInt(code) == Constants.HINTSTATUS_AVAILABLE_CODE) {
@@ -446,7 +431,7 @@ public class XletDialer extends XivoActivity {
                     callTask.progress = status;
                     callTask.onProgressUpdate();
                 }
-            } else if (intent.getAction().equals(Constants.ACTION_ONGOING_CALL)) {
+            } else if (action.equals(Constants.ACTION_ONGOING_CALL)) {
                 refreshHangupButton();
                 if (dialog != null) {
                     dialog.dismiss();
@@ -454,6 +439,10 @@ public class XletDialer extends XivoActivity {
                 }
                 phoneNumber.setEnabled(true);
                 phoneNumber.setText("");
+            } else if (action.equals(Constants.ACTION_MY_PHONE_CHANGE)) {
+                if (intent.getStringExtra("code").equals(Constants.AVAILABLE_STATUS_CODE)) {
+                    refreshHangupButton();
+                }
             }
         }
     }
