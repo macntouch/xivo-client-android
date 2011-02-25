@@ -95,7 +95,6 @@ public final class Constants {
 	public static final String ACTION_REFRESH_USER_LIST = "xivo.intent.action.USER_SEARCH";
 	public static final String ACTION_FORCED_DISCONNECT = "xivo.intent.action.FORCED_DISCONNECT";
 	public static final String ACTION_DISCONNECT_REQUEST = "xivo.intent.action.DISCONNECT_REQUEST";
-	public static final String ACTION_HANGUP = "xivo.intent.action.HANGUP";
 	public static final String ACTION_OFFHOOK = "xivo.intent.action.OFFHOOK";
 	public static final String ACTION_MWI_UPDATE = "xivo.intent.action.MWI_UPDATE";
 	public static final String ACTION_MY_STATUS_CHANGE = "xivo.intent.action.MY_STATUS_CHANGE";
@@ -104,20 +103,7 @@ public final class Constants {
 	public static final String ACTION_UPDATE_IDENTITY = "xivo.intent.action.UPDATE_IDENTITY";
 	public static final String ACTION_ONGOING_CALL = "xivo.intent.action.ONGOING_CALL";
     public static final String ACTION_SETTINGS_CHANGE = "xivo.intent.action.SETTINGS_CHANGED";
-	
-	/**
-	 * XivoService connection status
-	 */
-	public static final int XIVO_DISCONNECTED = 0;
-	public static final int XIVO_CONNECTED = 1 << 0;
-	public static final int LOGIN_MISSING = 1 << 1;
-	
-	/**
-	 * List view arrays
-	 */
-	public static final String[] USERS_LIST_FROM_STRINGS = {"fullname","phonenum","stateid","stateid_longname", "stateid_color",
-		"hintstatus_code", "hintstatus_longname", "hintstatus_color"};
-	
+
 	/**
 	 * Preferences
 	 */
