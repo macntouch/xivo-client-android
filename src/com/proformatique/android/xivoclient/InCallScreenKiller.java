@@ -19,12 +19,6 @@
 
 package com.proformatique.android.xivoclient;
 
-import com.proformatique.android.xivoclient.service.IXivoConnectionService;
-import com.proformatique.android.xivoclient.service.XivoConnectionService;
-import com.proformatique.android.xivoclient.tools.AndroidTools;
-import com.proformatique.android.xivoclient.tools.Constants;
-import com.proformatique.android.xivoclient.xlets.XletDialer;
-
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -36,105 +30,113 @@ import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import com.proformatique.android.xivoclient.service.IXivoConnectionService;
+import com.proformatique.android.xivoclient.service.XivoConnectionService;
+import com.proformatique.android.xivoclient.tools.AndroidTools;
+import com.proformatique.android.xivoclient.tools.Constants;
+import com.proformatique.android.xivoclient.xlets.XletDialer;
+
 /**
- * This service will return the the XletsContainerTabActivity after receiving a call.
- * The goal is to be able to use the XiVO client after receiving a call back to do
- * transfers or other operations.
- *
+ * This service will return the the XletsContainerTabActivity after receiving a
+ * call. The goal is to be able to use the XiVO client after receiving a call
+ * back to do transfers or other operations.
+ * 
  */
 public class InCallScreenKiller extends Service {
-	
-	private TelephonyManager telephonyManager;
-	private PhoneStateListener phoneStateListener;
-	private final static String LOG_TAG = "InCallScreenKiller";
-	private XivoConnectionServiceConnection con = null;
-	protected IXivoConnectionService xivoConnectionService = null;
-	
-	@Override
-	public IBinder onBind(Intent intent) {
-		return null;
-	}
-	
-	@Override
-	public void onCreate() {
-		super.onCreate();
-		telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-		phoneStateListener = new PhoneStateListener() {
-			/**
-			 * Waits 2 seconds after answering a call and launch the XletsContainerTabActivity
-			 */
-			@Override
-			public void onCallStateChanged(int state, String incomingNumber) {
-				Log.d(LOG_TAG, "onCallStateChanged called");
-				try {
-					if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
-						if (xivoConnectionService != null && xivoConnectionService.killDialer()) {
-							AndroidTools.showOverDialer(getApplicationContext(),
-							            XletDialer.class, 2000);
-						} else {
-							Log.d(LOG_TAG, "Not killing this dialer.");
-						}
-					}
-				} catch (RemoteException e) {
-					Log.d(LOG_TAG, "Remote exception");
-				}
-			}
-		};
-		// Start listening
-		telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
-	}
-	
-	@Override
-	public void onDestroy() {
-		// Stop listening
-		telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
-		if (con != null) {
-			unbindService(con);
-			con = null;
-			Log.d(LOG_TAG, "XiVO connection service released");
-		} else {
-			Log.d(LOG_TAG, "XiVO connection service not binded");
-		}
-		super.onDestroy();
-	}
-	
-	@Override
-	public void onStart(Intent intent, int startId) {
-		super.onStart(intent, startId);
-		
-		/*
-		 * Bind to the XivoConnectionService
-		 */
-		if (con == null) {
-			con = new XivoConnectionServiceConnection();
-			Intent iServiceBinder = new Intent();
-			iServiceBinder.setClassName(Constants.PACK, XivoConnectionService.class.getName());
-			bindService(iServiceBinder, con, Context.BIND_AUTO_CREATE);
-			Log.d(LOG_TAG, "XiVO connection service binded");
-		} else {
-			Log.d(LOG_TAG, "XiVO connection already binded");
-		}
-	}
-	
-	/**
-	 * Establish a binding between the activity and the XivoConnectionService
-	 *
-	 */
-	protected class XivoConnectionServiceConnection implements ServiceConnection {
-		
-		@Override
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			xivoConnectionService = IXivoConnectionService.Stub.asInterface((IBinder)service);
-			if (xivoConnectionService == null)
-				Log.e(LOG_TAG, "xivoConnectionService is null");
-			else
-				Log.i(LOG_TAG, "xivoConnectionService is not null");
-			Log.d(LOG_TAG, "onServiceConnected");
-		}
-		
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-			Log.d(LOG_TAG, "onServiceDisconnected");
-		}
-	};
+    
+    private TelephonyManager telephonyManager;
+    private PhoneStateListener phoneStateListener;
+    private final static String LOG_TAG = "InCallScreenKiller";
+    private XivoConnectionServiceConnection con = null;
+    protected IXivoConnectionService xivoConnectionService = null;
+    
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+    
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        phoneStateListener = new PhoneStateListener() {
+            
+            /**
+             * Waits 2 seconds after answering a call and launch the
+             * XletsContainerTabActivity
+             */
+            @Override
+            public void onCallStateChanged(int state, String incomingNumber) {
+                Log.d(LOG_TAG, "onCallStateChanged called");
+                try {
+                    if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
+                        if (xivoConnectionService != null && xivoConnectionService.killDialer()) {
+                            AndroidTools.showOverDialer(getApplicationContext(), XletDialer.class,
+                                    2000);
+                        } else {
+                            Log.d(LOG_TAG, "Not killing this dialer.");
+                        }
+                    }
+                } catch (RemoteException e) {
+                    Log.d(LOG_TAG, "Remote exception");
+                }
+            }
+        };
+        // Start listening
+        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+    }
+    
+    @Override
+    public void onDestroy() {
+        // Stop listening
+        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
+        if (con != null) {
+            unbindService(con);
+            con = null;
+            Log.d(LOG_TAG, "XiVO connection service released");
+        } else {
+            Log.d(LOG_TAG, "XiVO connection service not binded");
+        }
+        super.onDestroy();
+    }
+    
+    @Override
+    public void onStart(Intent intent, int startId) {
+        super.onStart(intent, startId);
+        
+        /*
+         * Bind to the XivoConnectionService
+         */
+        if (con == null) {
+            con = new XivoConnectionServiceConnection();
+            Intent iServiceBinder = new Intent();
+            iServiceBinder.setClassName(Constants.PACK, XivoConnectionService.class.getName());
+            bindService(iServiceBinder, con, Context.BIND_AUTO_CREATE);
+            Log.d(LOG_TAG, "XiVO connection service binded");
+        } else {
+            Log.d(LOG_TAG, "XiVO connection already binded");
+        }
+    }
+    
+    /**
+     * Establish a binding between the activity and the XivoConnectionService
+     * 
+     */
+    protected class XivoConnectionServiceConnection implements ServiceConnection {
+        
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            xivoConnectionService = IXivoConnectionService.Stub.asInterface((IBinder) service);
+            if (xivoConnectionService == null)
+                Log.e(LOG_TAG, "xivoConnectionService is null");
+            else
+                Log.i(LOG_TAG, "xivoConnectionService is not null");
+            Log.d(LOG_TAG, "onServiceConnected");
+        }
+        
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.d(LOG_TAG, "onServiceDisconnected");
+        }
+    };
 }
