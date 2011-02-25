@@ -208,9 +208,6 @@ public class XivoActivity extends Activity implements OnClickListener {
         case R.id.menu_settings:
             menuSettings();
             return true;
-        case R.id.menu_exit:
-            menuExit();
-            return true;
         case R.id.menu_about:
             menuAbout();
             return true;
@@ -279,11 +276,6 @@ public class XivoActivity extends Activity implements OnClickListener {
     private void menuAbout() {
         Intent defineIntent = new Intent(this, AboutActivity.class);
         startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
-    }
-    
-    private void menuExit() {
-        HomeActivity.stopInCallScreenKiller(this);
-        finish();
     }
     
     private void menuSettings() {
