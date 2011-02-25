@@ -359,7 +359,7 @@ public class XivoConnectionService extends Service {
                 Log.d(TAG, "Could not shutdown the network connection properly");
             }
         }
-        xivoNotif.removeNotif();
+        if (xivoNotif != null) xivoNotif.removeNotif();
         unregisterReceiver(receiver);
         super.onDestroy();
     }
