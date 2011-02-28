@@ -439,7 +439,7 @@ public class XivoConnectionService extends Service {
                 } catch (IOException e) {
                     Log.d(TAG, "Input and output were already closed");
                 }
-                networkConnection.close();
+                if (networkConnection != null) networkConnection.close();
                 networkConnection = null;
             } catch (IOException e) {
                 Log.e(TAG, "Error while cleaning up the network connection");
