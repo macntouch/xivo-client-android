@@ -138,7 +138,10 @@ public class XletServices extends XivoActivity {
 		
 		CheckBox checkbox;
 		String textDisplay;
-		String phoneNumber = data.getStringExtra("phoneNumber");
+		String phoneNumber = "";
+		if (data.getStringExtra("phoneNumber") != null) {
+		    phoneNumber = data.getStringExtra("phoneNumber");
+		}
 		
 		if (requestCode == Constants.CODE_SERVICE_ASK1) {
 			checkbox = (CheckBox) findViewById(R.id.fwdrna);
