@@ -33,6 +33,7 @@ import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -511,10 +512,21 @@ public class XivoConnectionService extends Service {
     
     private int disconnectFromServer() {
         Log.d(TAG, "Disconnecting");
-        stopThread();
-        connectionCleanup();
-        resetState();
+        DisconnectTask discon = new DisconnectTask();
+        discon.execute();
         return Constants.OK;
+    }
+    
+    private class DisconnectTask extends AsyncTask<Void, Void, Integer> {
+        
+        @Override
+        protected Integer doInBackground(Void... params) {
+            stopThread();
+            connectionCleanup();
+            resetState();
+            return 0;
+        }
+        
     }
     
     private void refreshFeatures() {

@@ -58,7 +58,7 @@ public enum Connection {
     
     public void releaseService() {
         try {
-            if (con != null && context != null) context.unbindService(con);
+            if (con != null && context != null) unbind();
         } catch (IllegalArgumentException e) {
             Log.d(TAG, "Could not release the service");
         }
