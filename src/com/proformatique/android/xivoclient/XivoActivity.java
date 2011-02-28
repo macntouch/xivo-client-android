@@ -131,14 +131,7 @@ public class XivoActivity extends Activity implements OnClickListener {
     }
     
     @Override
-    protected void onPause() {
-        //releaseXivoConnectionService();
-        super.onPause();
-    }
-    
-    @Override
     protected void onDestroy() {
-        //releaseXivoConnectionService();
         unregisterReceiver(receiver);
         if (dialog != null) {
             dialog.dismiss();
@@ -160,14 +153,24 @@ public class XivoActivity extends Activity implements OnClickListener {
         } catch (RemoteException e) {
             Log.d(TAG, "Could not set my state id");
         }
-        try {
-            waitForConnection();
-        } catch (InterruptedException e) {
-            Log.d(TAG, "Connection interrupted");
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            Log.d(TAG, "Connection timedout");
-            e.printStackTrace();
+        if (!askedToDisconnect && !wrongLoginInfo) {
+            try {
+                waitForConnection();
+            } catch (InterruptedException e) {
+                Log.d(TAG, "Connection interrupted");
+                e.printStackTrace();
+            } catch (TimeoutException e) {
+                Log.d(TAG, "Connection timedout");
+                e.printStackTrace();
+            }
+        } else {
+            setUiEnabled(true);
+        }
+    }
+    
+    protected void setUiEnabled(boolean state) {
+        if (state == false) {
+            Toast.makeText(this, "Not connected", Toast.LENGTH_SHORT).show();
         }
     }
     
@@ -510,9 +513,6 @@ public class XivoActivity extends Activity implements OnClickListener {
     
     private class AuthenticationTask extends AsyncTask<Void, Void, Integer> {
         
-        private int MAX_WAIT = 20;
-        private int WAIT_DELAY = 100;
-        
         @Override
         protected void onPreExecute() {
             if (dialog == null)
@@ -551,6 +551,7 @@ public class XivoActivity extends Activity implements OnClickListener {
             case Constants.OK:
             case Constants.AUTHENTICATION_OK:
                 Log.i(TAG, "Authenticated");
+                setUiEnabled(true);
                 startLoading();
                 break;
             case Constants.JSON_POPULATE_ERROR:
@@ -590,25 +591,12 @@ public class XivoActivity extends Activity implements OnClickListener {
                 break;
             }
         }
-        
-        private void timer(int milliseconds) {
-            try {
-                synchronized (this) {
-                    this.wait(milliseconds);
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
     }
     
     /**
      * Ask to the XivoConnectionService to connect and wait for the result
      */
     private class ConnectTask extends AsyncTask<Void, Void, Integer> {
-        
-        private int MAX_TRY = 20;
-        private int WAIT_DELAY = 100;
         
         @Override
         protected void onPreExecute() {
@@ -676,16 +664,6 @@ public class XivoActivity extends Activity implements OnClickListener {
                 break;
             }
         }
-        
-        private void timer(int milliseconds) {
-            try {
-                synchronized (this) {
-                    this.wait(milliseconds);
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
     }
     
     private class DisconnectTask extends AsyncTask<Void, Void, Integer> {
@@ -703,10 +681,6 @@ public class XivoActivity extends Activity implements OnClickListener {
         protected Integer doInBackground(Void... params) {
             try {
                 if (xivoConnectionService != null) xivoConnectionService.disconnect();
-                //releaseXivoConnectionService();
-                Intent iStopXivoService = new Intent();
-                iStopXivoService.setClassName(Constants.PACK, XivoConnectionService.class.getName());
-                stopService(iStopXivoService);
             } catch (RemoteException e) {
                 Log.d(TAG, "Could not contact the xivo connection service");
             }

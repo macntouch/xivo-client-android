@@ -36,6 +36,7 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 import java.util.ArrayList;
@@ -111,11 +112,12 @@ public class HomeActivity extends XivoActivity implements OnItemClickListener {
     @Override
     protected void onDestroy() {
         Log.d(LOG_TAG, "DESTROY");
-        //stopInCallScreenKiller(this);
-        /*if (!SettingsActivity.getKeepRunning(this)) {
+        stopInCallScreenKiller(this);
+        if (!SettingsActivity.getKeepRunning(this)) {
             Log.d(LOG_TAG, "Stoping XiVO connection service");
             stopXivoConnectionService();
-        }*/
+            Connection.INSTANCE.releaseService();
+        }
         unregisterReceiver(receiver);
         super.onDestroy();
     }

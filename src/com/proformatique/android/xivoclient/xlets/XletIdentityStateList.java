@@ -118,4 +118,12 @@ public class XletIdentityStateList extends XivoActivity {
 			Toast.makeText(this, getString(R.string.remote_exception), Toast.LENGTH_SHORT).show();
 		}
 	}
+    
+    @Override
+    protected void setUiEnabled(boolean state) {
+        super.setUiEnabled(state);
+        if (lv != null) {
+            lv.setEnabled(state);
+        }
+    }
 }

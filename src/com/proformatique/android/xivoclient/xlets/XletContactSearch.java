@@ -70,6 +70,7 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 	 */
 	private EditText et;
 	private ListView lv;
+	private Button searchButton;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +79,7 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 		
 		et = (EditText)findViewById(R.id.SearchEdit);
 		lv = (ListView) findViewById(R.id.users_list);
+		searchButton = (Button) findViewById(R.id.button_search_contacts);
 		
 		userAdapter = new UserAdapter();
 		lv.setAdapter(userAdapter);
@@ -373,4 +375,15 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 				}
 			}).show();
 	}
+    
+    @Override
+    protected void setUiEnabled(boolean state) {
+        super.setUiEnabled(state);
+        if (lv != null) {
+            lv.setEnabled(state);
+        }
+        if (searchButton != null) {
+            searchButton.setEnabled(state);
+        }
+    }
 }

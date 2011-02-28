@@ -539,4 +539,15 @@ public class XletDialer extends XivoActivity {
         }
         super.onDestroy();
     }
+    
+    @Override
+    protected void setUiEnabled(boolean state) {
+        super.setUiEnabled(state);
+        if (dialButton != null) {
+            dialButton.setEnabled(state);
+        }
+        if (phoneNumber != null) {
+            phoneNumber.setEnabled(state);
+        }
+    }
 }
