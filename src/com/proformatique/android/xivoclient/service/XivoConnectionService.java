@@ -355,7 +355,6 @@ public class XivoConnectionService extends Service {
         Log.d(TAG, "onDestroy");
         stopThread();
         connectionCleanup();
-        if (xivoNotif != null) xivoNotif.removeNotif();
         unregisterReceiver(receiver);
         super.onDestroy();
     }
@@ -373,8 +372,6 @@ public class XivoConnectionService extends Service {
     public void onStart(Intent i, int startId) {
         super.onStart(i, startId);
         Log.d(TAG, "XiVO connection service started");
-        xivoNotif = new XivoNotification(getApplicationContext());
-        xivoNotif.createNotification();
         if (SettingsActivity.getAlwaysConnected(this)) {
             while (!connected && !authenticated && !wrongHostPort && !wrongLoginInfo) {
                 autoLogin();
@@ -501,6 +498,8 @@ public class XivoConnectionService extends Service {
             String firstLine;
             while ((firstLine = getLine()) != null) {
                 if (firstLine.contains("XiVO CTI Server")) {
+                    xivoNotif = new XivoNotification(getApplicationContext());
+                    xivoNotif.createNotification();
                     return Constants.CONNECTION_OK;
                 }
             }
@@ -512,6 +511,7 @@ public class XivoConnectionService extends Service {
     
     private int disconnectFromServer() {
         Log.d(TAG, "Disconnecting");
+        if (xivoNotif != null) xivoNotif.removeNotif();
         DisconnectTask discon = new DisconnectTask();
         discon.execute();
         return Constants.OK;
