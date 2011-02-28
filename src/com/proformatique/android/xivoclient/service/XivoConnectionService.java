@@ -56,6 +56,7 @@ public class XivoConnectionService extends Service {
     private boolean cancel = false;
     private XivoNotification xivoNotif;
     private IntentReceiver receiver = null;
+    private DisconnectTask disconnectTask = null;
     
     // Informations that is relevant to a specific connection
     private String sessionId = null;
@@ -111,7 +112,8 @@ public class XivoConnectionService extends Service {
         @Override
         public boolean isConnected() throws RemoteException {
             return (networkConnection != null && networkConnection.isConnected()
-                    && inputBuffer != null);
+                    && inputBuffer != null && (disconnectTask == null || disconnectTask.getStatus()
+                            != AsyncTask.Status.RUNNING));
         }
         
         @Override
@@ -399,6 +401,14 @@ public class XivoConnectionService extends Service {
     private int connect() {
         connected = false;
         if (connecting == true) return Constants.ALREADY_CONNECTING;
+        while (disconnectTask != null && disconnectTask.getStatus() == AsyncTask.Status.RUNNING) {
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                Log.d(TAG, "Got interrupted while waiting for the running disconnection");
+                e.printStackTrace();
+            }
+        }
         connecting = true;
         int res = connectToServer();
         connecting = false;
@@ -424,6 +434,8 @@ public class XivoConnectionService extends Service {
         if (inputBuffer != null) {
             try {
                 inputBuffer.close();
+                @SuppressWarnings("unused")
+                BufferedReader tmp = inputBuffer;
             } catch (IOException e) {
                 Log.d(TAG, "inputBuffer was already closed");
             }
@@ -438,11 +450,13 @@ public class XivoConnectionService extends Service {
                     Log.d(TAG, "Input and output were already closed");
                 }
                 if (networkConnection != null) networkConnection.close();
-                networkConnection = null;
+                @SuppressWarnings("unused")
+                Socket tmp = networkConnection;
             } catch (IOException e) {
                 Log.e(TAG, "Error while cleaning up the network connection");
                 e.printStackTrace();
             }
+            networkConnection = null;
         }
     }
     
@@ -512,8 +526,8 @@ public class XivoConnectionService extends Service {
     private int disconnectFromServer() {
         Log.d(TAG, "Disconnecting");
         if (xivoNotif != null) xivoNotif.removeNotif();
-        DisconnectTask discon = new DisconnectTask();
-        discon.execute();
+        disconnectTask = new DisconnectTask();
+        disconnectTask.execute();
         return Constants.OK;
     }
     
@@ -1423,8 +1437,8 @@ public class XivoConnectionService extends Service {
                     return Constants.VERSION_MISMATCH;
                 }
             } else if (jsonObject != null && jsonObject.has("class")
-                    && jsonObject.getString("class").equals("disconn")) {
-                lostConnectionEvent();
+                    && (jsonObject.getString("class").equals("disconn") ||
+                            jsonObject.getString("class").equals("disconnect"))) {
                 return Constants.FORCED_DISCONNECT;
             }
         } catch (JSONException e) {

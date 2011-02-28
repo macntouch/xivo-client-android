@@ -263,7 +263,7 @@ public class XivoActivity extends Activity implements OnClickListener {
                 stopXivoConnectionService();
             } else {
                 askedToDisconnect = false;
-                startXivoConnectionService();
+                //startXivoConnectionService();
                 bindXivoConnectionService();
                 HomeActivity.startInCallScreenKiller(this);
             }
@@ -502,7 +502,18 @@ public class XivoActivity extends Activity implements OnClickListener {
             try {
                 if (xivoConnectionService != null && xivoConnectionService.isAuthenticated())
                     return Constants.AUTHENTICATION_OK;
-                return xivoConnectionService.authenticate();
+                int res = xivoConnectionService.authenticate();
+                while (res == Constants.ALREADY_AUTHENTICATING) {
+                    synchronized (this) {
+                        try {
+                            wait(100);
+                        } catch (InterruptedException e) {
+                            Log.d(TAG, "Interrupted while waiting for an authentication");
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                return res;
             } catch (RemoteException e) {
                 return Constants.REMOTE_EXCEPTION;
             }
@@ -528,6 +539,10 @@ public class XivoActivity extends Activity implements OnClickListener {
                 Log.i(TAG, "Authenticated");
                 setUiEnabled(true);
                 startLoading();
+                break;
+            case Constants.NO_NETWORK_AVAILABLE:
+                Toast.makeText(XivoActivity.this, getString(R.string.no_web_connection),
+                        Toast.LENGTH_SHORT).show();
                 break;
             case Constants.JSON_POPULATE_ERROR:
                 Toast.makeText(XivoActivity.this, getString(R.string.login_ko), Toast.LENGTH_LONG)
