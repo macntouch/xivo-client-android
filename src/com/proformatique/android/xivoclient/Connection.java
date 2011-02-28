@@ -51,10 +51,17 @@ public enum Connection {
      */
     public IXivoConnectionService getConnection(Context context) {
         Log.d(TAG, "Connection instance request, Already binding: " + currentlyBinding);
-        this.context = context;
+        if (this.context == null) this.context = context;
         if (service == null && currentlyBinding == false) bind(context);
-        if (service == null) Log.e(TAG, "Returning a null connection");
         return service;
+    }
+    
+    public void releaseService() {
+        try {
+            if (con != null && context != null) context.unbindService(con);
+        } catch (IllegalArgumentException e) {
+            Log.d(TAG, "Could not release the service");
+        }
     }
     
     private void bind(Context context) {
