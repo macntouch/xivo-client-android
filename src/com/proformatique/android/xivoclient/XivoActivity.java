@@ -76,7 +76,6 @@ public class XivoActivity extends Activity implements OnClickListener {
      * Service
      */
     protected BindingTask bindingTask = null;
-    private XivoConnectionServiceConnection con = null;
     protected IXivoConnectionService xivoConnectionService = null;
     private ConnectTask connectTask = null;
     private DisconnectTask disconnectTask = null;
@@ -126,21 +125,20 @@ public class XivoActivity extends Activity implements OnClickListener {
     @Override
     protected void onResume() {
         super.onResume();
-        if (!askedToDisconnect && !wrongLoginInfo) {
-            startXivoConnectionService();
-            bindXivoConnectionService();
-        }
+        Log.d(TAG, "onResume");
+        if (SettingsActivity.getKeepRunning(this)) startXivoConnectionService();
+        bindXivoConnectionService();
     }
     
     @Override
     protected void onPause() {
-        releaseXivoConnectionService();
+        //releaseXivoConnectionService();
         super.onPause();
     }
     
     @Override
     protected void onDestroy() {
-        releaseXivoConnectionService();
+        //releaseXivoConnectionService();
         unregisterReceiver(receiver);
         if (dialog != null) {
             dialog.dismiss();
@@ -263,7 +261,6 @@ public class XivoActivity extends Activity implements OnClickListener {
                 askedToDisconnect = true;
                 HomeActivity.stopInCallScreenKiller(this);
                 stopXivoConnectionService();
-                con = null;
             } else {
                 askedToDisconnect = false;
                 startXivoConnectionService();
@@ -319,23 +316,6 @@ public class XivoActivity extends Activity implements OnClickListener {
     }
     
     /**
-     * Releases the service before leaving
-     */
-    private void releaseXivoConnectionService() {
-        if (con != null) {
-            try {
-                unbindService(con);
-            } catch (IllegalArgumentException e) {
-                // Can't unbind if not binded.
-            }
-            con = null;
-            Log.d(TAG, "XiVO connection service released");
-        } else {
-            Log.d(TAG, "XiVO connection service not binded");
-        }
-    }
-    
-    /**
      * Starts a connection task and wait until it's connected
      * 
      * @throws TimeoutException
@@ -361,11 +341,11 @@ public class XivoActivity extends Activity implements OnClickListener {
      */
     private void waitForAuthentication() throws InterruptedException, TimeoutException {
         try {
-            if (!(xivoConnectionService.isConnected())) {
+            if (xivoConnectionService == null || !(xivoConnectionService.isConnected())) {
                 Log.d(TAG, "Cannot start authenticating if not connected");
                 return;
             }
-            if (xivoConnectionService.isAuthenticated())
+            if (xivoConnectionService != null && xivoConnectionService.isAuthenticated())
                 return;
         } catch (RemoteException e) {
             dieOnBindFail();
@@ -429,8 +409,13 @@ public class XivoActivity extends Activity implements OnClickListener {
      * Binds the XivoConnection service
      */
     private void bindXivoConnectionService() {
-        bindingTask = new BindingTask();
-        bindingTask.execute();
+        xivoConnectionService = Connection.INSTANCE.getConnection(getApplicationContext());
+        if (xivoConnectionService == null) {
+            bindingTask = new BindingTask();
+            bindingTask.execute();
+        } else {
+            onBindingComplete();
+        }
     }
     
     /**
@@ -462,7 +447,7 @@ public class XivoActivity extends Activity implements OnClickListener {
         
         private final static int OK = 0;
         private final static int FAIL = -1;
-        private final static int DELAY = 50;
+        private final static int DELAY = 100;
         private final static int MAX_WAIT = 50;
         
         @Override
@@ -477,24 +462,14 @@ public class XivoActivity extends Activity implements OnClickListener {
         
         @Override
         protected Integer doInBackground(Void... params) {
-            if (con == null) {
-                con = new XivoConnectionServiceConnection();
-                Intent iServiceBinder = new Intent();
-                iServiceBinder.setClassName(Constants.PACK, XivoConnectionService.class.getName());
-                bindService(iServiceBinder, con, Context.BIND_AUTO_CREATE);
-                Log.d(TAG, "XiVO connection service binded");
-            } else {
-                Log.d(TAG, "XiVO connection already binded");
-            }
-            
-            // wait until it's connected...
+            xivoConnectionService = Connection.INSTANCE.getConnection(getApplicationContext());
             int i = 0;
-            while (i < MAX_WAIT && (con == null || xivoConnectionService == null)) {
+            while (xivoConnectionService == null && i < MAX_WAIT) {
                 timer(DELAY);
                 i++;
+                xivoConnectionService = Connection.INSTANCE.getConnection(getApplicationContext());
             }
-            
-            return xivoConnectionService == null ? FAIL : OK;
+            return xivoConnectionService != null ? OK : FAIL;
         }
         
         @Override
@@ -512,7 +487,7 @@ public class XivoActivity extends Activity implements OnClickListener {
             }
         }
         
-        private void timer(int milliseconds) {
+        private void timer(long milliseconds) {
             try {
                 synchronized (this) {
                     this.wait(milliseconds);
@@ -549,11 +524,6 @@ public class XivoActivity extends Activity implements OnClickListener {
         
         @Override
         protected Integer doInBackground(Void... params) {
-            int i = 0;
-            while (xivoConnectionService == null && i < MAX_WAIT) {
-                timer(WAIT_DELAY);
-                i++;
-            }
             try {
                 if (xivoConnectionService != null && xivoConnectionService.isAuthenticated())
                     return Constants.AUTHENTICATION_OK;
@@ -651,11 +621,6 @@ public class XivoActivity extends Activity implements OnClickListener {
         
         @Override
         protected Integer doInBackground(Void... params) {
-            int i = 0;
-            while (xivoConnectionService == null && i < MAX_TRY) {
-                timer(WAIT_DELAY);
-                i++;
-            }
             try {
                 if (xivoConnectionService != null && xivoConnectionService.isConnected())
                     return Constants.CONNECTION_OK;
@@ -738,7 +703,7 @@ public class XivoActivity extends Activity implements OnClickListener {
         protected Integer doInBackground(Void... params) {
             try {
                 if (xivoConnectionService != null) xivoConnectionService.disconnect();
-                releaseXivoConnectionService();
+                //releaseXivoConnectionService();
                 Intent iStopXivoService = new Intent();
                 iStopXivoService.setClassName(Constants.PACK, XivoConnectionService.class.getName());
                 stopService(iStopXivoService);
