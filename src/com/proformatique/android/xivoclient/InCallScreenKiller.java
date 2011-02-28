@@ -20,10 +20,9 @@
 package com.proformatique.android.xivoclient;
 
 import android.app.Service;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.telephony.PhoneStateListener;
@@ -31,9 +30,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.proformatique.android.xivoclient.service.IXivoConnectionService;
-import com.proformatique.android.xivoclient.service.XivoConnectionService;
 import com.proformatique.android.xivoclient.tools.AndroidTools;
-import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.xlets.XletDialer;
 
 /**
@@ -47,7 +44,6 @@ public class InCallScreenKiller extends Service {
     private TelephonyManager telephonyManager;
     private PhoneStateListener phoneStateListener;
     private final static String LOG_TAG = "InCallScreenKiller";
-    private XivoConnectionServiceConnection con = null;
     protected IXivoConnectionService xivoConnectionService = null;
     
     @Override
@@ -90,53 +86,37 @@ public class InCallScreenKiller extends Service {
     public void onDestroy() {
         // Stop listening
         telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
-        if (con != null) {
-            unbindService(con);
-            con = null;
-            Log.d(LOG_TAG, "XiVO connection service released");
-        } else {
-            Log.d(LOG_TAG, "XiVO connection service not binded");
-        }
         super.onDestroy();
     }
     
     @Override
     public void onStart(Intent intent, int startId) {
         super.onStart(intent, startId);
-        
-        /*
-         * Bind to the XivoConnectionService
-         */
-        if (con == null) {
-            con = new XivoConnectionServiceConnection();
-            Intent iServiceBinder = new Intent();
-            iServiceBinder.setClassName(Constants.PACK, XivoConnectionService.class.getName());
-            bindService(iServiceBinder, con, Context.BIND_AUTO_CREATE);
-            Log.d(LOG_TAG, "XiVO connection service binded");
-        } else {
-            Log.d(LOG_TAG, "XiVO connection already binded");
+        xivoConnectionService = Connection.INSTANCE.getConnection(this);
+        if (xivoConnectionService == null) {
+            AsyncTask<Void, Void, Integer> task = new AsyncTask<Void, Void, Integer>() {
+                private long DELAY = 100;
+                private int MAX_WAIT = 50;
+                @Override
+                protected Integer doInBackground(Void... params) {
+                    int i = 0;
+                    do {
+                        try {
+                            synchronized (this) {
+                                wait(DELAY);
+                            }
+                        } catch (InterruptedException e) {
+                            Log.d(LOG_TAG, "Interrupted while waiting for a binding");
+                            e.printStackTrace();
+                        }
+                        xivoConnectionService
+                                = Connection.INSTANCE.getConnection(getApplicationContext());
+                        i++;
+                    } while (xivoConnectionService == null && i < MAX_WAIT);
+                    return 0;
+                }
+            };
+            task.execute();
         }
     }
-    
-    /**
-     * Establish a binding between the activity and the XivoConnectionService
-     * 
-     */
-    protected class XivoConnectionServiceConnection implements ServiceConnection {
-        
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            xivoConnectionService = IXivoConnectionService.Stub.asInterface((IBinder) service);
-            if (xivoConnectionService == null)
-                Log.e(LOG_TAG, "xivoConnectionService is null");
-            else
-                Log.i(LOG_TAG, "xivoConnectionService is not null");
-            Log.d(LOG_TAG, "onServiceConnected");
-        }
-        
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            Log.d(LOG_TAG, "onServiceDisconnected");
-        }
-    };
 }

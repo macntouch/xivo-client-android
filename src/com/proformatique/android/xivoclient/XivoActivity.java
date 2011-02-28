@@ -23,18 +23,15 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -420,28 +417,6 @@ public class XivoActivity extends Activity implements OnClickListener {
             onBindingComplete();
         }
     }
-    
-    /**
-     * Establish a binding between the activity and the XivoConnectionService
-     * 
-     */
-    protected class XivoConnectionServiceConnection implements ServiceConnection {
-        
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            xivoConnectionService = IXivoConnectionService.Stub.asInterface((IBinder) service);
-            if (xivoConnectionService == null)
-                Log.e(TAG, "xivoConnectionService is null");
-            else
-                Log.i(TAG, "xivoConnectionService is not null");
-            Log.d(TAG, "onServiceConnected");
-        }
-        
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            Log.d(TAG, "onServiceDisconnected");
-        }
-    };
     
     /**
      * Binds to the service
