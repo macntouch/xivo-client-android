@@ -526,8 +526,10 @@ public class XivoConnectionService extends Service {
     private int disconnectFromServer() {
         Log.d(TAG, "Disconnecting");
         if (xivoNotif != null) xivoNotif.removeNotif();
-        disconnectTask = new DisconnectTask();
-        disconnectTask.execute();
+        if (!(disconnectTask != null && disconnectTask.getStatus() == AsyncTask.Status.RUNNING)) {
+            disconnectTask = new DisconnectTask();
+            disconnectTask.execute();
+        }
         return Constants.OK;
     }
     
