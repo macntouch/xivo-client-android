@@ -87,6 +87,7 @@ public class HomeActivity extends XivoActivity
             }
         }
     };
+    private XletObserver observer = null;
     
     /**
      * Activity life cycle
@@ -106,6 +107,9 @@ public class HomeActivity extends XivoActivity
         grid.setOnItemClickListener(this);
         grid.setOnItemLongClickListener(this);
         grid.setEmptyView(findViewById(android.R.id.empty));
+        
+        observer = new XletObserver();
+        getContentResolver().registerContentObserver(CapaxletsProvider.CONTENT_URI, true, observer);
         
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.ACTION_LOAD_XLETS);
@@ -142,6 +146,7 @@ public class HomeActivity extends XivoActivity
         Log.d(LOG_TAG, "DESTROY");
         stopInCallScreenKiller(this);
         unregisterReceiver(receiver);
+        getContentResolver().unregisterContentObserver(observer);
         super.onDestroy();
     }
     
@@ -401,6 +406,20 @@ public class HomeActivity extends XivoActivity
             return menuAddLaunchDel;
         default:
             return menuAdd;
+        }
+    }
+    
+    private class XletObserver extends android.database.ContentObserver {
+        
+        public XletObserver() {
+            super(null);
+        }
+        
+        @Override
+        public void onChange(boolean selfChange) {
+            Log.d(LOG_TAG, "Xlets changed");
+            super.onChange(selfChange);
+            handler.post(updateGrid);
         }
     }
 }

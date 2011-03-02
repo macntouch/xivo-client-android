@@ -92,7 +92,7 @@ public class InCallScreenKiller extends Service {
     @Override
     public void onStart(Intent intent, int startId) {
         super.onStart(intent, startId);
-        xivoConnectionService = Connection.INSTANCE.getConnection(this);
+        xivoConnectionService = Connection.INSTANCE.getConnection(getApplicationContext());
         if (xivoConnectionService == null) {
             AsyncTask<Void, Void, Integer> task = new AsyncTask<Void, Void, Integer>() {
                 private long DELAY = 100;
