@@ -16,9 +16,7 @@ public class XivoServiceStarter extends BroadcastReceiver {
         Log.d(TAG, "Intent received");
         if (SettingsActivity.getStartOnBoot(context)) {
             Log.d(TAG, "Starting the XiVO service");
-            Intent iServiceStarter = new Intent();
-            iServiceStarter.setAction(XivoConnectionService.class.getName());
-            context.startService(iServiceStarter);
+            context.startService(new Intent(context, XivoConnectionService.class));
         } else {
             Log.d(TAG, "XiVO auto start disabled");
         }

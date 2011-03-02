@@ -385,7 +385,13 @@ public class XivoConnectionService extends Service {
         Log.d(TAG, "Trying to auto-logon");
         if (!connected) connect();
         if (connected && !authenticated) authenticate();
-        //if (connected && authenticated) refreshLists();
+        if (connected && authenticated) refreshLists();
+    }
+    
+    private void refreshLists() {
+        XivoConnectionService.this.refreshFeatures();
+        XivoConnectionService.this.refreshHistory();
+        XivoConnectionService.this.loadList("users");
     }
     
     private int authenticate() {
