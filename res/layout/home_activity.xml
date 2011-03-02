@@ -1,21 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:background="@color/black"
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:orientation="vertical"
+  android:background="@color/black"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent">
+  <include
+    layout="@layout/xlet_identity"
+    android:layout_weight="1" />
+  <GridView
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
-    <include layout="@layout/xlet_identity"
-        android:layout_weight="1"/>
-    <GridView
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:id="@+id/grid"
-        android:padding="15dp"
-        android:verticalSpacing="15dp"
-        android:horizontalSpacing="15dp"
-        android:numColumns="auto_fit"
-        android:columnWidth="60dp"
-        android:stretchMode="columnWidth"
-        android:gravity="center"
-        android:background="@color/appli_bg"/>
+    android:layout_height="fill_parent"
+    android:id="@+id/grid"
+    android:padding="15dp"
+    android:verticalSpacing="15dp"
+    android:horizontalSpacing="15dp"
+    android:numColumns="auto_fit"
+    android:columnWidth="60dp"
+    android:stretchMode="columnWidth"
+    android:gravity="center"
+    android:background="@color/appli_bg"
+    android:clickable="true"
+    android:layout_weight="0" />
+  <TextView
+    android:id="@android:id/empty"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Empty"
+    android:background="#ff992244"
+    android:layout_weight="1" />
 </LinearLayout>

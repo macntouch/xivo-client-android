@@ -67,6 +67,7 @@
     <string name="service_not_ready">XiVO service not ready</string>
     <string name="connection_timedout">Connection timed out</string>
     <string name="disconnecting">Disconnecting</string>
+    <string name="uninstalled_error">Failed to launch this application. It may be unaccessible from other applications or it may have been uninstalled</string>
    
     <!-- Others -->
     <string name="context_action">Action</string>
@@ -121,4 +122,10 @@
     <string name="xivo_phone_type_lbl">XiVO</string>
     <string name="binding">Binding</string>
     <string name="time_unit_seconds">sec</string>
+    
+    <string name="app_picker_title">Application picker</string>
+    <string name="add_menu_title">Add new launcher</string>
+    <string name="del_menu_title">Delete launcher</string>
+    <string name="launch_menu_title">Launch</string>
+    <string name="shortcut_already_present">This shortcut is already present</string>
 </resources>

@@ -31,6 +31,8 @@
     android:label="@string/app_name"
     android:theme="@android:style/Theme.NoTitleBar">
     <activity
+      android:name=".ApplicationPicker" />
+    <activity
       android:name=".HomeActivity"
       android:label="@string/app_name"
       android:launchMode="singleTask"
@@ -124,6 +126,9 @@
     <provider
       android:name=".service.HistoryProvider"
       android:authorities="com.proformatique.android.xivoclient.history" />
+    <provider
+      android:name=".service.ShortcutProvider"
+      android:authorities="com.proformatique.android.xivoclient.shortcut" />
   </application>
   <uses-sdk
     android:minSdkVersion="7" />
