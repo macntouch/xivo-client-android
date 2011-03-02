@@ -186,7 +186,6 @@ public class SettingsActivity extends PreferenceActivity {
             List<HashMap<String, ?>> list = new ArrayList<HashMap<String, ?>>(size);
             c.moveToFirst();
             while (!c.isAfterLast()) {
-                Log.d(TAG, "Adding one item to the list");
                 HashMap<String, Object> item = new HashMap<String, Object>();
                 String packageName = c.getString(c.getColumnIndex(ShortcutProvider.PACKAGE));
                 item.put("package", packageName);
@@ -196,7 +195,6 @@ public class SettingsActivity extends PreferenceActivity {
                 c.moveToNext();
             }
             c.close();
-            Log.d(TAG, "Returning a list of " + list.size() + " elements.");
             return list;
         }
         c.close();
