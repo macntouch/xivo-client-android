@@ -123,7 +123,7 @@ public class XivoActivity extends Activity implements OnClickListener {
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
-        if (SettingsActivity.getKeepRunning(this)) startXivoConnectionService();
+        startXivoConnectionService();
         bindXivoConnectionService();
     }
     

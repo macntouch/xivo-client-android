@@ -31,6 +31,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -102,14 +103,30 @@ public class HomeActivity extends XivoActivity
          * Setup the grid, it's adapter, observer and listener
          */
         grid = (GridView) findViewById(R.id.grid);
-        xletsAdapter = new XletsAdapter();
-        grid.setAdapter(xletsAdapter);
         grid.setOnItemClickListener(this);
         grid.setOnItemLongClickListener(this);
         grid.setEmptyView(findViewById(android.R.id.empty));
+        
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.ACTION_LOAD_XLETS);
         registerReceiver(receiver, filter);
+        
+        handler.post(updateGrid);
+    }
+    
+    @Override
+    public void onBackPressed() {
+        if (!SettingsActivity.getAlwaysConnected(this)) {
+            if (xivoConnectionService != null) {
+                try {
+                    xivoConnectionService.disconnect();
+                } catch (RemoteException e) {
+                    Log.d(LOG_TAG, "Remote exception onBackPressed");
+                    Toast.makeText(this, R.string.disconnect_failed, Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+        super.onBackPressed();
     }
     
     @Override
@@ -117,18 +134,13 @@ public class HomeActivity extends XivoActivity
         super.onResume();
         Log.i(LOG_TAG, "onResume");
         startInCallScreenKiller(this);
-        xletsAdapter.notifyDataSetChanged();
+        handler.post(updateGrid);
     }
     
     @Override
     protected void onDestroy() {
         Log.d(LOG_TAG, "DESTROY");
         stopInCallScreenKiller(this);
-        if (!SettingsActivity.getKeepRunning(this)) {
-            Log.d(LOG_TAG, "Stoping XiVO connection service");
-            stopXivoConnectionService();
-            Connection.INSTANCE.releaseService();
-        }
         unregisterReceiver(receiver);
         super.onDestroy();
     }
@@ -140,10 +152,12 @@ public class HomeActivity extends XivoActivity
     final Runnable updateGrid = new Runnable() {
         
         public void run() {
-            if (xletsAdapter != null) {
-                xletsAdapter.updateAvailableXlets();
-                xletsAdapter.notifyDataSetChanged();
+            if (xletsAdapter == null) {
+                xletsAdapter = new XletsAdapter();
+                grid.setAdapter(xletsAdapter);
             }
+            xletsAdapter.updateAvailableXlets();
+            xletsAdapter.notifyDataSetChanged();
         }
     };
     
@@ -253,7 +267,6 @@ public class HomeActivity extends XivoActivity
                 int index = position - availXlets.size();
                 if (index < 0  || index >= shortcuts.size()) return v;
                 try {
-                    Log.d(LOG_TAG, "Getview on a shortcut...");
                     tv.setText((String) shortcuts.get(index).get("name"));
                     iv.setImageDrawable((Drawable) shortcuts.get(index).get("icon"));
                 } catch (ClassCastException e) {

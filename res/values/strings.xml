@@ -36,6 +36,7 @@
     <string name="keep_running">Keep service running</string>
     <string name="service_bandwidth_warning">Will consume ALOT of energy and bandwidth</string>
     <string name="always_connected">Keep the service connected to the server</string>
+    <string name="disconnect_failed">Disconnection failed</string>
     
     <!-- Messages strings -->
     <string name="connection_failed">Connection failed</string>

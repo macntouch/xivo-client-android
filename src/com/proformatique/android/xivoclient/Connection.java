@@ -50,7 +50,6 @@ public enum Connection {
      * @return
      */
     public IXivoConnectionService getConnection(Context context) {
-        Log.d(TAG, "Connection instance request, Already binding: " + currentlyBinding);
         if (this.context == null) this.context = context;
         if (service == null && currentlyBinding == false) bind(context);
         return service;
