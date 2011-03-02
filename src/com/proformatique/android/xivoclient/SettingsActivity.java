@@ -158,11 +158,6 @@ public class SettingsActivity extends PreferenceActivity {
 		return PreferenceManager.getDefaultSharedPreferences(context).getString("login", "");
 	}
     
-    public static boolean getKeepRunning(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(KEEP_RUNNING, false);
-    }
-    
     public static boolean getStartOnBoot(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(START_ON_BOOT, false);
