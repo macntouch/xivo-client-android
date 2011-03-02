@@ -436,7 +436,9 @@ public class XivoConnectionService extends Service {
      */
     private void connectionCleanup() {
         connected = false;
+        connecting = false;
         authenticated = false;
+        authenticating = false;
         if (inputBuffer != null) {
             try {
                 inputBuffer.close();
