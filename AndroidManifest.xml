@@ -92,7 +92,6 @@
     <activity
       android:name=".xlets.XletServicesAsk"
       android:theme="@android:style/Theme.Dialog"
-      android:launchMode="singleTask"
       android:configChanges="keyboard|keyboardHidden" />
     <!-- Services -->
     <service
