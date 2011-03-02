@@ -51,6 +51,7 @@ public final class Constants {
      * ActivityForResult requestCodes and codeResults
      */
     public static final int CODE_IDENTITY_STATE_LIST = 1;
+    public static final int CODE_ADD_APPLICATION = 2;
     public static final int CODE_LAUNCH = 100;
     public static final int CODE_EXIT = 666; // Kill kill !!
     public static final int CODE_SERVICE_ASK1 = 101;
