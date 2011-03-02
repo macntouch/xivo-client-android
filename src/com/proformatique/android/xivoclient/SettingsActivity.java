@@ -19,19 +19,31 @@
 
 package com.proformatique.android.xivoclient;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import com.proformatique.android.xivoclient.service.ShortcutProvider;
+import com.proformatique.android.xivoclient.tools.AndroidTools;
 import com.proformatique.android.xivoclient.tools.Constants;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.WindowManager;
+import android.widget.Toast;
 
-public class SettingsActivity extends PreferenceActivity{
+public class SettingsActivity extends PreferenceActivity {
+    
+    private final static String TAG = "XiVO settings";
 	
 	private final static String USE_MOBILE_OPTION = "use_mobile_number";
 	private final static String START_ON_BOOT = "start_on_boot";
@@ -159,5 +171,92 @@ public class SettingsActivity extends PreferenceActivity{
     public static boolean getAlwaysConnected(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(ALWAYS_CONNECTED, false);
+    }
+    
+    /**
+     * Returns the list of shortcuts
+     * @param context
+     * @return
+     */
+    public static List<HashMap<String, ?>> getShortcuts(Context context) {
+        Cursor c = context.getContentResolver().query(ShortcutProvider.CONTENT_URI,
+                null, null, null, ShortcutProvider.NAME);
+        int size = c != null ? c.getCount() : 0;
+        if (size > 0) {
+            List<HashMap<String, ?>> list = new ArrayList<HashMap<String, ?>>(size);
+            c.moveToFirst();
+            while (!c.isAfterLast()) {
+                Log.d(TAG, "Adding one item to the list");
+                HashMap<String, Object> item = new HashMap<String, Object>();
+                String packageName = c.getString(c.getColumnIndex(ShortcutProvider.PACKAGE));
+                item.put("package", packageName);
+                item.put("name", c.getString(c.getColumnIndex(ShortcutProvider.NAME)));
+                item.put("icon", AndroidTools.getPackageIcon(context, packageName));
+                list.add(item);
+                c.moveToNext();
+            }
+            c.close();
+            Log.d(TAG, "Returning a list of " + list.size() + " elements.");
+            return list;
+        }
+        c.close();
+        return null;
+    }
+    
+    /**
+     * Returns the number of shortcuts available
+     * @param context
+     * @return
+     */
+    public static int getNbShortcuts(Context context) {
+        Cursor c = context.getContentResolver().query(ShortcutProvider.CONTENT_URI,
+                null, null, null, null);
+        int res = c != null ? c.getCount() : 0;
+        c.close();
+        return res;
+    }
+    
+    /**
+     * Adds a shortcut to ShortcutProvider for persistence
+     * @param context
+     * @param packageName
+     */
+    public static void addShortcut(Context context, String packageName) {
+        Log.d(TAG, "Adding the following shortcut " + packageName);
+        if (hasShortcut(context, packageName)) {
+            Toast.makeText(context, context.getString(R.string.shortcut_already_present),
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+        ContentValues values = new ContentValues();
+        values.put(ShortcutProvider.NAME, AndroidTools.getPackageLabel(context, packageName));
+        values.put(ShortcutProvider.PACKAGE, packageName);
+        context.getContentResolver().insert(ShortcutProvider.CONTENT_URI, values);
+        values.clear();
+    }
+    
+    /**
+     * Removes a shortcut from the ShortcutProvider
+     * @param context
+     * @param packageName
+     */
+    public static void removeShortcut(Context context, String packageName) {
+        Log.d(TAG, "Deleting the following shortcut: " + packageName);
+        context.getContentResolver().delete(ShortcutProvider.CONTENT_URI,
+                ShortcutProvider.PACKAGE + " = '" + packageName + "'", null);
+    }
+    
+    /**
+     * Check if the ShortcutProvider already contains a given package
+     * @param context
+     * @param packageName
+     * @return
+     */
+    private static boolean hasShortcut(Context context, String packageName) {
+        Cursor c = context.getContentResolver().query(ShortcutProvider.CONTENT_URI,
+                null, ShortcutProvider.PACKAGE + " = '" + packageName + "'", null, null);
+        boolean res = c.getCount() > 0;
+        c.close();
+        return res;
     }
 }
