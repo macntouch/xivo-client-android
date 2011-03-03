@@ -75,6 +75,7 @@
     <string name="context_action_call_short">"Appeler %s"</string>
     <string name="transfer_number">Transfert direct au %1$s</string>
     <string name="atxfer_number">Transfert indirect au %1$s</string>
+    <string name="context_edit_before_call">Éditer (%1$s)</string>
 
     <!-- Xlets descriptions
          IMPORTANT : use this file to put label and description
