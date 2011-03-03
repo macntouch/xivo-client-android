@@ -325,12 +325,14 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 							getString(R.string.context_action_transfer), key, contact.get(key));
 				}
 			} else {
-				items = new String[contact.size()];
+				items = new String[(contact.size() - 1) * 2 + 1];
 				for (String key: contact.keySet()) {
 					if (key.equals("Name"))
 						continue;
 					items[i++] = String.format(
 							getString(R.string.context_action_call), key, contact.get(key));
+					items[i++] = String.format(
+					        getString(R.string.context_edit_before_call), contact.get(key));
 				}
 			}
 			items[i] = getString(R.string.cancel_label);
@@ -365,6 +367,7 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 						} else {
 							Intent intent = new Intent(XletContactSearch.this, XletDialer.class);
 							intent.putExtra("numToCall", number);
+							if (i == 1) intent.putExtra("edit", true);
 							startActivity(intent);
 						}
 						

@@ -73,8 +73,10 @@ public class XletDialer extends XivoActivity {
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
             phoneNumber.setText(bundle.getString("numToCall"));
-            callTask = new CallTask();
-            callTask.execute();
+            if (!bundle.getBoolean("edit")) {
+                callTask = new CallTask();
+                callTask.execute();
+            }
         }
         
         phoneStateListener = new PhoneStateListener() {

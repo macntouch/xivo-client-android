@@ -77,6 +77,7 @@
     <string name="context_action_call_short">"Call %s"</string>
     <string name="transfer_number">Blind transfer to %1$s</string>
     <string name="atxfer_number">Attended transfer to %1$s</string>
+    <string name="context_edit_before_call">Edit (%1$s)</string>
 
     <!-- Xlets descriptions
          IMPORTANT : use this file to put label and description
