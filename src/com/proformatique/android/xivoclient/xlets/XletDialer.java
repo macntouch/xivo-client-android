@@ -518,6 +518,9 @@ public class XletDialer extends XivoActivity {
     
     @Override
     protected void onResume() {
+        if (phoneNumber != null) {
+            phoneNumber.setText(SettingsActivity.getLastDialerValue(this));
+        }
         super.onResume();
     }
     
@@ -527,7 +530,10 @@ public class XletDialer extends XivoActivity {
             dialog.dismiss();
             dialog = null;
         }
-        phoneNumber.setEnabled(true);
+        if (phoneNumber != null) {
+            phoneNumber.setEnabled(true);
+            SettingsActivity.setLastDialerValue(this, phoneNumber.getText().toString());
+        }
         super.onPause();
     }
     

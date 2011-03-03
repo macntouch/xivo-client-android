@@ -47,11 +47,11 @@ public class SettingsActivity extends PreferenceActivity {
 	
 	private final static String USE_MOBILE_OPTION = "use_mobile_number";
 	private final static String START_ON_BOOT = "start_on_boot";
-	private final static String KEEP_RUNNING = "keep_running";
 	private final static String ALWAYS_CONNECTED = "always_connected";
 	private final static boolean USE_MOBILE_DEFAULT = false;
 	private static final String MOBILE_PHONE_NUMBER = "mobile_number";
 	private static final String DEFAULT_MOBILE_PHONE_NUMBER = "";
+	private static final String LAST_DIALER_VALUE = "last_dialer_value";
 	
 	SharedPreferences settingsPrefs;
 	
@@ -251,5 +251,26 @@ public class SettingsActivity extends PreferenceActivity {
         boolean res = c.getCount() > 0;
         c.close();
         return res;
+    }
+    
+    /**
+     * Saves the last number that was on the dialer to restore it on the next onResume
+     * @param context
+     * @param number
+     */
+    public static void setLastDialerValue(Context context, String number) {
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .putString(LAST_DIALER_VALUE, number).commit();
+    }
+    
+    /**
+     * Retrieves the last dialer phone number that was present on the phoneNumber field of the
+     * dialer when onPause was called
+     * @param context
+     * @return number
+     */
+    public static String getLastDialerValue(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+                .getString(LAST_DIALER_VALUE, "");
     }
 }
