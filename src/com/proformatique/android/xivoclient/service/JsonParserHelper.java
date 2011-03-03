@@ -11,7 +11,7 @@ import org.json.JSONObject;
 
 import com.proformatique.android.xivoclient.SettingsActivity;
 
-public class JSONParserHelper {
+public class JsonParserHelper {
     
     /**
      * Searches a phone update message and returns the comm that contains the

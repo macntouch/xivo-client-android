@@ -803,7 +803,7 @@ public class XivoConnectionService extends Service {
         if (lastCalledNumber != null) {
             if (SettingsActivity.getUseMobile(this)) {
                 if (lastCalledNumber.length() < Constants.MAX_PHONE_NUMBER_LEN) {
-                    if (JSONParserHelper.getCalledIdNum(line).equals(
+                    if (JsonParserHelper.getCalledIdNum(line).equals(
                             SettingsActivity.getMobileNumber(this))) {
                         parseMyMobilePhoneUpdate(line);
                     }
@@ -960,15 +960,15 @@ public class XivoConnectionService extends Service {
      */
     private void parseMyMobilePhoneUpdate(JSONObject line) {
         Log.d(TAG, "Parsing my mobile phone update");
-        List<JSONObject> comms = JSONParserHelper.getMyComms(this, line);
+        List<JSONObject> comms = JsonParserHelper.getMyComms(this, line);
         for (JSONObject comm: comms) {
-            String status = JSONParserHelper.getChannelStatus(comm);
+            String status = JsonParserHelper.getChannelStatus(comm);
             if (status.equals("ringing") || status.equals("linked-called")) {
                 updateChannels(comm, false);
             }
         }
         for (JSONObject comm: comms) {
-            if (JSONParserHelper.channelsMatch(comm, peerChannel, thisChannel)) {
+            if (JsonParserHelper.channelsMatch(comm, peerChannel, thisChannel)) {
                 try {
                     if (line.getJSONObject("status").getJSONObject("hintstatus")
                             .getString("code").equals(Constants.CALLING_STATUS_CODE)) {
@@ -979,7 +979,7 @@ public class XivoConnectionService extends Service {
                 } catch (JSONException e) {
                     // Nothing to do if there's no status or hintstatus
                 }
-                if (JSONParserHelper.getChannelStatus(comm).equals("hangup")) {
+                if (JsonParserHelper.getChannelStatus(comm).equals("hangup")) {
                     resetChannels();
                     Intent iStatusUpdate = new Intent();
                     iStatusUpdate.setAction(Constants.ACTION_CALL_PROGRESS);
