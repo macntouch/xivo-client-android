@@ -8,9 +8,11 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -82,17 +84,34 @@ public class XivoConnectionService extends Service {
     private boolean authenticating = false;
     private boolean wrongLoginInfo = false;
     
-    // Messages from the loop to the handler
-    private final static int NO_MESSAGE = 0;
-    private final static int NO_CLASS = 1;
-    private final static int DISCONNECT = 2;
-    private final static int UNKNOWN = 3;
-    private final static int JSON_EXCEPTION = 4;
-    private static final int USERS_LIST_COMPLETE = 5;
-    private static final int PHONES_LOADED = 6;
-    private static final int PRESENCE_UPDATE = 7;
-    private static final int HISTORY_LOADED = 8;
-    private static final int FEATURES_LOADED = 9;
+    /**
+     * Messages to return from the main loop to the handler
+     */
+    public enum Messages {
+        NO_MESSAGE(0), NO_CLASS(1), DISCONNECT(2), UNKNOWN(3), JSON_EXCEPTION(4),
+        USERS_LIST_COMPLETE(5), PHONES_LOADED(6), PRESENCE_UPDATE(7), HISTORY_LOADED(8),
+        FEATURES_LOADED(9);
+        
+        private int id;
+        private static final Map<Integer, Messages> lookup = new HashMap<Integer, Messages>();
+        static {
+            for (Messages m : EnumSet.allOf(Messages.class)) {
+                lookup.put(m.getId(), m);
+            }
+        }
+        
+        public int getId() {
+            return id;
+        }
+        
+        private Messages(int id) {
+            this.id = id;
+        }
+        
+        public static Messages get(int id) {
+            return lookup.get(id);
+        }
+    }
     
     /**
      * Implementation of the methods between the service and the activities
@@ -594,7 +613,7 @@ public class XivoConnectionService extends Service {
              * Receives messages from the json loop and broadcast intents accordingly.
              */
             public void handleMessage(Message msg) {
-                switch(msg.what) {
+                switch(Messages.get(msg.what)) {
                 case USERS_LIST_COMPLETE:
                     Log.d(TAG, "Users list loaded");
                     Intent iLoadUser = new Intent();
@@ -643,7 +662,7 @@ public class XivoConnectionService extends Service {
                 Log.d(TAG, "Starting the main loop");
                 while (!(cancel)) {
                     while ((newLine = readJsonObjectCTI()) == null && !(cancel));
-                    handler.sendEmptyMessage(parseIncomingJson(newLine));
+                    handler.sendEmptyMessage(parseIncomingJson(newLine).getId());
                 }
             };
         };
@@ -655,13 +674,13 @@ public class XivoConnectionService extends Service {
      * for better message handling.
      * @return
      */
-    protected int parseIncomingJson(JSONObject line) {
+    protected Messages parseIncomingJson(JSONObject line) {
         if (cancel || line == null)
-            return NO_MESSAGE;
+            return Messages.NO_MESSAGE;
         try {
             String classRec = line.has("class") ? line.getString("class") : null;
             if (classRec == null)
-                return NO_CLASS;
+                return Messages.NO_CLASS;
             if (classRec.equals("presence"))
                 return parsePresence(line);
             else if (classRec.equals("users"))
@@ -675,35 +694,24 @@ public class XivoConnectionService extends Service {
             else if (classRec.equals("groups"))
                 return parseGroups(line);
             else if (classRec.equals("disconn"))
-                return DISCONNECT;
+                return Messages.DISCONNECT;
             // Sheets are ignored at the moment
             else if (classRec.equals("sheet"))
-                return NO_MESSAGE;
+                return Messages.NO_MESSAGE;
             else if (classRec.equals("meetme"))
-                return parseMeetme(line);
+                return JsonParserHelper.parseMeetme(XivoConnectionService.this, line);
             else {
                 Log.d(TAG, "Unknown classrec: " + classRec);
-                return UNKNOWN;
+                return Messages.UNKNOWN;
             }
         } catch (JSONException e) {
             Log.d(TAG, "Unable to get the class from the JSONObject");
             e.printStackTrace();
-            return JSON_EXCEPTION;
+            return Messages.JSON_EXCEPTION;
         }
     }
     
-    private int parseMeetme(JSONObject line) {
-        try {
-            if (line.getString("function").equals("update")) {
-                loadList("users");
-            }
-        } catch (JSONException e) {
-            // no function
-        }
-        return NO_MESSAGE;
-    }
-    
-    private int parseFeatures(JSONObject line) {
+    private Messages parseFeatures(JSONObject line) {
         Log.d(TAG, "Parsing features:\n" + line.toString());
         String[] features = {"enablednd", "callrecord", "incallfilter", "enablevoicemail",
             "busy", "rna", "unc"};
@@ -743,12 +751,12 @@ public class XivoConnectionService extends Service {
             }
         } catch (JSONException e) {
             Log.d(TAG, "Could not parse features");
-            return JSON_EXCEPTION;
+            return Messages.JSON_EXCEPTION;
         }
-        return FEATURES_LOADED;
+        return Messages.FEATURES_LOADED;
     }
     
-    private int parseHistory(JSONObject line) {
+    private Messages parseHistory(JSONObject line) {
         Log.d(TAG, "Parsing history:\n" + line.toString());
         try {
             JSONArray payload = line.getJSONArray("payload");
@@ -766,9 +774,9 @@ public class XivoConnectionService extends Service {
             }
         } catch (JSONException e) {
             Log.d(TAG, "Could not parse incoming history payload");
-            return JSON_EXCEPTION;
+            return Messages.JSON_EXCEPTION;
         }
-        return HISTORY_LOADED;
+        return Messages.HISTORY_LOADED;
     }
     
     /**
@@ -776,7 +784,7 @@ public class XivoConnectionService extends Service {
      * @param line
      * @return msg to the handler
      */
-    private int parsePhones(JSONObject line) {
+    private Messages parsePhones(JSONObject line) {
         try {
             String function = line.getString("function");
             if (function.equals("sendlist")) {
@@ -787,7 +795,7 @@ public class XivoConnectionService extends Service {
         } catch (JSONException e) {
             Log.d(TAG, "Phone class without function");
         }
-        return NO_MESSAGE;
+        return Messages.NO_MESSAGE;
     }
     
     /**
@@ -795,7 +803,7 @@ public class XivoConnectionService extends Service {
      * @param line
      * @return Message to the handler
      */
-    private int parsePhoneUpdate(JSONObject line) {
+    private Messages parsePhoneUpdate(JSONObject line) {
         
         /*
          * Check if the update concerns a call I'm doing
@@ -833,7 +841,7 @@ public class XivoConnectionService extends Service {
         } catch (JSONException e) {
             Log.d(TAG, "Could not find and astid and an id for this update");
         }
-        return NO_MESSAGE;
+        return Messages.NO_MESSAGE;
     }
     
     /**
@@ -860,7 +868,7 @@ public class XivoConnectionService extends Service {
      * @param hintstatus
      * @return
      */
-    private int updateUserHintStatus(long id, JSONObject hintstatus) {
+    private Messages updateUserHintStatus(long id, JSONObject hintstatus) {
         ContentValues values = new ContentValues();
         try {
             values.put(UserProvider.HINTSTATUS_CODE, hintstatus.getString("code"));
@@ -868,7 +876,7 @@ public class XivoConnectionService extends Service {
             values.put(UserProvider.HINTSTATUS_LONGNAME, hintstatus.getString("longname"));
         } catch (JSONException e) {
             Log.d(TAG, "Failed to update the user status");
-            return NO_MESSAGE;
+            return Messages.NO_MESSAGE;
         }
         getContentResolver().update(
                 Uri.parse(UserProvider.CONTENT_URI + "/" + id), values, null, null);
@@ -877,7 +885,7 @@ public class XivoConnectionService extends Service {
         iUpdateIntent.putExtra("id", id);
         sendBroadcast(iUpdateIntent);
         Log.d(TAG, "Update intent sent");
-        return NO_MESSAGE;
+        return Messages.NO_MESSAGE;
     }
     
     /**
@@ -995,16 +1003,16 @@ public class XivoConnectionService extends Service {
      * @param line
      * @return Message to the handler
      */
-    private int parsePhoneList(JSONObject line) {
+    private Messages parsePhoneList(JSONObject line) {
         Log.d(TAG, "Parsing phone list");
         if (line.has("payload") == false)
-            return NO_MESSAGE;
+            return Messages.NO_MESSAGE;
         JSONObject payloads = null;
         try {
             payloads = line.getJSONObject("payload");
         } catch (JSONException e) {
             Log.e(TAG, "Could not retrieve the payload from the phone message");
-            return JSON_EXCEPTION;
+            return Messages.JSON_EXCEPTION;
         }
         JSONArray jAllPhones = new JSONArray();
         for (@SuppressWarnings("unchecked") Iterator<String> keyIter = payloads.keys();
@@ -1013,7 +1021,7 @@ public class XivoConnectionService extends Service {
                 jAllPhones.put(payloads.getJSONObject(keyIter.next()));
             } catch (JSONException e) {
                 Log.e(TAG, "Could not retrieve phone from payload");
-                return JSON_EXCEPTION;
+                return Messages.JSON_EXCEPTION;
             }
         }
         
@@ -1038,7 +1046,7 @@ public class XivoConnectionService extends Service {
             }
         } while (user.moveToNext());
         user.close();
-        return PHONES_LOADED;
+        return Messages.PHONES_LOADED;
     }
     
     @SuppressWarnings("unused")
@@ -1098,7 +1106,7 @@ public class XivoConnectionService extends Service {
      * @param json
      * @return result parsed by the main loop handler
      */
-    private int parseUsers(JSONObject line) {
+    private Messages parseUsers(JSONObject line) {
         Log.d(TAG, "Parsing users");
         if (line.has("payload")) {
             JSONArray payload = null;
@@ -1106,7 +1114,7 @@ public class XivoConnectionService extends Service {
                 payload = line.getJSONArray("payload");
             } catch (JSONException e) {
                 Log.d(TAG, "Could not get payload of the line");
-                return JSON_EXCEPTION;
+                return Messages.JSON_EXCEPTION;
             }
             int len = payload != null ? payload.length() : 0;
             getContentResolver().delete(UserProvider.CONTENT_URI, null, null);
@@ -1120,7 +1128,7 @@ public class XivoConnectionService extends Service {
                 } catch (JSONException e) {
                     Log.d(TAG, "Could not retrieve user info from the payload");
                     e.printStackTrace();
-                    return JSON_EXCEPTION;
+                    return Messages.JSON_EXCEPTION;
                 }
                 
                 /**
@@ -1158,17 +1166,17 @@ public class XivoConnectionService extends Service {
                     }
                 } catch (JSONException e) {
                     Log.d(TAG, "Could not create the user data structure");
-                    return JSON_EXCEPTION;
+                    return Messages.JSON_EXCEPTION;
                 }
                 getContentResolver().insert(UserProvider.CONTENT_URI, user);
                 user.clear();
             }
-            return USERS_LIST_COMPLETE;
+            return Messages.USERS_LIST_COMPLETE;
         }
-        return NO_MESSAGE;
+        return Messages.NO_MESSAGE;
     }
     
-    private int parsePresence(JSONObject line) {
+    private Messages parsePresence(JSONObject line) {
         Log.d(TAG, "Parsing presences: " + line.toString());
         try {
             String id = line.getString("xivo_userid");
@@ -1186,14 +1194,14 @@ public class XivoConnectionService extends Service {
             }
         } catch (JSONException e) {
             Log.d(TAG, "Failed to update presence");
-            return NO_MESSAGE;
+            return Messages.NO_MESSAGE;
         }
-        return PRESENCE_UPDATE;
+        return Messages.PRESENCE_UPDATE;
     }
     
-    private int parseGroups(JSONObject line) {
+    private Messages parseGroups(JSONObject line) {
         Log.d(TAG, "Parsing groups: " + line.toString());
-        return NO_MESSAGE;
+        return Messages.NO_MESSAGE;
     }
     
     /**
