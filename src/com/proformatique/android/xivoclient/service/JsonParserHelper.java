@@ -113,18 +113,26 @@ public class JsonParserHelper {
      * 
      * @param line
      * @return calleridnum or ""
+     * @throws JSONException
      */
-    @SuppressWarnings("unchecked")
-    public static String getCalledIdNum(JSONObject line) {
-        try {
+    public static String getCalledIdNum(JSONObject line) throws JSONException {
+        if (line.has("status") && line.getJSONObject("status").has("comms")) {
             JSONObject comms = line.getJSONObject("status").getJSONObject("comms");
             String key = null;
-            for (Iterator<String> iter = comms.keys(); iter.hasNext();)
+            for (@SuppressWarnings("unchecked")Iterator<String> iter = comms.keys();
+                    iter.hasNext(); ) {
                 key = iter.next();
-            return comms.getJSONObject(key).getString("calleridnum");
-        } catch (JSONException e) {
-            return "";
+                if (comms.getJSONObject(key).has("calleridnum")) {
+                    return comms.getJSONObject(key).getString("calleridnum");
+                }
+            }
         }
+        return "";
+    }
+    
+    public static Messages parseGroups(Context context, JSONObject line) {
+        Log.d(TAG, "Parsing groups: " + line.toString());
+        return Messages.NO_MESSAGE;
     }
     
     /**
@@ -132,26 +140,22 @@ public class JsonParserHelper {
      * @param context
      * @param json line
      * @return Messages.HISTORY_LOADED if successful
+     * @throws JSONException
      */
-    public static Messages parseHistory(Context context, JSONObject line) {
+    public static Messages parseHistory(Context context, JSONObject line) throws JSONException {
         Log.d(TAG, "Parsing history:\n" + line.toString());
-        try {
-            JSONArray payload = line.getJSONArray("payload");
-            int len = payload.length();
-            for (int i = 0; i < len; i++) {
-                JSONObject item = payload.getJSONObject(i);
-                ContentValues values = new ContentValues();
-                values.put(HistoryProvider.DURATION, item.getString("duration"));
-                values.put(HistoryProvider.TERMIN, item.getString("termin"));
-                values.put(HistoryProvider.DIRECTION, item.getString("direction"));
-                values.put(HistoryProvider.FULLNAME, item.getString("fullname"));
-                values.put(HistoryProvider.TS, item.getString("ts"));
-                context.getContentResolver().insert(HistoryProvider.CONTENT_URI, values);
-                values.clear();
-            }
-        } catch (JSONException e) {
-            Log.d(TAG, "Could not parse incoming history payload");
-            return Messages.JSON_EXCEPTION;
+        JSONArray payload = line.getJSONArray("payload");
+        int len = payload.length();
+        for (int i = 0; i < len; i++) {
+            JSONObject item = payload.getJSONObject(i);
+            ContentValues values = new ContentValues();
+            values.put(HistoryProvider.DURATION, item.getString("duration"));
+            values.put(HistoryProvider.TERMIN, item.getString("termin"));
+            values.put(HistoryProvider.DIRECTION, item.getString("direction"));
+            values.put(HistoryProvider.FULLNAME, item.getString("fullname"));
+            values.put(HistoryProvider.TS, item.getString("ts"));
+            context.getContentResolver().insert(HistoryProvider.CONTENT_URI, values);
+            values.clear();
         }
         return Messages.HISTORY_LOADED;
     }

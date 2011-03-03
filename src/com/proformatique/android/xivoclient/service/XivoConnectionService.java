@@ -692,7 +692,7 @@ public class XivoConnectionService extends Service {
             else if (classRec.equals("features"))
                 return parseFeatures(line);
             else if (classRec.equals("groups"))
-                return parseGroups(line);
+                return JsonParserHelper.parseGroups(XivoConnectionService.this, line);
             else if (classRec.equals("disconn"))
                 return Messages.DISCONNECT;
             // Sheets are ignored at the moment
@@ -705,73 +705,70 @@ public class XivoConnectionService extends Service {
                 return Messages.UNKNOWN;
             }
         } catch (JSONException e) {
-            Log.d(TAG, "Unable to get the class from the JSONObject");
+            Log.d(TAG, "Unhandled JSONException in the main loop.\n" +
+                    "Important exceptions are checked before this point");
             e.printStackTrace();
-            return Messages.JSON_EXCEPTION;
+            return Messages.NO_MESSAGE;
         }
     }
     
-    private Messages parseFeatures(JSONObject line) {
+    private Messages parseFeatures(JSONObject line) throws JSONException {
         Log.d(TAG, "Parsing features:\n" + line.toString());
-        String[] features = {"enablednd", "callrecord", "incallfilter", "enablevoicemail",
+        if (!line.has("payload")) return Messages.NO_MESSAGE;
+        final String[] features = {"enablednd", "callrecord", "incallfilter", "enablevoicemail",
             "busy", "rna", "unc"};
-        try {
-            JSONObject payload = line.getJSONObject("payload");
-            if (line.has("function") && line.getString("function").equals("put")) {
-                for (@SuppressWarnings("unchecked") Iterator<String> keyIter = payload.keys();
-                        keyIter.hasNext(); ) {
-                    String feature = keyIter.next();
-                    ContentValues values = new ContentValues();
-                    values.put(CapaservicesProvider.ENABLED,
-                            payload.getJSONObject(feature).getBoolean("enabled") == true ? 1 : 0);
-                    if (payload.getJSONObject(feature).has("number")) {
-                        values.put(CapaservicesProvider.NUMBER,
-                                payload.getJSONObject(feature).getString("number"));
-                    }
-                    if (!feature.equals("enablednd") && !feature.equals("enablevoicemail"))
-                        feature = feature.replace("enable", "");
-                    getContentResolver().update(CapaservicesProvider.CONTENT_URI, values,
-                            CapaservicesProvider.SERVICE + " = '" + feature + "'", null);
-                    values.clear();
+        JSONObject payload = line.getJSONObject("payload");
+        if (line.has("function") && line.getString("function").equals("put")) {
+            for (@SuppressWarnings("unchecked") Iterator<String> keyIter = payload.keys();
+                    keyIter.hasNext(); ) {
+                String feature = keyIter.next();
+                JSONObject jFeature = payload.getJSONObject(feature);
+                ContentValues values = new ContentValues();
+                values.put(CapaservicesProvider.ENABLED,
+                        jFeature.has("enabled") && jFeature.getBoolean("enabled") == true ? 1 : 0);
+                if (jFeature.has("number")) {
+                    values.put(CapaservicesProvider.NUMBER, jFeature.getString("number"));
                 }
-            } else {
-                getContentResolver().delete(CapaservicesProvider.CONTENT_URI, null, null);
-                for (String feature: features) {
+                if (!feature.equals("enablednd") && !feature.equals("enablevoicemail"))
+                    feature = feature.replace("enable", "");
+                getContentResolver().update(CapaservicesProvider.CONTENT_URI, values,
+                        CapaservicesProvider.SERVICE + " = '" + feature + "'", null);
+                values.clear();
+            }
+        } else {
+            getContentResolver().delete(CapaservicesProvider.CONTENT_URI, null, null);
+            for (String feature: features) {
+                if (payload.has(feature)) {
+                    JSONObject jFeature = payload.getJSONObject(feature);
                     ContentValues values = new ContentValues();
                     values.put(CapaservicesProvider.SERVICE, feature);
-                    values.put(CapaservicesProvider.ENABLED,
-                            payload.getJSONObject(feature).getBoolean("enabled") == true ? 1 : 0);
-                    if (payload.getJSONObject(feature).has("number")) {
-                        values.put(CapaservicesProvider.NUMBER,
-                                payload.getJSONObject(feature).getString("number"));
+                    values.put(CapaservicesProvider.ENABLED, (jFeature.has("enabled") && 
+                            jFeature.getBoolean("enabled")) == true ? 1 : 0);
+                    if (jFeature.has("number")) {
+                        values.put(CapaservicesProvider.NUMBER, jFeature.getString("number"));
                     }
                     getContentResolver().insert(CapaservicesProvider.CONTENT_URI, values);
-                    values.clear();
+                values.clear();
                 }
             }
-        } catch (JSONException e) {
-            Log.d(TAG, "Could not parse features");
-            return Messages.JSON_EXCEPTION;
         }
         return Messages.FEATURES_LOADED;
     }
-    
     
     /**
      * Parses incoming messages from the CTI server with class phones
      * @param line
      * @return msg to the handler
+     * @throws JSONException 
      */
-    private Messages parsePhones(JSONObject line) {
-        try {
+    private Messages parsePhones(JSONObject line) throws JSONException {
+        if (line.has("function")) {
             String function = line.getString("function");
             if (function.equals("sendlist")) {
                 return parsePhoneList(line);
             } else if (function.equals("update")) {
                 return parsePhoneUpdate(line);
             }
-        } catch (JSONException e) {
-            Log.d(TAG, "Phone class without function");
         }
         return Messages.NO_MESSAGE;
     }
@@ -780,8 +777,9 @@ public class XivoConnectionService extends Service {
      * Parses phone updates
      * @param line
      * @return Message to the handler
+     * @throws JSONException 
      */
-    private Messages parsePhoneUpdate(JSONObject line) {
+    private Messages parsePhoneUpdate(JSONObject line) throws JSONException {
         
         /*
          * Check if the update concerns a call I'm doing
@@ -845,17 +843,13 @@ public class XivoConnectionService extends Service {
      * @param id
      * @param hintstatus
      * @return
+     * @throws JSONException 
      */
-    private Messages updateUserHintStatus(long id, JSONObject hintstatus) {
+    private Messages updateUserHintStatus(long id, JSONObject hintstatus) throws JSONException {
         ContentValues values = new ContentValues();
-        try {
-            values.put(UserProvider.HINTSTATUS_CODE, hintstatus.getString("code"));
-            values.put(UserProvider.HINTSTATUS_COLOR, hintstatus.getString("color"));
-            values.put(UserProvider.HINTSTATUS_LONGNAME, hintstatus.getString("longname"));
-        } catch (JSONException e) {
-            Log.d(TAG, "Failed to update the user status");
-            return Messages.NO_MESSAGE;
-        }
+        values.put(UserProvider.HINTSTATUS_CODE, hintstatus.getString("code"));
+        values.put(UserProvider.HINTSTATUS_COLOR, hintstatus.getString("color"));
+        values.put(UserProvider.HINTSTATUS_LONGNAME, hintstatus.getString("longname"));
         getContentResolver().update(
                 Uri.parse(UserProvider.CONTENT_URI + "/" + id), values, null, null);
         Intent iUpdateIntent = new Intent();
@@ -869,27 +863,30 @@ public class XivoConnectionService extends Service {
     /**
      * Parses phones update for a call from the user (not using his mobile)
      * @param line
+     * @throws JSONException 
      */
-    private void parseMyPhoneUpdate(JSONObject line) {
+    private void parseMyPhoneUpdate(JSONObject line) throws JSONException {
         Log.d(TAG, "Parsing my phone update");
+        if (!line.has("status")) return;
+        JSONObject status = line.getJSONObject("status");
         /*
          * Sends the new call progress status
          */
-        try {
-            Intent iStatusUpdate = new Intent();
-            iStatusUpdate.setAction(Constants.ACTION_CALL_PROGRESS);
-            JSONObject hintstatus = line.getJSONObject("status").getJSONObject("hintstatus");
-            iStatusUpdate.putExtra("status", hintstatus.getString("longname"));
-            iStatusUpdate.putExtra("code", hintstatus.getString("code"));
-            sendBroadcast(iStatusUpdate);
-        } catch (JSONException e) {
-            Log.d(TAG, "Could not get the new status");
+        if (status.has("hintstatus")) {
+            JSONObject hintstatus = status.getJSONObject("hintstatus");
+            if (hintstatus.has("longname") && hintstatus.has("code")) {
+                Intent iStatusUpdate = new Intent();
+                iStatusUpdate.setAction(Constants.ACTION_CALL_PROGRESS);
+                iStatusUpdate.putExtra("status", hintstatus.getString("longname"));
+                iStatusUpdate.putExtra("code", hintstatus.getString("code"));
+                sendBroadcast(iStatusUpdate);
+            }
         }
         /*
          * Save channels
          */
-        try {
-            JSONObject comms = line.getJSONObject("status").getJSONObject("comms");
+        if (status.has("comms")) {
+            JSONObject comms = status.getJSONObject("comms");
             for (@SuppressWarnings("unchecked") Iterator<String> iterKey = comms.keys();
                     iterKey.hasNext(); ) {
                 String key = iterKey.next();
@@ -899,8 +896,6 @@ public class XivoConnectionService extends Service {
                 if (comm.has("peerchannel"))
                     peerChannel = comm.getString("peerchannel");
             }
-        } catch (JSONException e) {
-            Log.d(TAG, "Could not parse channels");
         }
     }
     
@@ -910,41 +905,40 @@ public class XivoConnectionService extends Service {
      * @param myChannel 
      *      True if the update is coming for my userid
      *      False if it's the peer's update
+     * @throws JSONException 
      */
-    private void updateChannels(final JSONObject comm, final boolean myChannel) {
+    private void updateChannels(final JSONObject comm, final boolean myChannel)
+            throws JSONException {
         Log.d(TAG, "Updating channels");
-        try {
-            if (comm.has("thischannel")) {
-                if (myChannel) {
-                    if (thisChannel != null && !thisChannel.startsWith("Local/")) {
-                        oldChannel = thisChannel;
-                    }
-                    thisChannel = comm.getString("thischannel");
-                } else {
-                    peerChannel = comm.getString("thischannel");
+        if (comm.has("thischannel")) {
+            if (myChannel) {
+                if (thisChannel != null && !thisChannel.startsWith("Local/")) {
+                    oldChannel = thisChannel;
                 }
+                thisChannel = comm.getString("thischannel");
+            } else {
+                peerChannel = comm.getString("thischannel");
             }
-            
-            if (comm.has("peerchannel")) {
-                if (myChannel) {
-                    peerChannel = comm.getString("peerchannel");
-                } else {
-                    if (thisChannel != null && !thisChannel.startsWith("Local/")) {
-                        oldChannel = thisChannel;
-                    }
-                    thisChannel = comm.getString("peerchannel");
+        }
+        
+        if (comm.has("peerchannel")) {
+            if (myChannel) {
+                peerChannel = comm.getString("peerchannel");
+            } else {
+                if (thisChannel != null && !thisChannel.startsWith("Local/")) {
+                    oldChannel = thisChannel;
                 }
+                thisChannel = comm.getString("peerchannel");
             }
-        } catch (JSONException e) {
-            // We can ignore this exception since we tested with .has before getting
         }
     }
     
     /**
      * Parses phones for a call from the user's mobile
      * @param line
+     * @throws JSONException 
      */
-    private void parseMyMobilePhoneUpdate(JSONObject line) {
+    private void parseMyMobilePhoneUpdate(JSONObject line) throws JSONException {
         Log.d(TAG, "Parsing my mobile phone update");
         List<JSONObject> comms = JsonParserHelper.getMyComms(this, line);
         for (JSONObject comm: comms) {
@@ -980,27 +974,17 @@ public class XivoConnectionService extends Service {
      * Parses the phone list received at the beginning of a session.
      * @param line
      * @return Message to the handler
+     * @throws JSONException 
      */
-    private Messages parsePhoneList(JSONObject line) {
+    private Messages parsePhoneList(JSONObject line) throws JSONException {
         Log.d(TAG, "Parsing phone list");
         if (line.has("payload") == false)
             return Messages.NO_MESSAGE;
-        JSONObject payloads = null;
-        try {
-            payloads = line.getJSONObject("payload");
-        } catch (JSONException e) {
-            Log.e(TAG, "Could not retrieve the payload from the phone message");
-            return Messages.JSON_EXCEPTION;
-        }
+        JSONObject payloads = line.getJSONObject("payload");
         JSONArray jAllPhones = new JSONArray();
         for (@SuppressWarnings("unchecked") Iterator<String> keyIter = payloads.keys();
                 keyIter.hasNext(); ) {
-            try {
-                jAllPhones.put(payloads.getJSONObject(keyIter.next()));
-            } catch (JSONException e) {
-                Log.e(TAG, "Could not retrieve phone from payload");
-                return Messages.JSON_EXCEPTION;
-            }
+            jAllPhones.put(payloads.getJSONObject(keyIter.next()));
         }
         
         // logAllPhones(jAllPhones);
@@ -1016,11 +1000,9 @@ public class XivoConnectionService extends Service {
         do {
             String techlist = user.getString(techlistIndex);
             for (int i = 0; i < nbXivo; i++) {
-                try {
-                    if (jAllPhones.getJSONObject(i).has(techlist)) {
-                        setPhoneForUser(user, jAllPhones.getJSONObject(i).getJSONObject(techlist));
-                    }
-                } catch (JSONException e) {}
+                if (jAllPhones.getJSONObject(i).has(techlist)) {
+                    setPhoneForUser(user, jAllPhones.getJSONObject(i).getJSONObject(techlist));
+                }
             }
         } while (user.moveToNext());
         user.close();
@@ -1083,68 +1065,50 @@ public class XivoConnectionService extends Service {
      * Parses incoming cti messages of class users
      * @param json
      * @return result parsed by the main loop handler
+     * @throws JSONException 
      */
-    private Messages parseUsers(JSONObject line) {
+    private Messages parseUsers(JSONObject line) throws JSONException {
         Log.d(TAG, "Parsing users");
         if (line.has("payload")) {
-            JSONArray payload = null;
-            try {
-                payload = line.getJSONArray("payload");
-            } catch (JSONException e) {
-                Log.d(TAG, "Could not get payload of the line");
-                return Messages.JSON_EXCEPTION;
-            }
+            JSONArray payload = line.getJSONArray("payload");
             int len = payload != null ? payload.length() : 0;
             getContentResolver().delete(UserProvider.CONTENT_URI, null, null);
             ContentValues user = new ContentValues();
             for (int i = 0; i < len; i++) {
-                JSONObject jUser = null;
-                JSONObject jUserState = null;
-                try {
-                    jUser = payload.getJSONObject(i);
-                    jUserState = jUser.getJSONObject("statedetails");
-                } catch (JSONException e) {
-                    Log.d(TAG, "Could not retrieve user info from the payload");
-                    e.printStackTrace();
-                    return Messages.JSON_EXCEPTION;
-                }
+                JSONObject jUser = payload.getJSONObject(i);
+                JSONObject jUserState = jUser.getJSONObject("statedetails");
                 
                 /**
                  * Feed the useful fields to store in the list
                  */
-                try {
-                    String xivoId = jUser.getString("xivo_userid");
-                    String astId = jUser.getString("astid");
-                    String userId = astId + "/" + xivoId;
-                    user.put(UserProvider.ASTID, astId);
-                    user.put(UserProvider.XIVO_USERID, xivoId);
-                    user.put(UserProvider.FULLNAME, jUser.getString("fullname"));
-                    user.put(UserProvider.PHONENUM, jUser.getString("phonenum"));
-                    user.put(UserProvider.STATEID, jUserState.getString("stateid"));
-                    user.put(UserProvider.STATEID_LONGNAME, jUserState.getString("longname"));
-                    user.put(UserProvider.STATEID_COLOR, jUserState.getString("color"));
-                    user.put(UserProvider.TECHLIST, jUser.getJSONArray("techlist").getString(0));
-                    user.put(UserProvider.HINTSTATUS_COLOR, Constants.DEFAULT_HINT_COLOR);
-                    user.put(UserProvider.HINTSTATUS_CODE, Constants.DEFAULT_HINT_CODE);
-                    user.put(UserProvider.HINTSTATUS_LONGNAME, getString(
-                            R.string.default_hint_longname));
-                    if (userId.equals(this.userId)) {
-                        fullname = jUser.getString("fullname");
-                        Intent iUpdateIdentity = new Intent();
-                        iUpdateIdentity.setAction(Constants.ACTION_UPDATE_IDENTITY);
-                        iUpdateIdentity.putExtra("fullname", fullname);
-                        sendBroadcast(iUpdateIdentity);
-                        if (jUser.has("mwi")) {
-                            JSONArray mwi = jUser.getJSONArray("mwi");
-                            int lenmwi = mwi != null ? mwi.length() : 0;
-                            for (int j = 0; j < lenmwi; j++) {
-                                this.mwi[j] = mwi.getInt(j);
-                            }
+                String xivoId = jUser.getString("xivo_userid");
+                String astId = jUser.getString("astid");
+                String userId = astId + "/" + xivoId;
+                user.put(UserProvider.ASTID, astId);
+                user.put(UserProvider.XIVO_USERID, xivoId);
+                user.put(UserProvider.FULLNAME, jUser.getString("fullname"));
+                user.put(UserProvider.PHONENUM, jUser.getString("phonenum"));
+                user.put(UserProvider.STATEID, jUserState.getString("stateid"));
+                user.put(UserProvider.STATEID_LONGNAME, jUserState.getString("longname"));
+                user.put(UserProvider.STATEID_COLOR, jUserState.getString("color"));
+                user.put(UserProvider.TECHLIST, jUser.getJSONArray("techlist").getString(0));
+                user.put(UserProvider.HINTSTATUS_COLOR, Constants.DEFAULT_HINT_COLOR);
+                user.put(UserProvider.HINTSTATUS_CODE, Constants.DEFAULT_HINT_CODE);
+                user.put(UserProvider.HINTSTATUS_LONGNAME, getString(
+                        R.string.default_hint_longname));
+                if (userId.equals(this.userId)) {
+                    fullname = jUser.getString("fullname");
+                    Intent iUpdateIdentity = new Intent();
+                    iUpdateIdentity.setAction(Constants.ACTION_UPDATE_IDENTITY);
+                    iUpdateIdentity.putExtra("fullname", fullname);
+                    sendBroadcast(iUpdateIdentity);
+                    if (jUser.has("mwi")) {
+                        JSONArray mwi = jUser.getJSONArray("mwi");
+                        int lenmwi = mwi != null ? mwi.length() : 0;
+                        for (int j = 0; j < lenmwi; j++) {
+                            this.mwi[j] = mwi.getInt(j);
                         }
                     }
-                } catch (JSONException e) {
-                    Log.d(TAG, "Could not create the user data structure");
-                    return Messages.JSON_EXCEPTION;
                 }
                 getContentResolver().insert(UserProvider.CONTENT_URI, user);
                 user.clear();
@@ -1175,11 +1139,6 @@ public class XivoConnectionService extends Service {
             return Messages.NO_MESSAGE;
         }
         return Messages.PRESENCE_UPDATE;
-    }
-    
-    private Messages parseGroups(JSONObject line) {
-        Log.d(TAG, "Parsing groups: " + line.toString());
-        return Messages.NO_MESSAGE;
     }
     
     /**
