@@ -440,13 +440,8 @@ public class XivoConnectionService extends Service {
         authenticated = false;
         authenticating = false;
         if (inputBuffer != null) {
-            try {
-                inputBuffer.close();
-                @SuppressWarnings("unused")
-                BufferedReader tmp = inputBuffer;
-            } catch (IOException e) {
-                Log.d(TAG, "inputBuffer was already closed");
-            }
+            @SuppressWarnings("unused")
+            BufferedReader tmp = inputBuffer;
             inputBuffer = null;
         }
         if (networkConnection != null) {
@@ -457,14 +452,15 @@ public class XivoConnectionService extends Service {
                 } catch (IOException e) {
                     Log.d(TAG, "Input and output were already closed");
                 }
-                if (networkConnection != null) networkConnection.close();
-                @SuppressWarnings("unused")
-                Socket tmp = networkConnection;
+                if (networkConnection != null) {
+                    Socket tmp = networkConnection;
+                    tmp.close();
+                    networkConnection = null;
+                }
             } catch (IOException e) {
                 Log.e(TAG, "Error while cleaning up the network connection");
                 e.printStackTrace();
             }
-            networkConnection = null;
         }
     }
     
@@ -550,7 +546,6 @@ public class XivoConnectionService extends Service {
             resetState();
             return 0;
         }
-        
     }
     
     private void refreshFeatures() {
@@ -1340,11 +1335,9 @@ public class XivoConnectionService extends Service {
      */
     private void resetState() {
         xivoId = null;
-        authenticated = false;
         sessionId = null;
         astId = null;
         usersList = null;
-        
     }
     
     private int sendPasswordCTI() {
