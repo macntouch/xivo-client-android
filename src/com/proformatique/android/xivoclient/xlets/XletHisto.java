@@ -30,10 +30,13 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
@@ -47,6 +50,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
 
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
@@ -54,7 +58,7 @@ import com.proformatique.android.xivoclient.service.HistoryProvider;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
 
-public class XletHisto extends XivoActivity {
+public class XletHisto extends XivoActivity implements OnItemClickListener {
 	
 	private static final String LOG_TAG = "XiVO " + XletHisto.class.getSimpleName();
 	private  List<HashMap<String, String>> xletList = null;
@@ -68,6 +72,7 @@ public class XletHisto extends XivoActivity {
 		
 		setContentView(R.layout.xlet_history);
 		lv = (ListView)findViewById(R.id.history_list);
+		lv.setOnItemClickListener(this);
 		xletList = HistoryProvider.getList(this);
 		sortHistory();
 		xletAdapter = new AlternativeAdapter(
@@ -241,4 +246,69 @@ public class XletHisto extends XivoActivity {
 			return (((d2.getTime()-d1.getTime())>0)?1:-1);
 		}
 	}
+    
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Log.d(LOG_TAG, "onItemClick");
+        try {
+            String fullname = xletList.get(position).get("fullname");
+            String number = "";
+            try {
+                @SuppressWarnings("unused")
+                long phoneInt = Long.parseLong(fullname); 
+                number = fullname;
+            } catch (Exception e) {
+                Pattern p = Pattern.compile(".*?<([^>]+)>",
+                        Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+                Matcher m = p.matcher(fullname);
+                if (m.find())
+                    number = m.group(1);
+            }
+            if (number == null || number.equals("")) {
+                Toast.makeText(this, R.string.no_phone_error, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            final String phoneNumber = number;
+            String[] items;
+            if (xivoConnectionService.isOnThePhone()) {
+                String[] tmp = {
+                        String.format(getString(R.string.atxfer_number), number),
+                        String.format(getString(R.string.transfer_number), number),
+                        getString(R.string.cancel_label)};
+                items = tmp;
+            } else {
+                String[] tmp = {
+                        String.format(getString(R.string.context_action_call_short), number),
+                        getString(R.string.cancel_label)};
+                items = tmp;
+            }
+            new AlertDialog.Builder(this)
+            .setTitle(R.string.context_action)
+            .setItems(items, new OnClickListener() {
+                
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    try {
+                        if (xivoConnectionService.isOnThePhone()) {
+                            if (which == 0) {
+                                xivoConnectionService.atxfer(phoneNumber);
+                            } else if (which == 1) {
+                                xivoConnectionService.transfer(phoneNumber);
+                            }
+                        } else if (which == 0){
+                            Intent iCall = new Intent(XletHisto.this, XletDialer.class);
+                            iCall.putExtra("numToCall", phoneNumber);
+                            startActivity(iCall);
+                        }
+                    } catch (RemoteException e) {
+                        Toast.makeText(XletHisto.this, R.string.service_not_ready,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }).show();
+        } catch (RemoteException e) {
+            Toast.makeText(this, R.string.service_not_ready, Toast.LENGTH_SHORT).show();
+            Log.d(LOG_TAG, "xivoConnectionService is null");
+        }
+    }
 }
