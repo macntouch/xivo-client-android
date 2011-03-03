@@ -518,7 +518,7 @@ public class XletDialer extends XivoActivity {
     
     @Override
     protected void onResume() {
-        if (phoneNumber != null) {
+        if (phoneNumber != null && phoneNumber.getText().toString().equals("")) {
             phoneNumber.setText(SettingsActivity.getLastDialerValue(this));
         }
         super.onResume();
