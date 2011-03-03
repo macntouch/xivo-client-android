@@ -40,11 +40,8 @@ import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
-import android.view.ContextMenu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -69,8 +66,8 @@ public class XletHisto extends XivoActivity implements OnItemClickListener {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
 		setContentView(R.layout.xlet_history);
+		
 		lv = (ListView)findViewById(R.id.history_list);
 		lv.setOnItemClickListener(this);
 		xletList = HistoryProvider.getList(this);
@@ -94,75 +91,6 @@ public class XletHisto extends XivoActivity implements OnItemClickListener {
 		registerForContextMenu(lv);
 		
 		registerButtons();
-	}
-	
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-		switch (v.getId()){
-		case R.id.history_list:
-			AdapterView.AdapterContextMenuInfo info =
-					(AdapterView.AdapterContextMenuInfo)menuInfo;
-			menu.setHeaderTitle(getString(R.string.context_action));
-			try {
-				if (xivoConnectionService.isOnThePhone()) {
-					menu.add(Constants.TRANSFER_MENU, Constants.ATXFER_ITEM_INDEX, 0, 
-							getString(R.string.attended_transfer_title));
-					menu.add(Constants.TRANSFER_MENU, Constants.TRANSFER_ITEM_INDEX, 0, 
-							getString(R.string.blind_transfer_title));
-				} else {
-					String callAction = getString(R.string.context_action_call_short, 
-							xletList.get(info.position).get("fullname"));
-					menu.add(0, 1, 0, callAction);
-				}
-			} catch (RemoteException e) {}
-			break;
-		}
-		super.onCreateContextMenu(menu, v, menuInfo);
-	}
-	
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		AdapterView.AdapterContextMenuInfo info =
-				(AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-		int menuItemIndex = item.getItemId();
-		String fullname = xletList.get(info.position).get("fullname");
-		String phoneString = "";
-		try {
-			@SuppressWarnings("unused")
-			long phoneInt = Long.parseLong(fullname); 
-			phoneString = fullname;
-		} catch (Exception e) {
-			Pattern p = Pattern.compile(".*?<([^>]+)>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-			Matcher m = p.matcher(fullname);
-			if (m.find())
-				phoneString=m.group(1);
-		}
-		
-		if (!phoneString.equals("")) {
-			try {
-				if (xivoConnectionService.isOnThePhone()){
-					switch (menuItemIndex) {
-					case Constants.ATXFER_ITEM_INDEX:
-						xivoConnectionService.atxfer(phoneString);
-						break;
-					case Constants.TRANSFER_ITEM_INDEX:
-						xivoConnectionService.transfer(phoneString);
-						break;
-					}
-				} else {
-					Intent iCall = new Intent(this, XletDialer.class);
-					iCall.putExtra("numToCall", phoneString);
-					startActivity(iCall);
-				}
-			} catch (RemoteException e) {
-				Toast.makeText(this, getString(R.string.remote_exception),
-						Toast.LENGTH_SHORT).show();
-			}
-		} else {
-			Toast.makeText(XletHisto.this, R.string.call_no_phone_number, Toast.LENGTH_LONG).show();
-		}
-		
-		return super.onContextItemSelected(item);
 	}
 	
 	/**
