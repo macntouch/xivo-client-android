@@ -41,6 +41,7 @@ public final class Constants {
     public static final int CONNECTION_TIMEDOUT = -13;
     public static final int ALREADY_CONNECTING = -14;
     public static final int ALREADY_AUTHENTICATING = -15;
+    public static final int CONNECTION_REFUSED = -16;
     public static final int LOGIN_KO = 0;
     public static final int OK = 1;
     public static final int CONNECTION_OK = 2;

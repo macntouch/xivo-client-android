@@ -68,6 +68,7 @@
     <string name="connection_timedout">Connection timed out</string>
     <string name="disconnecting">Disconnecting</string>
     <string name="uninstalled_error">Failed to launch this application. It may be unaccessible from other applications or it may have been uninstalled</string>
+    <string name="connection_refused">Connection refused</string>
    
     <!-- Others -->
     <string name="context_action">Action</string>

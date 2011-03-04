@@ -629,6 +629,10 @@ public class XivoActivity extends Activity implements OnClickListener {
                     e.printStackTrace();
                 }
                 break;
+            case Constants.CONNECTION_REFUSED:
+                Toast.makeText(XivoActivity.this, R.string.connection_refused,
+                        Toast.LENGTH_SHORT).show();
+                break;
             case Constants.REMOTE_EXCEPTION:
                 Toast.makeText(XivoActivity.this, getString(R.string.remote_exception),
                         Toast.LENGTH_LONG).show();
