@@ -191,8 +191,7 @@ public class XivoConnectionService extends Service {
             if (SettingsActivity.getUseMobile(XivoConnectionService.this)) {
                 return XivoConnectionService.this.isMobileOffHook();
             } else {
-                return phoneStatusCode == null ? false : !phoneStatusCode.equals(
-                        Constants.AVAILABLE_STATUS_CODE);
+                return thisChannel != null;
             }
         }
         
@@ -494,6 +493,7 @@ public class XivoConnectionService extends Service {
      */
     private int connectToServer() {
         if (wrongHostPort) return Constants.BAD_HOST;
+        resetChannels();
         authenticated = false;
         int port = Constants.XIVO_DEFAULT_PORT;
         try {

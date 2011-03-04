@@ -313,7 +313,8 @@ public class XletDialer extends XivoActivity {
      * 
      * @author cquaquin
      */
-    private class CallTask extends AsyncTask<Void, Integer, Integer> {
+    private class CallTask extends AsyncTask<Void, Integer, Integer>
+            implements android.content.DialogInterface.OnCancelListener {
         
         public String progress = null;
         private TextView text = null;
@@ -330,6 +331,7 @@ public class XletDialer extends XivoActivity {
             
             dialog.setContentView(R.layout.xlet_dialer_call);
             dialog.setTitle(R.string.calling_title);
+            dialog.setOnCancelListener(this);
             
             text = (TextView) dialog.findViewById(R.id.call_message);
             text.setText(progress);
@@ -387,6 +389,11 @@ public class XletDialer extends XivoActivity {
         
         private void showToast(int messageId) {
             Toast.makeText(XletDialer.this, getString(messageId), Toast.LENGTH_SHORT).show();
+        }
+        
+        @Override
+        public void onCancel(DialogInterface dialog) {
+            Log.d(LOG_TAG, "Cancelling the call");
         }
     }
     
