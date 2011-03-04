@@ -27,14 +27,14 @@ public class JsonParserHelper {
      * @param line
      * @return comm
      */
-    @SuppressWarnings("unchecked")
     public static JSONObject getMyComm(Context context, JSONObject line) {
         JSONObject comm = null;
         String myNumber = SettingsActivity.getMobileNumber(context);
         String key = null;
         try {
             JSONObject comms = line.getJSONObject("status").getJSONObject("comms");
-            for (Iterator<String> iter = comms.keys(); iter.hasNext();) {
+            for (@SuppressWarnings("unchecked")Iterator<String> iter = comms.keys();
+                    iter.hasNext(); ) {
                 key = iter.next();
                 if (comms.getJSONObject(key).getString("calleridnum").equals(myNumber)) {
                     return comms.getJSONObject(key);
