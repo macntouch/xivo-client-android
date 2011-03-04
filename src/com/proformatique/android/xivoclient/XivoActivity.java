@@ -364,10 +364,6 @@ public class XivoActivity extends Activity implements OnClickListener {
     private void startLoading() {
         try {
             if (xivoConnectionService.isAuthenticated()) {
-                if (xivoConnectionService.loadDataCalled()) {
-                    Log.d(TAG, "Data already loaded");
-                    return;
-                }
                 xivoConnectionService.loadData();
             }
         } catch (RemoteException e) {

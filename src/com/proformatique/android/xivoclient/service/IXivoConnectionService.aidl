@@ -7,7 +7,6 @@ interface IXivoConnectionService {
     int authenticate();
     boolean isAuthenticated();
     void loadData();
-    boolean loadDataCalled();
     long getReceivedBytes();
     boolean hasNewVoiceMail();
     long getStateId();

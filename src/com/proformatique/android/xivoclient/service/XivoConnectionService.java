@@ -66,7 +66,6 @@ public class XivoConnectionService extends Service {
     private String astId = null;
     private String userId = null;
     private String fullname = null;
-    private List<HashMap<String, String>> usersList = null;
     private int[] mwi = new int[3];
     private JSONArray capalist = null;
     private long stateId = 0L;
@@ -150,11 +149,6 @@ public class XivoConnectionService extends Service {
             XivoConnectionService.this.refreshFeatures();
             XivoConnectionService.this.refreshHistory();
             XivoConnectionService.this.loadList("users");
-        }
-        
-        @Override
-        public boolean loadDataCalled() throws RemoteException {
-            return usersList != null;
         }
         
         @Override
@@ -1282,7 +1276,6 @@ public class XivoConnectionService extends Service {
         xivoId = null;
         sessionId = null;
         astId = null;
-        usersList = null;
     }
     
     private int sendPasswordCTI() {
