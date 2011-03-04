@@ -32,6 +32,7 @@ import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -69,6 +70,9 @@ public class XivoActivity extends Activity implements OnClickListener {
     private static boolean askedToDisconnect = false;
     private static boolean wrongLoginInfo = false;
     
+    private Handler mHandler = new Handler();
+    private final static long UPDATE_DELAY = 200L;
+    
     /*
      * Service
      */
@@ -88,6 +92,7 @@ public class XivoActivity extends Activity implements OnClickListener {
     private ProgressDialog dialog;
     private FrameLayout status;
     private MenuItem connectButton;
+    private TextView longname;
     
     /*
      * Activity lifecycle
@@ -123,6 +128,8 @@ public class XivoActivity extends Activity implements OnClickListener {
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
+        mHandler.removeCallbacks(mUpdateIdentity);
+        mHandler.postDelayed(mUpdateIdentity, UPDATE_DELAY);
         if (!(settings.getString("login", "").equals("")
                 || settings.getString("server_adress", "").equals(""))) {
             startXivoConnectionService();
@@ -137,6 +144,10 @@ public class XivoActivity extends Activity implements OnClickListener {
             dialog.dismiss();
             dialog = null;
         }
+        if (mHandler != null) {
+            mHandler.removeCallbacks(mUpdateIdentity);
+            mHandler = null;
+        }
         super.onDestroy();
     }
     
@@ -149,7 +160,7 @@ public class XivoActivity extends Activity implements OnClickListener {
             updateMyStatus(xivoConnectionService.getStateId());
             updatePhoneStatus(xivoConnectionService.getPhoneStatusColor(), xivoConnectionService
                     .getPhoneStatusLongname());
-            updateFullname(xivoConnectionService.getFullname());
+            updateFullname();
         } catch (RemoteException e) {
             Log.d(TAG, "Could not set my state id");
         }
@@ -182,6 +193,7 @@ public class XivoActivity extends Activity implements OnClickListener {
         statusButton.setOnClickListener(this);
         status = (FrameLayout) findViewById(R.id.identityClickZone);
         status.setOnClickListener(this);
+        longname = (TextView) findViewById(R.id.user_identity);
     }
     
     @Override
@@ -400,8 +412,24 @@ public class XivoActivity extends Activity implements OnClickListener {
                 (ImageView) findViewById(R.id.identityPhoneStatus), color);
     }
     
-    private void updateFullname(String name) {
-        ((TextView) findViewById(R.id.user_identity)).setText(name);
+    /**
+     * Update the fullname of the identity bar
+     */
+    private void updateFullname() {
+        String name = null;
+        try {
+            if (xivoConnectionService == null) {
+                name = getString(R.string.user_identity);
+            } else if (xivoConnectionService.isAuthenticated()) {
+                name = xivoConnectionService.getFullname();
+            } else {
+                name = xivoConnectionService.getFullname() + "\n"
+                    + getString(R.string.disconnected);
+            }
+        } catch (RemoteException e) {
+            // Can be ignored since xivoConnectionService == null is checked
+        }
+        if (longname != null) longname.setText(name);
     }
     
     /**
@@ -701,7 +729,7 @@ public class XivoActivity extends Activity implements OnClickListener {
                 updatePhoneStatus(intent.getStringExtra("color"),
                         intent.getStringExtra("longname"));
             } else if (action.equals(Constants.ACTION_UPDATE_IDENTITY)) {
-                updateFullname(intent.getStringExtra("fullname"));
+                updateFullname();
             } else if (action.equals(Constants.ACTION_SETTINGS_CHANGE)
                     || action.equals(ConnectivityManager.CONNECTIVITY_ACTION)
                     || action.equals(WifiManager.WIFI_STATE_CHANGED_ACTION)) {
@@ -709,4 +737,16 @@ public class XivoActivity extends Activity implements OnClickListener {
             }
         }
     }
+    
+    /**
+     * Runnable to update Longname
+     */
+    private Runnable mUpdateIdentity = new Runnable() {
+        
+        @Override
+        public void run() {
+            updateFullname();
+            mHandler.postDelayed(mUpdateIdentity, UPDATE_DELAY);
+        }
+    };
 }

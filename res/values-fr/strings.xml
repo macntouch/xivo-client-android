@@ -100,7 +100,7 @@
     <string name="transfer_prompt">Numéro auquel vous désirez transférer</string>
     <string name="label_cancel_btn">Annulé</string>
     <string name="unknown_contact_name">Inconnu</string>
-    
+    <string name="disconnected">(non connecté)</string>
     <string name="bandwidth_in_label">Reçu:</string>
     
     <!-- Units -->
