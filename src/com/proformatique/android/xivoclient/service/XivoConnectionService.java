@@ -141,7 +141,7 @@ public class XivoConnectionService extends Service {
         
         @Override
         public boolean isAuthenticated() throws RemoteException {
-            return authenticated;
+            return authenticated && this.isConnected();
         }
         
         @Override
