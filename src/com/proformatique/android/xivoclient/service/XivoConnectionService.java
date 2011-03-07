@@ -274,7 +274,7 @@ public class XivoConnectionService extends Service {
             String src = "chan:" + astId + "/" + xivoId + ":" + this.thisChannel;
             sendLine(JSONMessageFactory.createJsonTransfer("atxfer", src, number).toString());
         } else {
-            Log.d(TAG, "Cannot atxfer from a null");
+            Log.d(TAG, "Cannot atxfer from a null. this = " + thisChannel);
         }
     }
     
@@ -295,6 +295,7 @@ public class XivoConnectionService extends Service {
             return;
         }
         sendLine(JSONMessageFactory.createJsonHangupObject(this, channel).toString());
+        resetChannels();
     }
     
     /**
@@ -836,8 +837,6 @@ public class XivoConnectionService extends Service {
         i.putExtra("color", phoneStatusColor);
         i.putExtra("longname", phoneStatusLongname);
         sendBroadcast(i);
-        if (this.phoneStatusCode.equals(Constants.AVAILABLE_STATUS_CODE))
-            resetChannels();
     }
     
     /**
@@ -911,7 +910,6 @@ public class XivoConnectionService extends Service {
      */
     private void updateChannels(final JSONObject comm, final boolean myChannel)
             throws JSONException {
-        Log.d(TAG, "Updating channels");
         if (comm.has("thischannel")) {
             if (myChannel) {
                 if (thisChannel != null && !thisChannel.startsWith("Local/")) {
@@ -933,6 +931,7 @@ public class XivoConnectionService extends Service {
                 thisChannel = comm.getString("peerchannel");
             }
         }
+        Log.d(TAG, "Updating channels: this = " + thisChannel + " peer = " + peerChannel);
     }
     
     /**
@@ -1499,6 +1498,7 @@ public class XivoConnectionService extends Service {
      * Clears all channels
      */
     private void resetChannels() {
+        Log.d(TAG, "Reseting channels");
         if (thisChannel != null && !thisChannel.startsWith("Local/")) {
             oldChannel = thisChannel;
         }

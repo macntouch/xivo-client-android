@@ -225,15 +225,10 @@ public class XletDialer extends XivoActivity {
                 return;
             }
         } else {
-            try {
-                if (isServiceReady() && !xivoConnectionService.isOnThePhone()) {
+                if (isServiceReady() && !isXivoOffHook()) {
                     call();
                     return;
                 }
-            } catch (RemoteException e) {
-                Toast.makeText(this, getString(R.string.service_not_ready),
-                        Toast.LENGTH_SHORT).show();
-            }
         }
         // On the phone
         if (!(isServiceReady())) {
@@ -317,6 +312,10 @@ public class XletDialer extends XivoActivity {
         } else {
             setPhoneOffHook(sOnThePhoneCode.contains(getMyHintstatus()));
         }
+    }
+    
+    private boolean isXivoOffHook() {
+        return sOnThePhoneCode.contains(getMyHintstatus());
     }
     
     /**
