@@ -185,8 +185,6 @@ public class HomeActivity extends XivoActivity
     
     private class XletsAdapter extends BaseAdapter {
         
-        private final int MIN_ICONS = 12;
-        
         public XletsAdapter() {
             // Add more xlets here
             implementedXlets = new ArrayList<String>(1);
@@ -227,9 +225,8 @@ public class HomeActivity extends XivoActivity
         
         @Override
         public int getCount() {
-            int nbIcons = (availXlets == null ? 0 : availXlets.size())
-                + SettingsActivity.getNbShortcuts(HomeActivity.this);
-            return nbIcons >= MIN_ICONS ? nbIcons : MIN_ICONS;
+            return (availXlets == null ? 0 : availXlets.size())
+                    + SettingsActivity.getNbShortcuts(HomeActivity.this) + 1;
         }
         
         @Override
