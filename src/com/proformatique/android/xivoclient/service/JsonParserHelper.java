@@ -115,7 +115,7 @@ public class JsonParserHelper {
      * @return calleridnum or ""
      * @throws JSONException
      */
-    public static String getCalledIdNum(JSONObject line) throws JSONException {
+    public static String getCallerIdNum(JSONObject line) throws JSONException {
         if (line.has("status") && line.getJSONObject("status").has("comms")) {
             JSONObject comms = line.getJSONObject("status").getJSONObject("comms");
             String key = null;

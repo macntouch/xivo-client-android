@@ -36,6 +36,7 @@
     <string name="service_bandwidth_warning">Will consume ALOT of energy and bandwidth</string>
     <string name="always_connected">Keep the service connected to the server</string>
     <string name="disconnect_failed">Disconnection failed</string>
+    <string name="cancel_failed">Failed to cancel the call</string>
     
     <!-- Messages strings -->
     <string name="connection_failed">Connection failed</string>
@@ -79,6 +80,7 @@
     <string name="transfer_number">Blind transfer to %1$s</string>
     <string name="atxfer_number">Attended transfer to %1$s</string>
     <string name="context_edit_before_call">Edit (%1$s)</string>
+    <string name="back_cancel">Press back to cancel</string>
 
     <!-- Xlets descriptions
          IMPORTANT : use this file to put label and description

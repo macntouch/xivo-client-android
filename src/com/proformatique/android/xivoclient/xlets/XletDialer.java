@@ -19,6 +19,9 @@
 
 package com.proformatique.android.xivoclient.xlets;
 
+import java.util.Arrays;
+import java.util.List;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
@@ -26,9 +29,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.RemoteException;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
@@ -39,9 +44,11 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.SettingsActivity;
 import com.proformatique.android.xivoclient.XivoActivity;
+import com.proformatique.android.xivoclient.service.UserProvider;
 import com.proformatique.android.xivoclient.tools.AndroidTools;
 import com.proformatique.android.xivoclient.tools.Constants;
 
@@ -53,11 +60,22 @@ public class XletDialer extends XivoActivity {
     private EditText phoneNumber;
     private ImageButton dialButton;
     private IncomingReceiver receiver;
+    private Handler mHandler = new Handler();
+    private final static long UPDATE_DELAY = 200;
+    private Runnable updateHangup = new Runnable() {
+        @Override
+        public void run() {
+            refreshHangupButton();
+            mHandler.postDelayed(updateHangup, UPDATE_DELAY);
+        }
+    };
     private Dialog dialog;
     
     private CallTask callTask = null;
     private PhoneStateListener phoneStateListener = null;
     private TelephonyManager telephonyManager = null;
+    
+    private final List<String> sOnThePhoneCode = Arrays.asList(new String[] {"1", "8", "9", "16"});
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,13 +97,6 @@ public class XletDialer extends XivoActivity {
             }
         }
         
-        phoneStateListener = new PhoneStateListener() {
-            
-            public void onCallStateChanged(int state, String incomingNumber) {
-                refreshHangupButton();
-            }
-        };
-        
         telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
         
@@ -99,6 +110,7 @@ public class XletDialer extends XivoActivity {
         filter.addAction(Constants.ACTION_MWI_UPDATE);
         filter.addAction(Constants.ACTION_CALL_PROGRESS);
         filter.addAction(Constants.ACTION_ONGOING_CALL);
+        filter.addAction(Constants.ACTION_UPDATE_PEER_HINTSTATUS);
         registerReceiver(receiver, new IntentFilter(filter));
         
         registerButtons();
@@ -111,7 +123,7 @@ public class XletDialer extends XivoActivity {
         } catch (RemoteException e) {
             newVoiceMail(false);
         }
-        refreshHangupButton();
+        mHandler.postDelayed(updateHangup, UPDATE_DELAY);
         super.onBindingComplete();
     }
     
@@ -270,9 +282,30 @@ public class XletDialer extends XivoActivity {
         } else {
             dialButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_dial_action_call));
             ((EditText) findViewById(R.id.number)).setEnabled(true);
-            if (dialog != null)
-                dialog.dismiss();
         }
+    }
+    
+    private String getMyHintstatus() {
+        if (xivoConnectionService == null) return "";
+        try {
+            String astid = xivoConnectionService.getAstId();
+            String xivoId = xivoConnectionService.getXivoId();
+            Cursor c = getContentResolver().query(
+                    UserProvider.CONTENT_URI,
+                    new String[] {
+                        UserProvider.ASTID,
+                        UserProvider.XIVO_USERID,
+                        UserProvider.HINTSTATUS_CODE},
+                        UserProvider.ASTID + " = '" + astid + "' AND '" + xivoId + "' = " +
+                            UserProvider.XIVO_USERID , null, null);
+            if (c.getCount() > 0) {
+                c.moveToFirst();
+                return c.getString(c.getColumnIndex(UserProvider.HINTSTATUS_CODE));
+            }
+        } catch (RemoteException e) {
+            Log.d(LOG_TAG, "Failed to retrieve my hintstatus");
+        }
+        return "";
     }
     
     /**
@@ -282,12 +315,7 @@ public class XletDialer extends XivoActivity {
         if (SettingsActivity.getUseMobile(this)) {
             setPhoneOffHook(isMobileOffHook());
         } else {
-            try {
-                setPhoneOffHook(xivoConnectionService != null
-                        && xivoConnectionService.hasChannels());
-            } catch (RemoteException e) {
-                setPhoneOffHook(false);
-            }
+            setPhoneOffHook(sOnThePhoneCode.contains(getMyHintstatus()));
         }
     }
     
@@ -308,6 +336,22 @@ public class XletDialer extends XivoActivity {
         }
     }
     
+    private void showCallDialog() {
+        dialog = new Dialog(this);
+        dialog.setContentView(R.layout.xlet_dialer_call);
+        dialog.setTitle(R.string.calling_title);
+        dialog.setOnCancelListener(callTask);
+        dialog.setCancelable(false);
+        dialog.show();
+    }
+    
+    private void cancelCallDialog() {
+        if (dialog != null) {
+            dialog.dismiss();
+            dialog = null;
+        }
+    }
+    
     /**
      * Creating a AsyncTask to run call process
      * 
@@ -322,21 +366,12 @@ public class XletDialer extends XivoActivity {
         
         @Override
         protected void onPreExecute() {
-            
+            showCallDialog();
             progress = getString(R.string.calling, phoneNumber.getText().toString());
             completeOrCancel = false;
-            
             phoneNumber.setEnabled(false);
-            dialog = new Dialog(XletDialer.this);
-            
-            dialog.setContentView(R.layout.xlet_dialer_call);
-            dialog.setTitle(R.string.calling_title);
-            dialog.setOnCancelListener(this);
-            
             text = (TextView) dialog.findViewById(R.id.call_message);
             text.setText(progress);
-            
-            dialog.show();
             
             super.onPreExecute();
         }
@@ -373,10 +408,6 @@ public class XletDialer extends XivoActivity {
         
         @Override
         protected void onPostExecute(Integer result) {
-            if (dialog != null) {
-                dialog.dismiss();
-                dialog = null;
-            }
             phoneNumber.setEnabled(true);
             switch (result) {
             case Constants.OK:
@@ -393,7 +424,7 @@ public class XletDialer extends XivoActivity {
         
         @Override
         public void onCancel(DialogInterface dialog) {
-            Log.d(LOG_TAG, "Cancelling the call");
+            hangup();
         }
     }
     
@@ -410,13 +441,8 @@ public class XletDialer extends XivoActivity {
             final String action = intent.getAction();
             if (action.equals(Constants.ACTION_OFFHOOK)) {
                 Log.d(LOG_TAG, "OffHook action received");
-                refreshHangupButton();
                 phoneNumber.setEnabled(true);
                 phoneNumber.setText("");
-                if (dialog != null) {
-                    dialog.dismiss();
-                    dialog = null;
-                }
             } else if (action.equals(Constants.ACTION_MWI_UPDATE)) {
                 Log.d(LOG_TAG, "MWI update received");
                 int[] mwi = intent.getExtras().getIntArray("mwi");
@@ -424,12 +450,7 @@ public class XletDialer extends XivoActivity {
             } else if (action.equals(Constants.ACTION_CALL_PROGRESS)) {
                 final String status = intent.getStringExtra("status");
                 final String code = intent.getStringExtra("code");
-                refreshHangupButton();
                 if (code.equals(Constants.CALLING_STATUS_CODE)) {
-                    if (dialog != null) {
-                        dialog.dismiss();
-                        dialog = null;
-                    }
                     phoneNumber.setEnabled(true);
                     phoneNumber.setText("");
                 }
@@ -441,17 +462,34 @@ public class XletDialer extends XivoActivity {
                     callTask.onProgressUpdate();
                 }
             } else if (action.equals(Constants.ACTION_ONGOING_CALL)) {
-                refreshHangupButton();
-                if (dialog != null) {
-                    dialog.dismiss();
-                    dialog = null;
-                }
                 phoneNumber.setEnabled(true);
                 phoneNumber.setText("");
             } else if (action.equals(Constants.ACTION_MY_PHONE_CHANGE)) {
                 if (intent.getStringExtra("code").equals(Constants.AVAILABLE_STATUS_CODE)) {
-                    refreshHangupButton();
                 }
+            } else if (action.equals(Constants.ACTION_UPDATE_PEER_HINTSTATUS)) {
+                if (intent.hasExtra("status")) {
+                    String status = intent.getStringExtra("status");
+                    if (status.equals("ringing")) {
+                        setCancellable(true);
+                    } else if (status.equals("linked-called")){
+                        cancelCallDialog();
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * Change the status of the dialog box to make it cancelable if the call can be cancelled
+     * @param cancellable
+     */
+    private void setCancellable(final boolean cancellable) {
+        if (dialog != null) {
+            dialog.setCancelable(cancellable);
+            if (cancellable) {
+                ((TextView) dialog.findViewById(R.id.call_message)).setText(
+                        getString(R.string.back_cancel));
             }
         }
     }

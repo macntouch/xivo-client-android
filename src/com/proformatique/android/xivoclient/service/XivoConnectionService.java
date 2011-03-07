@@ -66,6 +66,7 @@ public class XivoConnectionService extends Service {
     private String astId = null;
     private String userId = null;
     private String fullname = null;
+    private String mNumber = null;
     private int[] mwi = new int[3];
     private JSONArray capalist = null;
     private long stateId = 0L;
@@ -231,6 +232,16 @@ public class XivoConnectionService extends Service {
                 && lastCalledNumber != null
                 && lastCalledNumber.length() < Constants.MAX_PHONE_NUMBER_LEN;
         }
+        
+        @Override
+        public String getAstId() throws RemoteException {
+            return XivoConnectionService.this.astId;
+        }
+        
+        @Override
+        public String getXivoId() throws RemoteException {
+            return XivoConnectionService.this.xivoId;
+        }
     };
     
     /**
@@ -263,7 +274,7 @@ public class XivoConnectionService extends Service {
             String src = "chan:" + astId + "/" + xivoId + ":" + this.thisChannel;
             sendLine(JSONMessageFactory.createJsonTransfer("atxfer", src, number).toString());
         } else {
-            Log.d(TAG, "Cannot atxfer from a null of Local/ channel");
+            Log.d(TAG, "Cannot atxfer from a null");
         }
     }
     
@@ -774,31 +785,28 @@ public class XivoConnectionService extends Service {
      * @throws JSONException 
      */
     private Messages parsePhoneUpdate(JSONObject line) throws JSONException {
-        
         /*
          * Check if the update concerns a call I'm doing
          */
         if (lastCalledNumber != null) {
-            if (SettingsActivity.getUseMobile(this)) {
-                if (lastCalledNumber.length() < Constants.MAX_PHONE_NUMBER_LEN) {
-                    if (JsonParserHelper.getCalledIdNum(line).equals(
-                            SettingsActivity.getMobileNumber(this))) {
-                        parseMyMobilePhoneUpdate(line);
-                    }
-                }
-            } else { // Not using mobile
-                if (JSONMessageFactory.checkIdMatch(line, astId, xivoId)) {
-                    parseMyPhoneUpdate(line);
-                    try {
-                        sendMyNewHintstatus(line.getJSONObject("status")
-                                .getJSONObject("hintstatus"));
-                    } catch (JSONException e) {
-                        // No update to send if there's no status or hintstatus
-                    }
-                }
+            String number = SettingsActivity.getUseMobile(this) ?
+                    SettingsActivity.getMobileNumber(this) : this.mNumber;
+            String callerIdNum = JsonParserHelper.getCallerIdNum(line);
+            if (number != null && number.equals(callerIdNum)) {
+                if (SettingsActivity.getUseMobile(this)) parseMyMobilePhoneUpdate(line);
+                updatePeerStatus(line);
             }
         }
         
+        if (JSONMessageFactory.checkIdMatch(line, astId, xivoId)) {
+            parseMyPhoneUpdate(line);
+            try {
+                sendMyNewHintstatus(line.getJSONObject("status")
+                        .getJSONObject("hintstatus"));
+            } catch (JSONException e) {
+                // No update to send if there's no status or hintstatus
+            }
+        }
         /*
          * For all updates
          */
@@ -879,7 +887,7 @@ public class XivoConnectionService extends Service {
         /*
          * Save channels
          */
-        if (status.has("comms")) {
+        if (status.has("comms") && !SettingsActivity.getUseMobile(this)) {
             JSONObject comms = status.getJSONObject("comms");
             for (@SuppressWarnings("unchecked") Iterator<String> iterKey = comms.keys();
                     iterKey.hasNext(); ) {
@@ -928,12 +936,34 @@ public class XivoConnectionService extends Service {
     }
     
     /**
+     * Parses our peer's phone update and send an intent containing his new hintstatus
+     * @param line
+     * @throws JSONException 
+     */
+    private void updatePeerStatus(JSONObject line) throws JSONException {
+        if (line.has("status") && line.getJSONObject("status").has("comms")) {
+            JSONObject comms = line.getJSONObject("status").getJSONObject("comms");
+            for (@SuppressWarnings("unchecked")Iterator<String> iter = comms.keys();
+                    iter.hasNext(); ) {
+                String key = iter.next();
+                if (comms.getJSONObject(key).has("status")) {
+                    String status = comms.getJSONObject(key).getString("status");
+                    Intent iPeerStatusUpdate = new Intent();
+                    iPeerStatusUpdate.setAction(Constants.ACTION_UPDATE_PEER_HINTSTATUS);
+                    iPeerStatusUpdate.putExtra("status", status);
+                    sendBroadcast(iPeerStatusUpdate);
+                    return;
+                }
+            }
+        }
+    }
+    
+    /**
      * Parses phones for a call from the user's mobile
      * @param line
      * @throws JSONException 
      */
     private void parseMyMobilePhoneUpdate(JSONObject line) throws JSONException {
-        Log.d(TAG, "Parsing my mobile phone update");
         List<JSONObject> comms = JsonParserHelper.getMyComms(this, line);
         for (JSONObject comm: comms) {
             String status = JsonParserHelper.getChannelStatus(comm);
@@ -1041,6 +1071,7 @@ public class XivoConnectionService extends Service {
         
         if (user.getString(user.getColumnIndex(UserProvider.XIVO_USERID)).equals(xivoId)) {
             try {
+                mNumber = jPhone.getString("number");
                 phoneStatusLongname = jPhoneStatus.getString("longname");
                 phoneStatusColor = jPhoneStatus.getString("color");
                 phoneStatusCode = jPhoneStatus.getString("code");

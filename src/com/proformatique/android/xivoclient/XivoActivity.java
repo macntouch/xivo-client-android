@@ -52,6 +52,7 @@ import java.util.concurrent.TimeoutException;
 
 import com.proformatique.android.xivoclient.service.CapapresenceProvider;
 import com.proformatique.android.xivoclient.service.IXivoConnectionService;
+import com.proformatique.android.xivoclient.service.UserProvider;
 import com.proformatique.android.xivoclient.service.XivoConnectionService;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
@@ -177,6 +178,29 @@ public class XivoActivity extends Activity implements OnClickListener {
         } else {
             setUiEnabled(true);
         }
+    }
+    
+    protected long getPhoneStatusId() {
+        if (xivoConnectionService == null) return 0L;
+        try {
+            String astid = xivoConnectionService.getAstId();
+            String xivoId = xivoConnectionService.getXivoId();
+            Cursor c = getContentResolver().query(
+                    UserProvider.CONTENT_URI,
+                    new String[] {
+                        UserProvider._ID,
+                        UserProvider.ASTID,
+                        UserProvider.XIVO_USERID},
+                        UserProvider.ASTID + " = '" + astid + "' AND '" + xivoId + "' = " +
+                            UserProvider.XIVO_USERID , null, null);
+            if (c.getCount() > 0) {
+                c.moveToFirst();
+                return c.getLong(c.getColumnIndex(UserProvider._ID));
+            }
+        } catch (RemoteException e) {
+            Log.d(TAG, "Failed to retrieve my hintstatus");
+        }
+        return 0L;
     }
     
     protected void setUiEnabled(boolean state) {

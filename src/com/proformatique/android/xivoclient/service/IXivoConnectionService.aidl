@@ -22,4 +22,6 @@ interface IXivoConnectionService {
     void transfer(String number);
     void atxfer(String number);
     boolean killDialer();
+    String getAstId();
+    String getXivoId();
 }

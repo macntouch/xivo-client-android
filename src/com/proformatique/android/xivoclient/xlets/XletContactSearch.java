@@ -271,8 +271,10 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 	 * Refresh the user list and notify the list adapter
 	 */
 	private void getUserList() {
-		if (user != null && user.isClosed() == false)
+		if (user != null && user.isClosed() == false) {
 			user.close();
+			user = null;
+		}
 		user = getContentResolver().query(UserProvider.CONTENT_URI, null,
 				UserProvider.FULLNAME + " LIKE '%" + et.getText() + "%'",
 				null, UserProvider.FULLNAME);
