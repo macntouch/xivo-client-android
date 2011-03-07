@@ -1,29 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout
 	android:id="@+id/ContactSearchLayout"
 	xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical">
+    <include layout="@layout/xlet_identity"/>
 	<LinearLayout
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
 		android:orientation="horizontal">
 		<EditText android:id="@+id/SearchEdit"
-			android:layout_width="wrap_content"
+			android:layout_width="fill_parent"
 			android:hint="@string/search_hint"
 			android:layout_height="wrap_content"
 			android:layout_margin="5dp"
-			android:layout_weight="1">
-		</EditText>
+			android:layout_weight="1"/>
 		<Button
 			android:id="@+id/button_search_contacts"
-			android:background="@drawable/android_button"
+			android:background="@drawable/android_search_button"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:layout_margin="5dp">
-		</Button>
+			android:layout_margin="5dp"
+			android:minWidth="20dp"
+			android:minHeight="20dp"
+            android:visibility="visible"/>
 	</LinearLayout>
     <!-- List Divider -->
     <View android:layout_width="fill_parent"

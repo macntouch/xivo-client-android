@@ -19,71 +19,104 @@
 
 package com.proformatique.android.xivoclient;
 
-import android.app.KeyguardManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import com.proformatique.android.xivoclient.service.IXivoConnectionService;
+import com.proformatique.android.xivoclient.tools.AndroidTools;
+import com.proformatique.android.xivoclient.xlets.XletDialer;
+
 /**
- * This service will return the the XletsContainerTabActivity after receiving a call.
- * The goal is to be able to use the XiVO client after receiving a call back to do
- * transfers or other operations.
- *
+ * This service will return the the XletsContainerTabActivity after receiving a
+ * call. The goal is to be able to use the XiVO client after receiving a call
+ * back to do transfers or other operations.
+ * 
  */
 public class InCallScreenKiller extends Service {
-	
-	private TelephonyManager telephonyManager;
-	private PhoneStateListener phoneStateListener;
-	private final static String LOG_TAG = "InCallScreenKiller";
-	private final static int MAX_EXTEN = 7;
-	
-	@Override
-	public IBinder onBind(Intent intent) {
-		return null;
-	}
-	
-	@Override
-	public void onCreate() {
-		super.onCreate();
-		telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-		KeyguardManager km = (KeyguardManager)	getSystemService(Context.KEYGUARD_SERVICE);
-		final KeyguardManager.KeyguardLock kmkl = km.newKeyguardLock("kCaller");
-		phoneStateListener = new PhoneStateListener() {
-			/**
-			 * Waits 2 seconds after answering a call and launch the XletsContainerTabActivity
-			 */
-			@Override
-			public void onCallStateChanged(int state, String incomingNumber) {
-				Log.d(LOG_TAG, "onCallStateChanged called");
-				if (state == TelephonyManager.CALL_STATE_OFFHOOK
-						&& SettingsActivity.getUseMobile(getApplicationContext())
-						&& InitialListLoader.getInstance().getCalledNumber() != null
-						&& InitialListLoader.getInstance().getCalledNumber().length() < MAX_EXTEN) {
-					Intent i = new Intent(getApplicationContext(), XletsContainerTabActivity.class);
-					i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					try {
-						Thread.sleep(2000);
-						kmkl.disableKeyguard();
-					} catch (Exception e) {
-						Log.d(LOG_TAG, "Exception: " + e);
-					}
-					startActivity(i);
-				}
-			}
-		};
-		// Start listening
-		telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
-	}
-	
-	@Override
-	public void onDestroy() {
-		// Stop listening
-		telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
-		super.onDestroy();
-	}
-
+    
+    private TelephonyManager telephonyManager;
+    private PhoneStateListener phoneStateListener;
+    private final static String LOG_TAG = "InCallScreenKiller";
+    protected IXivoConnectionService xivoConnectionService = null;
+    
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+    
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        phoneStateListener = new PhoneStateListener() {
+            
+            /**
+             * Waits 2 seconds after answering a call and launch the
+             * XletsContainerTabActivity
+             */
+            @Override
+            public void onCallStateChanged(int state, String incomingNumber) {
+                Log.d(LOG_TAG, "onCallStateChanged called");
+                try {
+                    if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
+                        if (xivoConnectionService != null && xivoConnectionService.killDialer()) {
+                            AndroidTools.showOverDialer(getApplicationContext(), XletDialer.class,
+                                    2000);
+                        } else {
+                            Log.d(LOG_TAG, "Not killing this dialer.");
+                        }
+                    }
+                } catch (RemoteException e) {
+                    Log.d(LOG_TAG, "Remote exception");
+                }
+            }
+        };
+        // Start listening
+        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+    }
+    
+    @Override
+    public void onDestroy() {
+        // Stop listening
+        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
+        super.onDestroy();
+    }
+    
+    @Override
+    public void onStart(Intent intent, int startId) {
+        super.onStart(intent, startId);
+        xivoConnectionService = Connection.INSTANCE.getConnection(getApplicationContext());
+        if (xivoConnectionService == null) {
+            AsyncTask<Void, Void, Integer> task = new AsyncTask<Void, Void, Integer>() {
+                private long DELAY = 100;
+                private int MAX_WAIT = 50;
+                @Override
+                protected Integer doInBackground(Void... params) {
+                    int i = 0;
+                    do {
+                        try {
+                            synchronized (this) {
+                                wait(DELAY);
+                            }
+                        } catch (InterruptedException e) {
+                            Log.d(LOG_TAG, "Interrupted while waiting for a binding");
+                            e.printStackTrace();
+                        }
+                        xivoConnectionService
+                                = Connection.INSTANCE.getConnection(getApplicationContext());
+                        i++;
+                    } while (xivoConnectionService == null && i < MAX_WAIT);
+                    return 0;
+                }
+            };
+            task.execute();
+        }
+    }
 }

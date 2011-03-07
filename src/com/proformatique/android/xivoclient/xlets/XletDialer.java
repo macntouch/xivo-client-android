@@ -19,20 +19,24 @@
 
 package com.proformatique.android.xivoclient.xlets;
 
-import java.io.IOException;
-import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.List;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.RemoteException;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -40,384 +44,563 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.proformatique.android.xivoclient.Connection;
-import com.proformatique.android.xivoclient.InitialListLoader;
+
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.SettingsActivity;
 import com.proformatique.android.xivoclient.XivoActivity;
-import com.proformatique.android.xivoclient.XletsContainerTabActivity;
+import com.proformatique.android.xivoclient.service.UserProvider;
+import com.proformatique.android.xivoclient.tools.AndroidTools;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 public class XletDialer extends XivoActivity {
-	
-	private static final String LOG_TAG = "XLET DIALER";
-	EditText phoneNumber;
-	IncomingReceiver receiver;
-	Dialog dialog;
-	private boolean offHook;
-	private final int VM_DISABLED_FILTER = 0xff555555;
-	
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		
-		setContentView(R.layout.xlet_dialer);
-		setPhoneOffHook(false);
-		phoneNumber = (EditText) findViewById(R.id.number);
-		
-		receiver = new IncomingReceiver();
-		
-		/**
-		 *  Register a BroadcastReceiver for Intent action that trigger a call
-		 */
-		IntentFilter filter = new IntentFilter();
-		filter.addAction(Constants.ACTION_XLET_DIAL_CALL);
-		filter.addAction(Constants.ACTION_HANGUP);
-		filter.addAction(Constants.ACTION_OFFHOOK);
-		filter.addAction(Constants.ACTION_MWI_UPDATE);
-		registerReceiver(receiver, new IntentFilter(filter));
-		
-		newVoiceMail(InitialListLoader.getInstance().hasNewVoicemail());
-	}
-	
-	private void newVoiceMail(boolean status) {
-		ImageButton vm_button = (ImageButton) findViewById(R.id.voicemailButton);
-		vm_button.setEnabled(true);
-		if (status) {
-			vm_button.setColorFilter(null);
-		} else {
-			vm_button.setColorFilter(VM_DISABLED_FILTER, PorterDuff.Mode.SRC_ATOP);
-		}
-	}
-	
-	public void clickOnCall(View v) {
-		if (offHook) {
-			new HangupJsonTask().execute();
-		} else {
-			if (!("").equals(phoneNumber.getText().toString())){
-				new CallJsonTask().execute();
-			}
-		}
-	}
-	
-	/**
-	 * Set the status of the phone to update the dial button
-	 * @param offHook
-	 */
-	public void setPhoneOffHook(boolean offHook) {
-		this.offHook = offHook;
-		if (offHook) {
-			((ImageButton)findViewById(R.id.dialButton)).setImageDrawable(getResources()
-					.getDrawable(R.drawable.ic_dial_action_hangup));
-		} else {
-			((ImageButton)findViewById(R.id.dialButton)).setImageDrawable(getResources()
-					.getDrawable(R.drawable.ic_dial_action_call));
-			((EditText)findViewById(R.id.number)).setEnabled(true);
-			if (dialog != null)
-				dialog.dismiss();
-		}
-	}
-	
-	/**
-	 * Creates and send an hangup command to the CTI server Asynchronously
-	 *
-	 */
-	private class HangupJsonTask extends AsyncTask<Void, Integer, Integer> {
-		
-		@Override
-		protected Integer doInBackground(Void... params) {
-			JSONObject jHangupObject = createJsonHangupObject();
-			if (jHangupObject != null) {
-				Connection.getInstance().sendJsonString(jHangupObject);
-			} else {
-				Log.d(LOG_TAG, "Null hangup object");
-			}
-			return null;
-		}
-		
-		@Override
-		protected void onPostExecute(Integer res) {
-			setPhoneOffHook(false);
-		}
-	}
-	
-	/**
-	 * Creating a AsyncTask to run call process
-	 * @author cquaquin
-	 */
-	private class CallJsonTask extends AsyncTask<Void, Integer, Integer> {
-		
-		@Override
-		protected void onPreExecute() {
-			
-			phoneNumber.setEnabled(false);
-			dialog = new Dialog(XletDialer.this);
-			
-			dialog.setContentView(R.layout.xlet_dialer_call);
-			dialog.setTitle(R.string.calling_title);
-			
-			TextView text = (TextView) dialog.findViewById(R.id.call_message);
-			text.setText(getString(R.string.calling, phoneNumber.getText().toString()));
-			
-			dialog.show();
-			
-			super.onPreExecute();
-		}
-		
-		@Override
-		protected Integer doInBackground(Void... params) {
-			
-			timer(1000);
-			
-			/**
-			 * Creating Call Json object
-			 */
-			JSONObject jCalling = createJsonCallingObject("originate", SettingsActivity.getMobileNumber(getApplicationContext()), 
-					phoneNumber.getText().toString().replaceAll("-", ""));
-			try {
-				Log.d( LOG_TAG, "jCalling: " + jCalling.toString());
-				PrintStream output = new PrintStream(Connection.getInstance().getNetworkConnection().getOutputStream());
-				output.println(jCalling.toString());
-								
-				publishProgress(Constants.OK);
-				timer(3000);
-				
-				return Constants.OK; 
-				
-			} catch (IOException e) {
-				publishProgress(Constants.NO_NETWORK_AVAILABLE);
-				
-				return Constants.NO_NETWORK_AVAILABLE;
-			}
-		}
-		
-		private void timer(int milliseconds){
-			try {
-				synchronized(this) {
-					this.wait(milliseconds);
-					} 
-				} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		@Override
-		protected void onProgressUpdate(Integer... values) {
-			if (values[0]==Constants.OK) {
-				TextView text = (TextView) dialog.findViewById(R.id.call_message);
-				text.setText(getString(R.string.call_ok));
-			}
-			else {
-				TextView text = (TextView) dialog.findViewById(R.id.call_message);
-				text.setText(getString(R.string.no_web_connection));
-			}
-			super.onProgressUpdate(values);
-		}
-	}
-	
-	/**
-	 * Prepare the Json string for calling process
-	 * 
-	 * @param inputClass
-	 * @param phoneNumberSrc
-	 * @param phoneNumberDest
-	 * @return
-	 */
-	private JSONObject createJsonCallingObject(String inputClass, 
-			String phoneNumberSrc,
-			String phoneNumberDest) {
-		
-		JSONObject jObj = new JSONObject();
-		String phoneSrc;
-		
-		if (phoneNumberSrc == null)
-			phoneSrc = "user:special:me";
-		else if (phoneNumberSrc.equals(""))
-			phoneSrc = "user:special:me";
-		else phoneSrc = "ext:"+phoneNumberSrc;
-		InitialListLoader.getInstance().setCalledNumber(phoneNumberDest);
-		try {
-			jObj.accumulate("direction", Constants.XIVO_SERVER);
-			jObj.accumulate("class",inputClass);
-			jObj.accumulate("source", phoneSrc);
-			jObj.accumulate("destination", "ext:"+phoneNumberDest);
-			
-			return jObj;
-		} catch (JSONException e) {
-			return null;
-		}
-	}
-	
-	/**
-	 * Create an hangup JSON object
-	 * "{
-	 *   "class": "ipbxcommand",
-	 *   "details": {
-	 *     "channelids": "chan:xivo/17:SIP/4002-00000755",
-	 *     "command": "hangup"
-	 *   },
-	 *   "direction": "xivoserver"
-	 * }" 
-	 * @return
-	 */
-	public JSONObject createJsonHangupObject() {
-		JSONObject j = new JSONObject();
-		JSONObject details = new JSONObject();
-		InitialListLoader l = InitialListLoader.getInstance();
-		String source = "chan:" + l.getUserId() + ":";
-		if (SettingsActivity.getUseMobile(this)) {
-			if (l.getPeersPeerChannelId() != null
-					&& l.getPeersPeerChannelId().startsWith("Local") == false) {
-				source += l.getPeersPeerChannelId();
-			} else if (l.getThisChannelId() != null) {
-				source += l.getThisChannelId();
-			} else {
-				source += l.getPeerChannelId();
-			}
-		} else {
-			source += l.getThisChannelId();
-		}
-		try {
-			details.accumulate("command", "hangup");
-			details.accumulate("channelids", source);
-			j.accumulate("class", "ipbxcommand");
-			j.accumulate("direction", Constants.XIVO_SERVER);
-			j.accumulate("details", details);
-			return j;
-		} catch (JSONException e) {
-			Log.e(LOG_TAG, "JSONException");
-			e.printStackTrace();
-			return null;
-		}
-	}
-	
-	/**
-	 * BroadcastReceiver, intercept Intents with action ACTION_XLET_DIAL_CALL
-	 * to perform a call
-	 * @author cquaquin
-	 *
-	 */
-	public class IncomingReceiver extends BroadcastReceiver {
-		
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			if (intent.getAction().equals(Constants.ACTION_XLET_DIAL_CALL)) {
-				Log.d( LOG_TAG , "Received Broadcast ");
-				Bundle extra = intent.getExtras();
-				
-				if (extra != null){
-					XletsContainerTabActivity parentAct;
-					phoneNumber.setText(extra.getString("numToCall"));
-					parentAct = (XletsContainerTabActivity)XletDialer.this.getParent();
-					parentAct.switchTab(0);
-					
-					new CallJsonTask().execute();
-				}
-			} else if (intent.getAction().equals(Constants.ACTION_HANGUP)) {
-				Log.d(LOG_TAG, "Hangup action received");
-				setPhoneOffHook(false);
-				phoneNumber.setEnabled(true);
-				if (dialog != null)
-					dialog.dismiss();
-			} else if (intent.getAction().equals(Constants.ACTION_OFFHOOK)) {
-				Log.d(LOG_TAG, "OffHook action received");
-				setPhoneOffHook(true);
-				phoneNumber.setEnabled(true);
-				if (dialog != null)
-					dialog.dismiss();
-			} else if (intent.getAction().equals(Constants.ACTION_MWI_UPDATE)) {
-				Log.d(LOG_TAG, "MWI update received");
-				int[] mwi = intent.getExtras().getIntArray("mwi");
-				newVoiceMail(mwi[0] == 1);
-			}
-		}
-	}
-	
-	public void clickOn1(View v) {
-		phoneNumber.append("1");
-	}
-	
-	public void clickOn2(View v) {
-		phoneNumber.append("2");
-	}
-	
-	public void clickOn3(View v) {
-		phoneNumber.append("3");
-	}
-	
-	public void clickOn4(View v) {
-		phoneNumber.append("4");
-	}
-	
-	public void clickOn5(View v) {
-		phoneNumber.append("5");
-	}
-	
-	public void clickOn6(View v) {
-		phoneNumber.append("6");
-	}
-	
-	public void clickOn7(View v) {
-		phoneNumber.append("7");
-	}
-	
-	public void clickOn8(View v) {
-		phoneNumber.append("8");
-	}
-	
-	public void clickOn9(View v) {
-		phoneNumber.append("9");
-	}
-	
-	public void clickOn0(View v) {
-		phoneNumber.append("0");
-	}
-	
-	public void clickOnStar(View v) {
-		phoneNumber.append("*");
-	}
-	
-	public void clickOnSharp(View v) {
-		phoneNumber.append("#");
-	}
-	
-	public void clickOnDelete(View v) {
-		keyPressed(KeyEvent.KEYCODE_DEL);
-	}
-	
-	private void keyPressed(int keyCode) {
-		KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
-		phoneNumber.onKeyDown(keyCode, event);
-	}
-	
-	public void clickVoiceMail(View v) {
-		if (SettingsActivity.getUseMobile(this)) {
-			Toast.makeText(this, "Not available when using your mobile number.", Toast.LENGTH_LONG).show();
-		} else {
-			((EditText) findViewById(R.id.number)).setText("*98");
-			new CallJsonTask().execute();
-		}
-	}
-	
-	@Override
-	protected void onResume() {
-		super.onResume();
-		newVoiceMail(InitialListLoader.getInstance().hasNewVoicemail());
-	}
-	
-	@Override
-	protected void onPause() {
-		if (dialog != null)
-			dialog.dismiss();
-			phoneNumber.setEnabled(true);
-		super.onPause();
-	}
-	
-	@Override
-	protected void onDestroy() {
-		unregisterReceiver(receiver);
-		if (dialog != null)
-			dialog.dismiss();
-		super.onDestroy();
-	}
+    
+    private static final String LOG_TAG = "XiVO Dialer";
+    private final int VM_DISABLED_FILTER = 0xff555555;
+    
+    private EditText phoneNumber;
+    private ImageButton dialButton;
+    private IncomingReceiver receiver;
+    private Handler mHandler = new Handler();
+    private final static long UPDATE_DELAY = 200;
+    private Runnable updateHangup = new Runnable() {
+        @Override
+        public void run() {
+            refreshHangupButton();
+            mHandler.postDelayed(updateHangup, UPDATE_DELAY);
+        }
+    };
+    private Dialog dialog;
+    
+    private CallTask callTask = null;
+    private PhoneStateListener phoneStateListener = null;
+    private TelephonyManager telephonyManager = null;
+    
+    private final List<String> sOnThePhoneCode = Arrays.asList(new String[] {"1", "8", "9", "16"});
+    
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        
+        setContentView(R.layout.xlet_dialer);
+        
+        phoneNumber = (EditText) findViewById(R.id.number);
+        dialButton = (ImageButton) findViewById(R.id.dialButton);
+        
+        refreshHangupButton();
+        
+        Bundle bundle = getIntent().getExtras();
+        if (bundle != null) {
+            phoneNumber.setText(bundle.getString("numToCall"));
+            if (!bundle.getBoolean("edit")) {
+                callTask = new CallTask();
+                callTask.execute();
+            }
+        }
+        
+        telephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+        
+        receiver = new IncomingReceiver();
+        
+        /**
+         * Register a BroadcastReceiver for Intent action that trigger a call
+         */
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Constants.ACTION_OFFHOOK);
+        filter.addAction(Constants.ACTION_MWI_UPDATE);
+        filter.addAction(Constants.ACTION_CALL_PROGRESS);
+        filter.addAction(Constants.ACTION_ONGOING_CALL);
+        filter.addAction(Constants.ACTION_UPDATE_PEER_HINTSTATUS);
+        registerReceiver(receiver, new IntentFilter(filter));
+        
+        registerButtons();
+    }
+    
+    @Override
+    protected void onBindingComplete() {
+        try {
+            newVoiceMail(xivoConnectionService.hasNewVoiceMail());
+        } catch (RemoteException e) {
+            newVoiceMail(false);
+        }
+        mHandler.postDelayed(updateHangup, UPDATE_DELAY);
+        super.onBindingComplete();
+    }
+    
+    private boolean isServiceReady() {
+        try {
+            return xivoConnectionService != null && xivoConnectionService.isAuthenticated();
+        } catch (RemoteException e) {
+            return false;
+        }
+    }
+    
+    private void newVoiceMail(final boolean status) {
+        ImageButton vm_button = (ImageButton) findViewById(R.id.voicemailButton);
+        vm_button.setEnabled(true);
+        if (status) {
+            vm_button.setColorFilter(null);
+        } else {
+            vm_button.setColorFilter(VM_DISABLED_FILTER, PorterDuff.Mode.SRC_ATOP);
+        }
+    }
+    
+    /**
+     * Hang up a call using the most appropriate method
+     */
+    private void hangup() {
+        if (SettingsActivity.getUseMobile(this)) {
+            if (isMobileOffHook()) {
+                if (AndroidTools.hangup(this)) return;
+            } else {
+                return;
+            }
+        }
+        try {
+            if (xivoConnectionService != null && xivoConnectionService.isAuthenticated()) {
+                if (xivoConnectionService.isOnThePhone()) {
+                    xivoConnectionService.hangup();
+                }
+                return;
+            }
+        } catch (RemoteException e) {
+            // Handled with other failure after the catch
+        }
+        Log.d(LOG_TAG, "Service not ready to hang-up");
+        Toast.makeText(this, getString(R.string.service_not_ready), Toast.LENGTH_SHORT).show();
+    }
+    
+    /**
+     * Starts a new CallTask
+     */
+    private void call() {
+        if (isServiceReady()) {
+            callTask = new CallTask();
+            callTask.execute();
+        } else {
+            Toast.makeText(this, getString(R.string.service_not_ready), Toast.LENGTH_SHORT).show();
+            Log.d(LOG_TAG, "Calling before the service is ready, aborting");
+        }
+    }
+    
+    private void transfer() {
+        if (isServiceReady()) {
+            try {
+                xivoConnectionService.transfer(phoneNumber.getText().toString());
+                return;
+            } catch (RemoteException e) {
+                // Checked by isServiceReady
+                e.printStackTrace();
+            }
+        }
+        Toast.makeText(this, getString(R.string.service_not_ready), Toast.LENGTH_SHORT).show();
+    }
+    
+    private void atxfer() {
+        if (isServiceReady()) {
+            try {
+                xivoConnectionService.atxfer(phoneNumber.getText().toString());
+                return;
+            } catch (RemoteException e) {
+                // Checked by isServiceReady
+                e.printStackTrace();
+            }
+        }
+        Toast.makeText(this, getString(R.string.service_not_ready), Toast.LENGTH_SHORT).show();
+    }
+    
+    public void clickOnCall(View v) {
+        if (phoneNumber.getText().toString().equals("")) {
+            hangup();
+        } else {
+            callOrTransfer();
+        }
+    }
+    
+    private void callOrTransfer() {
+        // Not on the phone, call
+        if (SettingsActivity.getUseMobile(this)) {
+            if (!isMobileOffHook()) {
+                call();
+                return;
+            }
+        } else {
+            try {
+                if (isServiceReady() && !xivoConnectionService.isOnThePhone()) {
+                    call();
+                    return;
+                }
+            } catch (RemoteException e) {
+                Toast.makeText(this, getString(R.string.service_not_ready),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+        // On the phone
+        if (!(isServiceReady())) {
+            Log.d(LOG_TAG, "Trying to call or transfer before the service is ready");
+            Toast.makeText(this, getString(R.string.service_not_ready), Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        final String num = phoneNumber.getText().toString();
+        final String[] menu = new String[] {
+                String.format(getString(R.string.transfer_number), num),
+                String.format(getString(R.string.atxfer_number), num),
+                getString(R.string.hangup), getString(R.string.cancel_label) };
+        new AlertDialog.Builder(this).setTitle(getString(R.string.context_action))
+                .setItems(menu, new DialogInterface.OnClickListener() {
+                    
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                        case 0:
+                            transfer();
+                            break;
+                        case 1:
+                            atxfer();
+                            break;
+                        case 2:
+                            hangup();
+                            break;
+                        default:
+                            Log.d(LOG_TAG, "Canceling");
+                            break;
+                        }
+                    }
+                }).show();
+    }
+    
+    /**
+     * Set the status of the phone to update the dial button
+     * 
+     * @param offHook
+     */
+    public void setPhoneOffHook(final boolean offHook) {
+        if (offHook) {
+            dialButton.setImageDrawable(getResources()
+                    .getDrawable(R.drawable.ic_dial_action_hangup));
+        } else {
+            dialButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_dial_action_call));
+            ((EditText) findViewById(R.id.number)).setEnabled(true);
+        }
+    }
+    
+    private String getMyHintstatus() {
+        if (xivoConnectionService == null) return "";
+        try {
+            String astid = xivoConnectionService.getAstId();
+            String xivoId = xivoConnectionService.getXivoId();
+            Cursor c = getContentResolver().query(
+                    UserProvider.CONTENT_URI,
+                    new String[] {
+                        UserProvider.ASTID,
+                        UserProvider.XIVO_USERID,
+                        UserProvider.HINTSTATUS_CODE},
+                        UserProvider.ASTID + " = '" + astid + "' AND '" + xivoId + "' = " +
+                            UserProvider.XIVO_USERID , null, null);
+            if (c.getCount() > 0) {
+                c.moveToFirst();
+                return c.getString(c.getColumnIndex(UserProvider.HINTSTATUS_CODE));
+            }
+        } catch (RemoteException e) {
+            Log.d(LOG_TAG, "Failed to retrieve my hintstatus");
+        }
+        return "";
+    }
+    
+    /**
+     * Check if our phone is Off hook and if we have active channels
+     */
+    private void refreshHangupButton() {
+        if (SettingsActivity.getUseMobile(this)) {
+            setPhoneOffHook(isMobileOffHook());
+        } else {
+            setPhoneOffHook(sOnThePhoneCode.contains(getMyHintstatus()));
+        }
+    }
+    
+    /**
+     * Check the phone status returns true if it's off hook
+     * 
+     * @return
+     */
+    private boolean isMobileOffHook() {
+        if (telephonyManager == null)
+            return false;
+        switch (telephonyManager.getCallState()) {
+        case TelephonyManager.CALL_STATE_OFFHOOK:
+        case TelephonyManager.CALL_STATE_RINGING:
+            return true;
+        default:
+            return false;
+        }
+    }
+    
+    private void showCallDialog() {
+        dialog = new Dialog(this);
+        dialog.setContentView(R.layout.xlet_dialer_call);
+        dialog.setTitle(R.string.calling_title);
+        dialog.setOnCancelListener(callTask);
+        dialog.setCancelable(false);
+        dialog.show();
+    }
+    
+    private void cancelCallDialog() {
+        if (dialog != null) {
+            dialog.dismiss();
+            dialog = null;
+        }
+    }
+    
+    /**
+     * Creating a AsyncTask to run call process
+     * 
+     * @author cquaquin
+     */
+    private class CallTask extends AsyncTask<Void, Integer, Integer>
+            implements android.content.DialogInterface.OnCancelListener {
+        
+        public String progress = null;
+        private TextView text = null;
+        public boolean completeOrCancel = false;
+        
+        @Override
+        protected void onPreExecute() {
+            showCallDialog();
+            progress = getString(R.string.calling, phoneNumber.getText().toString());
+            completeOrCancel = false;
+            phoneNumber.setEnabled(false);
+            text = (TextView) dialog.findViewById(R.id.call_message);
+            text.setText(progress);
+            
+            super.onPreExecute();
+        }
+        
+        @Override
+        protected Integer doInBackground(Void... params) {
+            int result = Constants.OK;
+            try {
+                while (xivoConnectionService == null) timer(100);
+                xivoConnectionService.call(phoneNumber.getText().toString().replace("(", "")
+                        .replace(")", "").replace("-", "").trim());
+                while (!completeOrCancel) timer(200);
+            } catch (RemoteException e) {
+                result = Constants.REMOTE_EXCEPTION;
+            }
+            return result;
+        }
+        
+        private void timer(int milliseconds) {
+            try {
+                synchronized (this) {
+                    this.wait(milliseconds);
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            text.setText(progress);
+            super.onProgressUpdate(values);
+        }
+        
+        @Override
+        protected void onPostExecute(Integer result) {
+            phoneNumber.setEnabled(true);
+            switch (result) {
+            case Constants.OK:
+                break;
+            case Constants.REMOTE_EXCEPTION:
+                showToast(R.string.remote_exception);
+                break;
+            }
+        }
+        
+        private void showToast(int messageId) {
+            Toast.makeText(XletDialer.this, getString(messageId), Toast.LENGTH_SHORT).show();
+        }
+        
+        @Override
+        public void onCancel(DialogInterface dialog) {
+            hangup();
+        }
+    }
+    
+    /**
+     * BroadcastReceiver, intercept Intents
+     * 
+     * @author cquaquin
+     * 
+     */
+    private class IncomingReceiver extends BroadcastReceiver {
+        
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+            if (action.equals(Constants.ACTION_OFFHOOK)) {
+                Log.d(LOG_TAG, "OffHook action received");
+                phoneNumber.setEnabled(true);
+                phoneNumber.setText("");
+            } else if (action.equals(Constants.ACTION_MWI_UPDATE)) {
+                Log.d(LOG_TAG, "MWI update received");
+                int[] mwi = intent.getExtras().getIntArray("mwi");
+                newVoiceMail(mwi[0] == 1);
+            } else if (action.equals(Constants.ACTION_CALL_PROGRESS)) {
+                final String status = intent.getStringExtra("status");
+                final String code = intent.getStringExtra("code");
+                if (code.equals(Constants.CALLING_STATUS_CODE)) {
+                    phoneNumber.setEnabled(true);
+                    phoneNumber.setText("");
+                }
+                if (callTask != null) {
+                    if (Integer.parseInt(code) == Constants.HINTSTATUS_AVAILABLE_CODE) {
+                        callTask.completeOrCancel = true;
+                    }
+                    callTask.progress = status;
+                    callTask.onProgressUpdate();
+                }
+            } else if (action.equals(Constants.ACTION_ONGOING_CALL)) {
+                phoneNumber.setEnabled(true);
+                phoneNumber.setText("");
+            } else if (action.equals(Constants.ACTION_MY_PHONE_CHANGE)) {
+                if (intent.getStringExtra("code").equals(Constants.AVAILABLE_STATUS_CODE)) {
+                }
+            } else if (action.equals(Constants.ACTION_UPDATE_PEER_HINTSTATUS)) {
+                if (intent.hasExtra("status")) {
+                    String status = intent.getStringExtra("status");
+                    if (status.equals("ringing")) {
+                        setCancellable(true);
+                    } else if (status.equals("linked-called")){
+                        cancelCallDialog();
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * Change the status of the dialog box to make it cancelable if the call can be cancelled
+     * @param cancellable
+     */
+    private void setCancellable(final boolean cancellable) {
+        if (dialog != null) {
+            dialog.setCancelable(cancellable);
+            if (cancellable) {
+                ((TextView) dialog.findViewById(R.id.call_message)).setText(
+                        getString(R.string.back_cancel));
+            }
+        }
+    }
+    
+    public void clickOn1(View v) {
+        phoneNumber.append("1");
+    }
+    
+    public void clickOn2(View v) {
+        phoneNumber.append("2");
+    }
+    
+    public void clickOn3(View v) {
+        phoneNumber.append("3");
+    }
+    
+    public void clickOn4(View v) {
+        phoneNumber.append("4");
+    }
+    
+    public void clickOn5(View v) {
+        phoneNumber.append("5");
+    }
+    
+    public void clickOn6(View v) {
+        phoneNumber.append("6");
+    }
+    
+    public void clickOn7(View v) {
+        phoneNumber.append("7");
+    }
+    
+    public void clickOn8(View v) {
+        phoneNumber.append("8");
+    }
+    
+    public void clickOn9(View v) {
+        phoneNumber.append("9");
+    }
+    
+    public void clickOn0(View v) {
+        phoneNumber.append("0");
+    }
+    
+    public void clickOnStar(View v) {
+        phoneNumber.append("*");
+    }
+    
+    public void clickOnSharp(View v) {
+        phoneNumber.append("#");
+    }
+    
+    public void clickOnDelete(View v) {
+        keyPressed(KeyEvent.KEYCODE_DEL);
+    }
+    
+    private void keyPressed(int keyCode) {
+        KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
+        phoneNumber.onKeyDown(keyCode, event);
+    }
+    
+    public void clickVoiceMail(View v) {
+        if (SettingsActivity.getUseMobile(this)) {
+            Toast.makeText(this, "Not available when using your mobile number.", Toast.LENGTH_LONG)
+                    .show();
+        } else {
+            ((EditText) findViewById(R.id.number)).setText("*98");
+            new CallTask().execute();
+        }
+    }
+    
+    @Override
+    protected void onResume() {
+        if (phoneNumber != null && phoneNumber.getText().toString().equals("")) {
+            phoneNumber.setText(SettingsActivity.getLastDialerValue(this));
+        }
+        super.onResume();
+    }
+    
+    @Override
+    protected void onPause() {
+        if (dialog != null) {
+            dialog.dismiss();
+            dialog = null;
+        }
+        if (phoneNumber != null) {
+            phoneNumber.setEnabled(true);
+            SettingsActivity.setLastDialerValue(this, phoneNumber.getText().toString());
+        }
+        super.onPause();
+    }
+    
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(receiver);
+        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
+        if (dialog != null) {
+            dialog.dismiss();
+            dialog = null;
+        }
+        super.onDestroy();
+    }
+    
+    @Override
+    protected void setUiEnabled(boolean state) {
+        super.setUiEnabled(state);
+        if (dialButton != null) {
+            dialButton.setEnabled(state);
+        }
+        if (phoneNumber != null) {
+            phoneNumber.setEnabled(state);
+        }
+    }
 }

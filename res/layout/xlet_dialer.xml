@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<LinearLayout 
-  xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" 
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:gravity="center_horizontal">
+    <include layout="@layout/xlet_identity"/>
 <LinearLayout 
   xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
@@ -145,5 +145,4 @@
 
 </TableLayout>
   <include layout="@layout/xlet_dialer_buttons" />
-
 </LinearLayout>

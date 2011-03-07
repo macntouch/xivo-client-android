@@ -5,4 +5,8 @@
 <color name="xivo_default_view">#00FFFFFF</color>
 <color name="xivo_default_pressed">#FF9900</color>
 <color name="xivo_default_focus">#FF6600</color>
+<color name="appli_bg">#00000000</color>
+<color name="header_bg">#00000000</color>
+<color name="black">#000000</color>
+<color name="appli_text_color">#ffffffff</color>
 </resources>

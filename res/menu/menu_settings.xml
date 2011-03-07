@@ -10,8 +10,4 @@
       android:icon="@drawable/flash"
       android:title="@string/disconnect"
       android:visible="false"/>
-<item android:id="@+id/menu_exit" 
-      android:icon="@drawable/exit"
-      android:title="@string/exit"/>
-
 </menu>

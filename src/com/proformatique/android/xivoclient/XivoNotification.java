@@ -43,7 +43,7 @@ public class XivoNotification {
 		notifManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
 		notification = new Notification(R.drawable.icon, "", System.currentTimeMillis());
 		PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, 
-				new Intent(context, LoginActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+				new Intent(context, HomeActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
 		notification.flags=Notification.FLAG_NO_CLEAR;
 		
 		/**
