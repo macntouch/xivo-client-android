@@ -66,6 +66,7 @@
     <string name="service_not_ready">Le service n\'est pas prêt à l\'exécution</string>
     <string name="disconnecting">Déconnection</string>
     <string name="uninstalled_error">Échec lors du démarrage, l\'application est peut-être innacessible à partir d\'une autre application ou elle a peut-être été dé-installée</string>
+    <string name="connection_refused">Connexion refusée</string>
     
     <!-- Others -->
     <string name="context_action">Action</string>
@@ -76,6 +77,7 @@
     <string name="transfer_number">Transfert direct au %1$s</string>
     <string name="atxfer_number">Transfert indirect au %1$s</string>
     <string name="context_edit_before_call">Éditer (%1$s)</string>
+    <string name="back_cancel">Retour pour annuler</string>
 
     <!-- Xlets descriptions
          IMPORTANT : use this file to put label and description
@@ -104,6 +106,7 @@
     <string name="bandwidth_in_label">Reçu:</string>
     
     <!-- Units -->
+    <string name="unknown">inconnu</string>
     <string name="unit_byte">octet</string>
     <string name="unit_kb">Ko</string>
     <string name="unit_mb">Mo</string>

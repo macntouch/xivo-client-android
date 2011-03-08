@@ -311,7 +311,16 @@ public class XivoActivity extends Activity implements OnClickListener {
     }
     
     private void menuAbout() {
+        long datareceived = -1L;
+        if (xivoConnectionService != null) {
+            try {
+                datareceived = xivoConnectionService.getReceivedBytes();
+            } catch (RemoteException e) {
+                datareceived = -1L;
+            }
+        }
         Intent defineIntent = new Intent(this, AboutActivity.class);
+        defineIntent.putExtra("received_data", datareceived);
         startActivityForResult(defineIntent, Constants.CODE_LAUNCH);
     }
     

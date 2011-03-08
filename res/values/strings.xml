@@ -36,7 +36,6 @@
     <string name="service_bandwidth_warning">Will consume ALOT of energy and bandwidth</string>
     <string name="always_connected">Keep the service connected to the server</string>
     <string name="disconnect_failed">Disconnection failed</string>
-    <string name="cancel_failed">Failed to cancel the call</string>
     
     <!-- Messages strings -->
     <string name="connection_failed">Connection failed</string>
@@ -107,7 +106,7 @@
     <string name="unknown_contact_name">Unknown</string>
     <string name="disconnected">(not connected)</string>
     
-    <string name="bandwidth_in_label">Received:</string>
+    <string name="bandwidth_in_label">Data received</string>
     
     <!-- Units -->
     <string name="unknown">Unknown</string>

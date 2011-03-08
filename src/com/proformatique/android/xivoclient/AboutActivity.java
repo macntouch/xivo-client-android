@@ -19,66 +19,98 @@
 
 package com.proformatique.android.xivoclient;
 
+import java.util.Arrays;
+import java.util.List;
+
+import android.app.ListActivity;
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-public class AboutActivity extends XivoActivity {
+public class AboutActivity extends ListActivity {
     
-    private final static String TAG = "XiVO About";
+    private String[] items;
     
     private final static double KB = Math.pow(2, 10);
     private final static double MB = Math.pow(2, 20);
     private final static double GB = Math.pow(2, 30);
     private final static double TB = Math.pow(2, 40);
     
-    private TextView mBandwidth;
-    private TextView mUnit;
-    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Intent i = getIntent();
+        long received = i.getLongExtra("received_data", -1L);
         setContentView(R.layout.about);
-        super.registerButtons();
         
-        mBandwidth = (TextView) findViewById(R.id.bandwidth_received);
-        mUnit = (TextView) findViewById(R.id.bandwidth_unit);
-    }
-    
-    @Override
-    protected void onBindingComplete() {
-        super.onBindingComplete();
-        
-        long received = -1L;
-        
-        try {
-            if (xivoConnectionService != null)
-                received = xivoConnectionService.getReceivedBytes();
-        } catch (Exception e) {
-            Log.d(TAG, "Could not retrieve bandwidth, using default value");
+        StringBuilder sb = new StringBuilder();
+        sb.append(getString(R.string.bandwidth_in_label)).append(" ");
+        if (received == -1L) {
+            sb.append(getString(R.string.unknown));
+        } else if (received == 0) {
+            sb.append(received).append(" ").append(getString(R.string.unit_byte));
+        } else if (received <= KB) {
+            sb.append(received).append(" ").append(getString(R.string.unit_byte)).append("s");
+        } else if (received <= MB) {
+            sb.append(String.format("%.2f ", received / KB)).append(getString(R.string.unit_kb));
+        } else if (received <= GB) {
+            sb.append(String.format("%.2f ", received / MB)).append(getString(R.string.unit_mb));
+        } else if (received <= TB) {
+            sb.append(String.format("%.2f ", received / GB)).append(getString(R.string.unit_gb));
+        } else {
+            sb.append(String.format("%.2f ", received / TB)).append(getString(R.string.unit_tb));
         }
         
-        if (received == -1L) {
-            mBandwidth.setText(getString(R.string.unknown));
-            mUnit.setText("");
-        } else if (received == 0) {
-            mBandwidth.setText(Long.toString(received));
-            mUnit.setText(R.string.unit_byte);
-        } else if (received <= KB) {
-            mBandwidth.setText(Long.toString(received));
-            mUnit.setText(R.string.unit_byte + "s");
-        } else if (received <= MB) {
-            mBandwidth.setText(String.format("%.2f", received / KB));
-            mUnit.setText(R.string.unit_kb);
-        } else if (received <= GB) {
-            mBandwidth.setText(String.format("%.2f", received / MB));
-            mUnit.setText(R.string.unit_mb);
-        } else if (received <= TB) {
-            mBandwidth.setText(String.format("%.2f", received / GB));
-            mUnit.setText(R.string.unit_gb);
-        } else {
-            mBandwidth.setText(String.format("%.2f", received / TB));
-            mUnit.setText(R.string.unit_tb);
+        items = new String[] {
+                getString(R.string.credits) + " " + getString(R.string.version),
+                getString(R.string.copyright),
+                getString(R.string.credits_part1),
+                getString(R.string.gpl),
+                sb.toString()
+        };
+        
+        this.setListAdapter(new AboutAdapter(Arrays.asList(items)));
+    }
+    
+    private class AboutAdapter extends BaseAdapter {
+        
+        private List<String> list;
+        
+        public AboutAdapter(List<String> list) {
+            this.list = list;
+        }
+        
+        @Override
+        public int getCount() {
+            return list == null ? 0 : list.size();
+        }
+        
+        @Override
+        public Object getItem(int position) {
+            return list.get(position);
+        }
+        
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+        
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View v;
+            if (convertView == null) {
+                LayoutInflater li = getLayoutInflater();
+                v = li.inflate(R.layout.about_row, null);
+            } else {
+                v = convertView;
+            }
+            TextView text = (TextView) v.findViewById(R.id.about_row_content);
+            text.setText(list.get(position));
+            return v;
         }
     }
 }
