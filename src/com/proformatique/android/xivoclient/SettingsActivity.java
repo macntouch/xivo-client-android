@@ -121,14 +121,18 @@ public class SettingsActivity extends PreferenceActivity {
     }
     
     /**
-     * Returns the use_mobile_number preference value
+     * Returns the use_mobile_number preference value.
+     * Check if the use_mobile_number is true or false and make sure a mobile number has been set
+     * if use_mobile_number is true.
      * 
      * @param context
-     * @return
+     * @return true if use_mobile_number is set and a mobile number has been set else false
+     * @throws NullPointerException if context is null
      */
     public static boolean getUseMobile(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(USE_MOBILE_OPTION,
-                USE_MOBILE_DEFAULT);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getBoolean(USE_MOBILE_OPTION, USE_MOBILE_DEFAULT)
+                && prefs.getString(MOBILE_PHONE_NUMBER, "").equals("") == false;
     }
     
     /**
