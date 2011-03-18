@@ -398,11 +398,12 @@ public class XivoConnectionService extends Service {
     public void onStart(Intent i, int startId) {
         super.onStart(i, startId);
         Log.d(TAG, "XiVO connection service started");
-        if (SettingsActivity.getAlwaysConnected(this)) {
+        // Disabled until I connection profiles are added
+        /*if (SettingsActivity.getStartOnBoot(this)) {
             while (!connected && !authenticated && !wrongHostPort && !wrongLoginInfo) {
                 autoLogin();
             }
-        }
+        }*/
     }
     
     private void autoLogin() {

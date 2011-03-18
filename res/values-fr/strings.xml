@@ -36,6 +36,7 @@
     <string name="service_bandwidth_warning">Le service consommera beaucoup plus d\'énergie et de bande passante si cette option est active</string>
     <string name="always_connected">Rester connecté au serveur</string>
     <string name="disconnect_failed">Échec lors de la déconnection</string>
+    <string name="not_available">Cette fonction n\'est pas active</string>
 
     <!-- Messages strings -->
     <string name="connection_failed">Connexion en échec</string>

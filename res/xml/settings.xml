@@ -30,7 +30,7 @@
       android:key="start_on_boot"
       android:title="@string/start_on_boot"
       android:defaultValue="false"
-      android:summary="@string/service_bandwidth_warning" />
+      android:summary="@string/not_available" />
     <CheckBoxPreference
         android:key="always_connected"
         android:title="@string/always_connected"
