@@ -67,11 +67,11 @@ public final class Constants {
     public static final String XIVO_ASTID = "xivo";
     public static final String XIVO_CONTEXT = "default";
     public static final String XIVO_LOGIN_VERSION = "9999";
-    public static final String XIVO_VERSION = "1.1";
-    public static final String XIVO_LOGIN_OK = "login_id_ok";
-    public static final String XIVO_PASSWORD_OK = "login_pass_ok";
+    public static final String XIVO_VERSION = "1.2";
+    public static final String XIVO_LOGIN_OK = "login_id";
+    public static final String XIVO_PASSWORD_OK = "login_pass";
     public static final String XIVO_LOGIN_KO = "loginko";
-    public static final String XIVO_LOGIN_CAPAS_OK = "login_capas_ok";
+    public static final String XIVO_LOGIN_CAPAS_OK = "login_capas";
     public static final String XIVO_VERSION_NOT_COMPATIBLE = "xivoversion_client:1.1;1.0";
     public static final String XIVO_CTI_VERSION_NOT_SUPPORTED = "wrong_client_os_identifier:android-";
     public static final String XIVO_LOGIN_PASSWORD = "login_password";

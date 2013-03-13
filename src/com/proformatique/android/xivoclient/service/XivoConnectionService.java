@@ -535,22 +535,24 @@ public class XivoConnectionService extends Service {
             return Constants.CONNECTION_REFUSED;
         }
         bytesReceived = 0L;
+        xivoNotif = new XivoNotification(getApplicationContext());
+        xivoNotif.createNotification();
+        Log.d(TAG,"connected .....");
         try {
             inputBuffer = new BufferedReader(
                     new InputStreamReader(networkConnection.getInputStream()));
             
-            String firstLine;
-            while ((firstLine = getLine()) != null) {
-                if (firstLine.contains("XiVO CTI Server")) {
-                    xivoNotif = new XivoNotification(getApplicationContext());
-                    xivoNotif.createNotification();
-                    return Constants.CONNECTION_OK;
-                }
-            }
-            return Constants.NOT_CTI_SERVER;
+//            String firstLine;
+//            while ((firstLine = getLine()) != null) {
+//                if (firstLine.contains("XiVO CTI Server")) {
+//                    return Constants.CONNECTION_OK;
+//                }
+//            }
+//            return Constants.NOT_CTI_SERVER;
         } catch (IOException e) {
             return Constants.NO_NETWORK_AVAILABLE;
         }
+        return Constants.CONNECTION_OK;
     }
     
     private int disconnectFromServer() {
@@ -1217,9 +1219,7 @@ public class XivoConnectionService extends Service {
     private int parseCapas(JSONObject jCapa) {
         resetState();
         try {
-            xivoId = jCapa.getString("xivo_userid");
-            astId = jCapa.getString("astid");
-            userId = astId + "/" + xivoId;
+            userId = jCapa.getString("userid");
             
             if (jCapa.has("capaxlets")) {
                 parseCapaxlets(jCapa.getJSONArray("capaxlets"));

@@ -80,18 +80,7 @@ public class AndroidTools {
                 Log.d(TAG, "The getITelephony method does not seem to exist for this build");
                 return false;
             }
-            // Get an instance of our iTelephony object
-            com.android.internal.telephony.ITelephony iTelephonyInstance =
-                (com.android.internal.telephony.ITelephony) iTelephonyGetter
-                    .invoke((TelephonyManager) context.getSystemService(context.TELEPHONY_SERVICE),
-                            null);
-            // Call it
-            if (iTelephonyInstance != null) {
-                return iTelephonyInstance.endCall();
-            } else {
-                Log.d(TAG, "Could not retrieve the Telephony interface");
-                return false;
-            }
+
         } catch (SecurityException e) {
             Log.d(TAG, "Security exception while accessing the TelephonyManager. "
                     + "Add CALL_PHONE to your manifest");
@@ -101,15 +90,6 @@ public class AndroidTools {
             e.printStackTrace();
         } catch (IllegalArgumentException e) {
             Log.d(TAG, "A method signature changed. Check the endCall and getITelephony params");
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            Log.d(TAG, "The called method is private, make sure you change it's accessibility");
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            Log.d(TAG, "This TelephonyManager cannot use endCall");
-            e.printStackTrace();
-        } catch (RemoteException e) {
-            Log.d(TAG, "Cannot reach the TelephonyManager");
             e.printStackTrace();
         }
         return false;

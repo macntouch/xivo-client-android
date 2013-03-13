@@ -52,7 +52,7 @@ public class JSONMessageFactory {
             obj.accumulate("class","login_id");
             obj.accumulate("company", SettingsActivity.getXivoContext(context));
             obj.accumulate("ident","android-" + android.os.Build.VERSION.RELEASE);
-            obj.accumulate("userid", SettingsActivity.getLogin(context));
+            obj.accumulate("userlogin", SettingsActivity.getLogin(context));
             obj.accumulate("version",Constants.XIVO_LOGIN_VERSION);
             obj.accumulate("xivoversion",Constants.XIVO_VERSION);
         } catch (JSONException e) {
