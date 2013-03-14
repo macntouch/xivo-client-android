@@ -1225,8 +1225,8 @@ public class XivoConnectionService extends Service {
                 parseCapaxlets(jCapa.getJSONArray("capaxlets"));
             }
             
-            if (jCapa.has("capapresence")) {
-                parseCapapresence(jCapa.getJSONObject("capapresence"));
+            if (jCapa.has("userstatus")) {
+                parseCapapresence(jCapa.getJSONObject("userstatus"));
             }
         } catch (JSONException e) {
             return Constants.JSON_POPULATE_ERROR;
@@ -1289,7 +1289,8 @@ public class XivoConnectionService extends Service {
         ContentValues values = new ContentValues();
         for (int i = 0; i < xlets.length(); i++) {
             try {
-                values.put(CapaxletsProvider.XLET, xlets.getString(i));
+            	Log.d(TAG,"inserting xlet ...." + xlets.getJSONArray(i).getString(0));
+            	values.put(CapaxletsProvider.XLET, xlets.getJSONArray(i).getString(0));
                 getContentResolver().insert(CapaxletsProvider.CONTENT_URI, values);
                 values.clear();
             } catch (JSONException e) {

@@ -211,10 +211,7 @@ public class HomeActivity extends XivoActivity
             if (c.moveToFirst()) {
                 do {
                     String incomingXlet = c.getString(c.getColumnIndex(CapaxletsProvider.XLET));
-                    int index;
-                    if ((index = incomingXlet.indexOf("-")) != -1) {
-                        incomingXlet = incomingXlet.substring(0, index);
-                    }
+                    Log.d(LOG_TAG,"xlet ..." + incomingXlet);
                     // Only add xlets that are implemented
                     if (implementedXlets.contains(incomingXlet))
                         availXlets.add(incomingXlet);
