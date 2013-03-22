@@ -542,13 +542,6 @@ public class XivoConnectionService extends Service {
             inputBuffer = new BufferedReader(
                     new InputStreamReader(networkConnection.getInputStream()));
             
-//            String firstLine;
-//            while ((firstLine = getLine()) != null) {
-//                if (firstLine.contains("XiVO CTI Server")) {
-//                    return Constants.CONNECTION_OK;
-//                }
-//            }
-//            return Constants.NOT_CTI_SERVER;
         } catch (IOException e) {
             return Constants.NO_NETWORK_AVAILABLE;
         }
