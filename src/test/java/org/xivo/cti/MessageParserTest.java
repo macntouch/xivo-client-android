@@ -1,14 +1,26 @@
 package org.xivo.cti;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.Matchers.hasItem;
 
+import java.util.List;
+
+import junit.framework.AssertionFailedError;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
-import org.xivo.cti.message.CtiMessage;
 import org.xivo.cti.message.LoginAck;
+import org.xivo.cti.message.LoginCapasAck;
 import org.xivo.cti.message.LoginPassAck;
+import org.xivo.cti.model.Capacities;
+import org.xivo.cti.model.Service;
+import org.xivo.cti.model.UserStatus;
 
 
 public class MessageParserTest {
@@ -40,6 +52,135 @@ public class MessageParserTest {
 		assertEquals("Can't decode replyid", 1646064863, loginPassAck.replyId);
 	}
 
+	@Test
+	public void parseLoginCapas() throws JSONException {
+		JSONObject jsonObject = new JSONObject("{\"class\": \"login_capas\",\"presence\": \"available\", " +
+													"\"userid\": \"3\", \"ipbxid\": \"xivo\",\"appliname\": \"Client\","
+									+ " \"timenow\": 1364373405.73,"
+									+ " \"capas\": {\"regcommands\": {}, \"preferences\": false,"
+										+ " \"userstatus\": {"
+											+ "\"available\": {\"color\": \"#08FD20\","
+												+ " \"allowed\": [\"available\", \"away\",\"outtolunch\", \"donotdisturb\", \"berightback\"],"
+												+ " \"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Disponible\"},"
+											+ " \"berightback\": {\"color\": \"#FFB545\", \"allowed\": [\"available\", \"away\", \"outtolunch\", \"donotdisturb\", \"berightback\"],"
+												+ " \"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Bient\u00f4t de retour\"}, "
+											+ "\"disconnected\": {\"color\": \"#202020\", \"actions\": {\"agentlogoff\": \"\"}, \"longname\": \"D\u00e9connect\u00e9\"}, "
+											+ "\"away\": {\"color\": \"#FDE50A\", \"allowed\": [\"available\", \"away\", \"outtolunch\", \"donotdisturb\", \"berightback\"], "
+												+ "\"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Sorti\"}, "
+											+ "\"donotdisturb\": {\"color\": \"#FF032D\", \"allowed\": [\"available\", \"away\", \"outtolunch\", \"donotdisturb\", \"berightback\"], "
+												+ "\"actions\": {\"enablednd\": \"true\"}, \"longname\": \"Ne pas d\u00e9ranger\"}, "
+											+ "\"outtolunch\": {\"color\": \"#001AFF\", \"allowed\": [\"available\", \"away\", \"outtolunch\", \"donotdisturb\", \"berightback\"],"
+												+ " \"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Parti Manger\"}}, "
+											+ "\"services\": [\"enablednd\", \"fwdunc\", \"fwdbusy\", \"fwdrna\"], "
+											+ "\"phonestatus\": {  \"16\": {\"color\": \"#F7FF05\", \"longname\": \"En Attente\"}, "
+																+ "\"1\": {\"color\": \"#FF032D\", \"longname\": \"En ligne OU appelle\"}, "
+																+ "\"0\": {\"color\": \"#0DFF25\", \"longname\": \"Disponible\"}, " +
+																"\"2\": {\"color\": \"#FF0008\", \"longname\": \"Occup\u00e9\"}, " +
+																"\"-1\": {\"color\": \"#000000\", \"longname\": \"D\u00e9sactiv\u00e9\"}, " +
+																"\"4\": {\"color\": \"#FFFFFF\", \"longname\": \"Indisponible\"}, " +
+																"\"-2\": {\"color\": \"#030303\", \"longname\": \"Inexistant\"}, " +
+																"\"9\": {\"color\": \"#FF0526\", \"longname\": \"(En Ligne OU Appelle) ET Sonne\"}, " +
+																"\"8\": {\"color\": \"#1B0AFF\", \"longname\": \"Sonne\"}}, \"ipbxcommands\": {}}, " +
+										"\"replyid\": 2, " +
+										"\"capaxlets\": [[\"identity\", \"grid\"], [\"search\", \"tab\"], [\"customerinfo\", \"tab\", \"1\"], " +
+															"[\"fax\", \"tab\", \"2\"], [\"dial\", \"grid\", \"2\"], [\"tabber\", \"grid\", \"3\"], " +
+															"[\"history\", \"tab\", \"3\"], [\"remotedirectory\", \"tab\", \"4\"], " +
+															"[\"features\", \"tab\", \"5\"], [\"mylocaldir\", \"tab\", \"6\"], [\"conference\", \"tab\", \"7\"]], " +
+											"}");
+		LoginCapasAck loginCapasAck = (LoginCapasAck) messageParser.parse(jsonObject);
+		assertNotNull("unable to decode login capas ack",loginCapasAck);
+		assertEquals("unable to decode presence",loginCapasAck.presence,"available");
+		assertEquals("unable to decode user id",loginCapasAck.userId,"3");
+		assertEquals("unable to decode application name",loginCapasAck.applicationName,"Client");
+		assertNotNull("unable to decode capacitied",loginCapasAck.capacities);
+		
+		
+	}
+
+	@Test
+	public void parseCapacities() throws JSONException {
+		JSONObject jsonObject = new JSONObject("{\"regcommands\": {}, \"preferences\": true,"
+						+ " \"userstatus\": {" +
+								"\"available\": {\"color\": \"#08FD20\"," +
+										" \"allowed\": [\"available\", \"away\",\"outtolunch\", \"donotdisturb\", \"berightback\"]," +
+										" \"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Disponible\"}," +
+								"\"disconnected\": {\"color\": \"#202020\", " +
+										"\"actions\": {\"agentlogoff\": \"\"}, \"longname\": \"D\u00e9connect\u00e9\"}}, " +
+								"\"services\": [\"enablednd\", \"fwdunc\", \"fwdbusy\", \"fwdrna\"], " +
+								"\"phonestatus\": {  \"16\": {\"color\": \"#F7FF05\", \"longname\": \"En Attente\"}, "
+												+ "\"1\": {\"color\": \"#FF032D\", \"longname\": \"En ligne OU appelle\"}, "
+												+ "\"0\": {\"color\": \"#0DFF25\", \"longname\": \"Disponible\"}, " +
+												"\"2\": {\"color\": \"#FF0008\", \"longname\": \"Occup\u00e9\"}, " +
+												"\"-1\": {\"color\": \"#000000\", \"longname\": \"D\u00e9sactiv\u00e9\"}, " +
+												"\"4\": {\"color\": \"#FFFFFF\", \"longname\": \"Indisponible\"}, " +
+												"\"-2\": {\"color\": \"#030303\", \"longname\": \"Inexistant\"}, " +
+												"\"9\": {\"color\": \"#FF0526\", \"longname\": \"(En Ligne OU Appelle) ET Sonne\"}, " +
+												"\"8\": {\"color\": \"#1B0AFF\", \"longname\": \"Sonne\"}}, \"ipbxcommands\": {}" +
+							"}");
+	
+		Capacities capacities = messageParser.parseCapacities(jsonObject);
+		assertNotNull("unable to decode capacities",capacities);
+		assertTrue("unable to decode capacity preferences",capacities.isPreferences());
+		assertNotNull("unable to decode userstatus",capacities.getUsersStatuses());
+		assertNotNull("unable to decode services",capacities.getServices());
+		
+	}
+	
+	@Test
+	public void testParseUserStatuses() throws JSONException {
+		JSONObject userStatusesJson = new JSONObject("{"
+					+ "\"available\": {\"color\": \"#08FD20\","
+						+ " \"allowed\": [\"available\", \"away\",\"outtolunch\", \"donotdisturb\", \"berightback\"],"
+						+ " \"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Disponible\"},"
+					+ "\"outtolunch\": {\"color\": \"#001AFF\", \"allowed\": [\"available\", \"away\", \"outtolunch\", \"donotdisturb\", \"berightback\"],"
+						+ " \"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Parti Manger\"}}");
+		
+		List<UserStatus> userStatuses = messageParser.parseUserStatuses(userStatusesJson);
+		assertEquals("all statuses not decoded",2,userStatuses.size());
+		assertEquals("status not decoded","outtolunch",userStatuses.get(0).getName());
+		assertEquals("status not decoded","available",userStatuses.get(1).getName());
+		
+	}
+	
+	@Test
+	public void parseUserStatus() throws JSONException {
+		JSONObject userStatusJson = new JSONObject("{\"color\": \"#08FD20\"," +
+						" \"allowed\": [\"available\", \"away\",\"outtolunch\", \"donotdisturb\", \"berightback\"], " +
+						"\"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Disponible\"}");
+		
+		UserStatus userStatus = messageParser.parseUserStatus("available", userStatusJson);
+		assertNotNull("unable to decode user status",userStatus);
+		assertEquals("invalid name","available",userStatus.getName());
+		assertEquals("unable to decode color","#08FD20",userStatus.getColor());
+		assertEquals("unable to decode longname","Disponible",userStatus.getLongName());
+		assertTrue("unable to decode allowed",userStatus.isAllowed("available"));
+		assertEquals("unable to decode action name","enablednd",userStatus.getActions().get(0).getName());
+		assertEquals("unable to decode action parameter","false",userStatus.getActions().get(0).getParameters());
+		
+	}
+	
+	@Test
+	public void parseUserStatusNothingAllowed() throws JSONException {
+		JSONObject userStatusJson = new JSONObject("{\"color\": \"#08FD20\"," +
+				"\"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Disponible\"}");
+		try {
+			messageParser.parseUserStatus("available", userStatusJson);
+		}
+		catch(JSONException e) {
+			fail("allowed is optional");
+		}
+		
+	}
+	
+	@Test
+	public void testServices() throws JSONException {
+		JSONArray servicesJson = new JSONArray("[\"enablednd\", \"fwdunc\"]");
+		List<Service> services = messageParser.parseServices(servicesJson);
+		
+		assertThat(services, hasItem(new Service("enablednd")));
+		assertThat(services, hasItem(new Service("fwdunc")));
+	}
+	
 	@Test(expected=IllegalArgumentException.class)
 	public void parseUnknowMessage() throws JSONException {
 		JSONObject jsonObject = new JSONObject("{\"capalist\": [2],\"class\": \"unexisting_message_class\",\"replyid\": 1646064863,\"timenow\": 1361268824.68}");

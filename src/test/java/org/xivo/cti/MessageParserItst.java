@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xivo.cti.message.CtiMessage;
 import org.xivo.cti.message.LoginAck;
+import org.xivo.cti.message.LoginCapasAck;
 import org.xivo.cti.message.LoginPassAck;
 
 public class MessageParserItst {
@@ -41,30 +42,48 @@ public class MessageParserItst {
 		connectToServer();
 		
 		sendLogin("marice");
-		LoginAck loginAck = (LoginAck) waitForLoginAck();
+		LoginAck loginAck = (LoginAck) waitForMessage(LoginAck.class.toString());
 		assertNotNull("unable to get login acknowledge",loginAck);
 		
 		String sessionId = loginAck.sesssionId;
 		
 		sendLoginPass("sapr",sessionId);
-
+		
+		LoginPassAck loginPassAck = (LoginPassAck) waitForMessage(LoginPassAck.class.toString());
+		assertNotNull("unable to get login pass acknowledge",loginPassAck);
+		
+		int capaId = loginPassAck.capalist.get(0);
+		
+		sendLoginCapa(capaId);
+		
+		LoginCapasAck loginCapasAck = (LoginCapasAck) waitForMessage(LoginCapasAck.class.toString());
+		assertNotNull("unable to get login capas acknowledge",loginCapasAck);
+		
 		disconnect();
 	}
 
 	private void sendLogin(String username) throws IOException {
-		
-		JSONObject jsonObject = messageFactory.createLoginId(username);
+		JSONObject message = messageFactory.createLoginId(username);
+		sendMessage(message);
+	}
+	
+	private void sendLoginPass(String password, String sessionId) throws IOException {
+		JSONObject message = messageFactory.createLoginPass(password,sessionId);
+		sendMessage(message);
+	}
+	
+	private void sendLoginCapa(int capaId) throws IOException {
+		JSONObject message = messageFactory.createLoginCapas(capaId);
+		sendMessage(message);
+	}
+
+	private void sendMessage(JSONObject message) throws IOException {
 		PrintStream output = new PrintStream(networkConnection.getOutputStream());
-		System.out.println(jsonObject.toString());
-		output.println(jsonObject.toString());
-	}
-	
-	private void sendLoginPass(String password, String sessionId) {
-		JSONObject jsonObject = messageFactory.createLoginPass(password,sessionId);
+		System.out.println(">>> " + message.toString());
+		output.println(message.toString());
 		
 	}
-	
-	private CtiMessage waitForLoginAck() throws IOException, JSONException{
+	private CtiMessage waitForMessage(String className) throws IOException, JSONException{
 		int i = 0;
 		boolean found = false;
 		while(!found) {
@@ -74,7 +93,7 @@ public class MessageParserItst {
 				return null;
 			}
 			CtiMessage ctiMessage = messageParser.parse(new JSONObject(line));
-			if (ctiMessage.getClass() == LoginAck.class) {
+			if (ctiMessage.getClass().toString().equals(className)) {
 				return ctiMessage;
 			}
 			if (i > 100) {
