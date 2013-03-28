@@ -65,13 +65,14 @@ public class MessageParserTest {
 														"\"regcommands\": {}," +
 														"\"ipbxcommands\": {}," +
 														"\"preferences\": false," +
-														" \"userstatus\": {"
-															+ "\"available\": {\"color\": \"#08FD20\","
+														" \"userstatus\": {" +
+															"\"available\": {\"color\": \"#08FD20\","
 																+ " \"allowed\": [\"available\", \"away\",\"outtolunch\", \"donotdisturb\", \"berightback\"],"
-																+ " \"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Disponible\"},"
-																+ "\"disconnected\": {\"color\": \"#202020\", \"actions\": {\"agentlogoff\": \"\"}, \"longname\": \"D\u00e9connect\u00e9\"}, "
-																+ "\"outtolunch\": {\"color\": \"#001AFF\", \"allowed\": [\"available\", \"away\", \"outtolunch\", \"donotdisturb\", \"berightback\"],"
-																	+ " \"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Parti Manger\"}" +
+																+ " \"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Disponible\"}," +
+															"\"disconnected\": {\"color\": \"#202020\", \"actions\": {\"agentlogoff\": \"\"}, \"longname\": \"D\u00e9connect\u00e9\"}, " +
+															"\"outtolunch\": {\"color\": \"#001AFF\", " +
+																	"\"allowed\": [\"available\", \"away\", \"outtolunch\", \"donotdisturb\", \"berightback\"]," +
+																	" \"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Parti Manger\"}" +
 														"}," +
 														"\"services\": [\"enablednd\", \"fwdrna\"], " +
 														"\"phonestatus\": {  " +

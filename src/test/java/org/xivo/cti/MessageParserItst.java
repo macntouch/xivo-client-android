@@ -1,6 +1,6 @@
 package org.xivo.cti;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -58,6 +58,7 @@ public class MessageParserItst {
 		
 		LoginCapasAck loginCapasAck = (LoginCapasAck) waitForMessage(LoginCapasAck.class.toString());
 		assertNotNull("unable to get login capas acknowledge",loginCapasAck);
+		System.out.println("User : " + loginCapasAck.userId + " status " + loginCapasAck.presence);
 		
 		disconnect();
 	}
@@ -88,7 +89,7 @@ public class MessageParserItst {
 		boolean found = false;
 		while(!found) {
 			String line = inputBuffer.readLine();
-			System.out.println(i+line);
+			System.out.println("<<<["+i+"] "+line);
 			if (line == null) {
 				return null;
 			}

@@ -11,6 +11,18 @@ public class Xlet {
 		this.order = order;
 	}
 	
+	public String getName() {
+		return name;
+	}
+
+	public String getContainer() {
+		return container;
+	}
+
+	public int getOrder() {
+		return order;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		Xlet xlet = (Xlet) obj;

@@ -17,12 +17,10 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.proformatique.android.xivoclient.R;
-import com.proformatique.android.xivoclient.SettingsActivity;
-import com.proformatique.android.xivoclient.XivoNotification;
-import com.proformatique.android.xivoclient.tools.Constants;
-import com.proformatique.android.xivoclient.tools.JSONMessageFactory;
+import org.xivo.cti.MessageParser;
+import org.xivo.cti.message.LoginCapasAck;
+import org.xivo.cti.model.UserStatus;
+import org.xivo.cti.model.Xlet;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -44,6 +42,12 @@ import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+
+import com.proformatique.android.xivoclient.R;
+import com.proformatique.android.xivoclient.SettingsActivity;
+import com.proformatique.android.xivoclient.XivoNotification;
+import com.proformatique.android.xivoclient.tools.Constants;
+import com.proformatique.android.xivoclient.tools.JSONMessageFactory;
 
 public class XivoConnectionService extends Service {
     
@@ -84,6 +88,8 @@ public class XivoConnectionService extends Service {
     private boolean authenticating = false;
     private boolean wrongLoginInfo = false;
     
+    private MessageParser messageParser;
+    
     /**
      * Messages to return from the main loop to the handler
      */
@@ -113,6 +119,9 @@ public class XivoConnectionService extends Service {
         }
     }
     
+    public XivoConnectionService() {
+		messageParser = new MessageParser();
+	}
     /**
      * Implementation of the methods between the service and the activities
      */
@@ -1190,6 +1199,18 @@ public class XivoConnectionService extends Service {
         if (res != Constants.OK) return res;
         
         jsonCapas = readJsonObjectCTI();
+        LoginCapasAck loginCapasAck = null;
+        try {
+			loginCapasAck = (LoginCapasAck) messageParser.parse(jsonCapas);
+		} catch (JSONException e1) {
+			Log.d(TAG,"Unable to parser login capas ack : "+e1.getMessage());
+			return Constants.VERSION_MISMATCH;
+		}
+        resetState();
+        userId = loginCapasAck.userId;
+        configureXlets(loginCapasAck.xlets);
+        configureUserStatuses(loginCapasAck.capacities.getUsersStatuses());
+        
         try {
             if (jsonCapas != null && jsonCapas.has("class") &&
                     jsonCapas.getString("class").equals(Constants.XIVO_LOGIN_CAPAS_OK)) {
@@ -1210,14 +1231,7 @@ public class XivoConnectionService extends Service {
      * @return error or success code
      */
     private int parseCapas(JSONObject jCapa) {
-        resetState();
         try {
-            userId = jCapa.getString("userid");
-            
-            if (jCapa.has("capaxlets")) {
-                parseCapaxlets(jCapa.getJSONArray("capaxlets"));
-            }
-            
             if (jCapa.has("userstatus")) {
                 parseCapapresence(jCapa.getJSONObject("userstatus"));
             }
@@ -1227,6 +1241,20 @@ public class XivoConnectionService extends Service {
         return Constants.OK;
     }
     
+    private void configureUserStatuses(List<UserStatus> userStatuses) {
+    	Log.d(TAG, "user statuses configuration");
+        getContentResolver().delete(CapapresenceProvider.CONTENT_URI, null, null);
+        ContentValues presence = new ContentValues();
+        for (UserStatus userStatus : userStatuses) {
+        	presence.put(CapapresenceProvider.NAME, userStatus.getName());
+        	presence.put(CapapresenceProvider.COLOR, userStatus.getColor());
+        	presence.put(CapapresenceProvider.LONGNAME, userStatus.getLongName());
+        	presence.put(CapapresenceProvider.ALLOWED, 1);
+        	getContentResolver().insert(CapapresenceProvider.CONTENT_URI, presence);
+        	presence.clear();
+        }
+    }
+    
     /**
      * Parses the incoming capapresence message and update the DB
      */
@@ -1234,26 +1262,6 @@ public class XivoConnectionService extends Service {
         /*
          * Fill the DB
          */
-        Log.d(TAG, "Parsing capapresence");
-        getContentResolver().delete(CapapresenceProvider.CONTENT_URI, null, null);
-        try {
-            ContentValues presence = new ContentValues();
-            for (@SuppressWarnings("unchecked") Iterator<String> keyIter =
-                    jPresence.getJSONObject("names").keys(); keyIter.hasNext(); ) {
-                String key = keyIter.next();
-                presence.put(CapapresenceProvider.NAME, key);
-                presence.put(CapapresenceProvider.COLOR,
-                        jPresence.getJSONObject("names").getJSONObject(key).getString("color"));
-                presence.put(CapapresenceProvider.LONGNAME,
-                        jPresence.getJSONObject("names").getJSONObject(key).getString("longname"));
-                int allowed = jPresence.getJSONObject("allowed").getBoolean(key) == true ? 1 : 0;
-                presence.put(CapapresenceProvider.ALLOWED, allowed);
-                getContentResolver().insert(CapapresenceProvider.CONTENT_URI, presence);
-                presence.clear();
-            }
-        } catch (JSONException e) {
-            Log.d(TAG, "json exception while parsing presences");
-        }
         try {
             JSONObject myPresence = jPresence.getJSONObject("state");
             String code = myPresence.getString("stateid");
@@ -1271,24 +1279,16 @@ public class XivoConnectionService extends Service {
         }
     }
     
-    /**
-     * Parses the incoming capaxlets message to add it to the DB
-     * @param xlets
-     */
-    private void parseCapaxlets(JSONArray xlets) {
-        Log.d(TAG, "Parsing capaxlets");
+
+    private void configureXlets(List<Xlet> xlets) {
+        Log.d(TAG, "Setting xlets");
         // Remove old entries
         getContentResolver().delete(CapaxletsProvider.CONTENT_URI, null, null);
         ContentValues values = new ContentValues();
-        for (int i = 0; i < xlets.length(); i++) {
-            try {
-            	Log.d(TAG,"inserting xlet ...." + xlets.getJSONArray(i).getString(0));
-            	values.put(CapaxletsProvider.XLET, xlets.getJSONArray(i).getString(0));
-                getContentResolver().insert(CapaxletsProvider.CONTENT_URI, values);
-                values.clear();
-            } catch (JSONException e) {
-                Log.d(TAG, "Could not parse capaxlets");
-            }
+        for (Xlet xlet : xlets) {
+        	Log.d(TAG,"inserting xlet ...." + xlet.getName() );
+        	values.put(CapaxletsProvider.XLET, xlet.getName());
+            getContentResolver().insert(CapaxletsProvider.CONTENT_URI, values);
         }
         Intent i = new Intent();
         i.setAction(Constants.ACTION_LOAD_XLETS);
