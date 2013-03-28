@@ -86,7 +86,6 @@ public class XivoConnectionService extends Service {
     private boolean connecting = false;
     private boolean authenticated = false;
     private boolean authenticating = false;
-    private boolean wrongLoginInfo = false;
     
     private MessageParser messageParser;
     private MessageFactory messageFactory;

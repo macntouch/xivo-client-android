@@ -19,6 +19,10 @@
 
 package com.proformatique.android.xivoclient;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
@@ -37,17 +41,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemLongClickListener;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 import com.proformatique.android.xivoclient.service.CapaxletsProvider;
 import com.proformatique.android.xivoclient.tools.AndroidTools;
@@ -211,7 +211,6 @@ public class HomeActivity extends XivoActivity
             if (c.moveToFirst()) {
                 do {
                     String incomingXlet = c.getString(c.getColumnIndex(CapaxletsProvider.XLET));
-                    Log.d(LOG_TAG,"xlet ..." + incomingXlet);
                     // Only add xlets that are implemented
                     if (implementedXlets.contains(incomingXlet))
                         availXlets.add(incomingXlet);
