@@ -7,6 +7,7 @@ public class Capacities {
 	private boolean preferences;
 	private List<UserStatus> usersStatuses;
 	private List<Service> services;
+	private List<PhoneStatus> phoneStatuses;
 	
 	public boolean isPreferences() {
 		return preferences;
@@ -26,7 +27,10 @@ public class Capacities {
 	public void setServices(List<Service> services) {
 		this.services = services;
 	}
-	
-	
-	
+	public List<PhoneStatus> getPhoneStatuses() {
+		return phoneStatuses;
+	}
+	public void setPhoneStatuses(List<PhoneStatus> phoneStatuses) {
+		this.phoneStatuses = phoneStatuses;
+	}
 }

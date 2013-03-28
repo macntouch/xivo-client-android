@@ -1,14 +1,13 @@
 package org.xivo.cti;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.hamcrest.Matchers.hasItem;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.List;
-
-import junit.framework.AssertionFailedError;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,6 +18,7 @@ import org.xivo.cti.message.LoginAck;
 import org.xivo.cti.message.LoginCapasAck;
 import org.xivo.cti.message.LoginPassAck;
 import org.xivo.cti.model.Capacities;
+import org.xivo.cti.model.PhoneStatus;
 import org.xivo.cti.model.Service;
 import org.xivo.cti.model.UserStatus;
 
@@ -55,37 +55,35 @@ public class MessageParserTest {
 	@Test
 	public void parseLoginCapas() throws JSONException {
 		JSONObject jsonObject = new JSONObject("{\"class\": \"login_capas\",\"presence\": \"available\", " +
-													"\"userid\": \"3\", \"ipbxid\": \"xivo\",\"appliname\": \"Client\","
-									+ " \"timenow\": 1364373405.73,"
-									+ " \"capas\": {\"regcommands\": {}, \"preferences\": false,"
-										+ " \"userstatus\": {"
-											+ "\"available\": {\"color\": \"#08FD20\","
-												+ " \"allowed\": [\"available\", \"away\",\"outtolunch\", \"donotdisturb\", \"berightback\"],"
-												+ " \"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Disponible\"},"
-											+ " \"berightback\": {\"color\": \"#FFB545\", \"allowed\": [\"available\", \"away\", \"outtolunch\", \"donotdisturb\", \"berightback\"],"
-												+ " \"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Bient\u00f4t de retour\"}, "
-											+ "\"disconnected\": {\"color\": \"#202020\", \"actions\": {\"agentlogoff\": \"\"}, \"longname\": \"D\u00e9connect\u00e9\"}, "
-											+ "\"away\": {\"color\": \"#FDE50A\", \"allowed\": [\"available\", \"away\", \"outtolunch\", \"donotdisturb\", \"berightback\"], "
-												+ "\"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Sorti\"}, "
-											+ "\"donotdisturb\": {\"color\": \"#FF032D\", \"allowed\": [\"available\", \"away\", \"outtolunch\", \"donotdisturb\", \"berightback\"], "
-												+ "\"actions\": {\"enablednd\": \"true\"}, \"longname\": \"Ne pas d\u00e9ranger\"}, "
-											+ "\"outtolunch\": {\"color\": \"#001AFF\", \"allowed\": [\"available\", \"away\", \"outtolunch\", \"donotdisturb\", \"berightback\"],"
-												+ " \"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Parti Manger\"}}, "
-											+ "\"services\": [\"enablednd\", \"fwdunc\", \"fwdbusy\", \"fwdrna\"], "
-											+ "\"phonestatus\": {  \"16\": {\"color\": \"#F7FF05\", \"longname\": \"En Attente\"}, "
-																+ "\"1\": {\"color\": \"#FF032D\", \"longname\": \"En ligne OU appelle\"}, "
-																+ "\"0\": {\"color\": \"#0DFF25\", \"longname\": \"Disponible\"}, " +
-																"\"2\": {\"color\": \"#FF0008\", \"longname\": \"Occup\u00e9\"}, " +
-																"\"-1\": {\"color\": \"#000000\", \"longname\": \"D\u00e9sactiv\u00e9\"}, " +
-																"\"4\": {\"color\": \"#FFFFFF\", \"longname\": \"Indisponible\"}, " +
-																"\"-2\": {\"color\": \"#030303\", \"longname\": \"Inexistant\"}, " +
-																"\"9\": {\"color\": \"#FF0526\", \"longname\": \"(En Ligne OU Appelle) ET Sonne\"}, " +
-																"\"8\": {\"color\": \"#1B0AFF\", \"longname\": \"Sonne\"}}, \"ipbxcommands\": {}}, " +
-										"\"replyid\": 2, " +
-										"\"capaxlets\": [[\"identity\", \"grid\"], [\"search\", \"tab\"], [\"customerinfo\", \"tab\", \"1\"], " +
-															"[\"fax\", \"tab\", \"2\"], [\"dial\", \"grid\", \"2\"], [\"tabber\", \"grid\", \"3\"], " +
-															"[\"history\", \"tab\", \"3\"], [\"remotedirectory\", \"tab\", \"4\"], " +
-															"[\"features\", \"tab\", \"5\"], [\"mylocaldir\", \"tab\", \"6\"], [\"conference\", \"tab\", \"7\"]], " +
+													"\"userid\": \"3\", \"ipbxid\": \"xivo\",\"appliname\": \"Client\"," +
+													" \"timenow\": 1364373405.73," +
+													"\"replyid\": 2, " +
+													" \"capas\": {" +
+														"\"regcommands\": {}," +
+														"\"ipbxcommands\": {}," +
+														"\"preferences\": false," +
+														" \"userstatus\": {"
+															+ "\"available\": {\"color\": \"#08FD20\","
+																+ " \"allowed\": [\"available\", \"away\",\"outtolunch\", \"donotdisturb\", \"berightback\"],"
+																+ " \"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Disponible\"},"
+																+ "\"disconnected\": {\"color\": \"#202020\", \"actions\": {\"agentlogoff\": \"\"}, \"longname\": \"D\u00e9connect\u00e9\"}, "
+																+ "\"outtolunch\": {\"color\": \"#001AFF\", \"allowed\": [\"available\", \"away\", \"outtolunch\", \"donotdisturb\", \"berightback\"],"
+																	+ " \"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Parti Manger\"}" +
+														"}," +
+														"\"services\": [\"enablednd\", \"fwdrna\"], " +
+														"\"phonestatus\": {  " +
+															"\"16\": {\"color\": \"#F7FF05\", \"longname\": \"En Attente\"}, " +
+															"\"1\": {\"color\": \"#FF032D\", \"longname\": \"En ligne OU appelle\"}, " +
+															"\"0\": {\"color\": \"#0DFF25\", \"longname\": \"Disponible\"}, " +
+															"\"8\": {\"color\": \"#1B0AFF\", \"longname\": \"Sonne\"}" +
+														"}," +
+													"}, " +
+													"\"capaxlets\": [" +
+														"[\"identity\", \"grid\"], [\"search\", \"tab\"], [\"customerinfo\", \"tab\", \"1\"], " +
+														"[\"fax\", \"tab\", \"2\"], [\"dial\", \"grid\", \"2\"], [\"tabber\", \"grid\", \"3\"], " +
+														"[\"history\", \"tab\", \"3\"], [\"remotedirectory\", \"tab\", \"4\"], " +
+														"[\"features\", \"tab\", \"5\"], [\"mylocaldir\", \"tab\", \"6\"], [\"conference\", \"tab\", \"7\"]" +
+													"], " +
 											"}");
 		LoginCapasAck loginCapasAck = (LoginCapasAck) messageParser.parse(jsonObject);
 		assertNotNull("unable to decode login capas ack",loginCapasAck);
@@ -106,16 +104,10 @@ public class MessageParserTest {
 										" \"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Disponible\"}," +
 								"\"disconnected\": {\"color\": \"#202020\", " +
 										"\"actions\": {\"agentlogoff\": \"\"}, \"longname\": \"D\u00e9connect\u00e9\"}}, " +
-								"\"services\": [\"enablednd\", \"fwdunc\", \"fwdbusy\", \"fwdrna\"], " +
-								"\"phonestatus\": {  \"16\": {\"color\": \"#F7FF05\", \"longname\": \"En Attente\"}, "
-												+ "\"1\": {\"color\": \"#FF032D\", \"longname\": \"En ligne OU appelle\"}, "
-												+ "\"0\": {\"color\": \"#0DFF25\", \"longname\": \"Disponible\"}, " +
-												"\"2\": {\"color\": \"#FF0008\", \"longname\": \"Occup\u00e9\"}, " +
-												"\"-1\": {\"color\": \"#000000\", \"longname\": \"D\u00e9sactiv\u00e9\"}, " +
-												"\"4\": {\"color\": \"#FFFFFF\", \"longname\": \"Indisponible\"}, " +
-												"\"-2\": {\"color\": \"#030303\", \"longname\": \"Inexistant\"}, " +
-												"\"9\": {\"color\": \"#FF0526\", \"longname\": \"(En Ligne OU Appelle) ET Sonne\"}, " +
-												"\"8\": {\"color\": \"#1B0AFF\", \"longname\": \"Sonne\"}}, \"ipbxcommands\": {}" +
+								"\"services\": [\"enablednd\", \"fwdunc\"], " +
+								"\"phonestatus\": {  \"16\": {\"color\": \"#F7FF05\", \"longname\": \"En Attente\"}, " +
+												"\"8\": {\"color\": \"#1B0AFF\", \"longname\": \"Sonne\"}}, " +
+								"\"ipbxcommands\": {}" +
 							"}");
 	
 		Capacities capacities = messageParser.parseCapacities(jsonObject);
@@ -123,9 +115,23 @@ public class MessageParserTest {
 		assertTrue("unable to decode capacity preferences",capacities.isPreferences());
 		assertNotNull("unable to decode userstatus",capacities.getUsersStatuses());
 		assertNotNull("unable to decode services",capacities.getServices());
+		assertNotNull("unable to decode phone statuses",capacities.getPhoneStatuses());
 		
 	}
 	
+	@Test
+	public void testParsePhoneStatuses() throws JSONException {
+		JSONObject phoneStatusesJson = new JSONObject("{\"16\": {\"color\": \"#F7FF05\", \"longname\": \"En Attente\"}, "
+											+ "\"1\": {\"color\": \"#FF032D\", \"longname\": \"En ligne OU appelle\"}, "
+											+ "\"0\": {\"color\": \"#0DFF25\", \"longname\": \"Disponible\"}, " +
+											"\"8\": {\"color\": \"#1B0AFF\", \"longname\": \"Sonne\"}}, ");
+
+		List<PhoneStatus> phoneStatuses = messageParser.parsePhoneStatuses(phoneStatusesJson);
+		assertNotNull("phone statuses not decoded",phoneStatuses);
+		PhoneStatus phoneStatus = new PhoneStatus("1","#FF032D","En ligne OU appelle");
+		assertThat(phoneStatuses, hasItem(phoneStatus));
+	}
+
 	@Test
 	public void testParseUserStatuses() throws JSONException {
 		JSONObject userStatusesJson = new JSONObject("{"

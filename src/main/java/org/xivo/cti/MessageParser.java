@@ -13,6 +13,7 @@ import org.xivo.cti.message.LoginCapasAck;
 import org.xivo.cti.message.LoginPassAck;
 import org.xivo.cti.model.Action;
 import org.xivo.cti.model.Capacities;
+import org.xivo.cti.model.PhoneStatus;
 import org.xivo.cti.model.Service;
 import org.xivo.cti.model.UserStatus;
 
@@ -59,14 +60,25 @@ public class MessageParser {
 	
 	public Capacities parseCapacities(JSONObject capacitiesJson) throws JSONException {
 		Capacities capacities = new Capacities();
-		
 		capacities.setPreferences(capacitiesJson.getBoolean("preferences"));
-		
 		capacities.setUsersStatuses(parseUserStatuses(capacitiesJson.getJSONObject("userstatus")));
-		
 		capacities.setServices(parseServices(capacitiesJson.getJSONArray("services")));
+		capacities.setPhoneStatuses(parsePhoneStatuses(capacitiesJson.getJSONObject("phonestatus")));
 		return capacities;
 		
+	}
+
+	protected List<PhoneStatus> parsePhoneStatuses(JSONObject phoneStatusesJson) throws JSONException {
+		List<PhoneStatus> phoneStatuses = new ArrayList<PhoneStatus>();
+		@SuppressWarnings("unchecked")
+		Iterator<String> keys = phoneStatusesJson.keys();
+		while(keys.hasNext()) {
+			String statusId = (String) keys.next();
+			JSONObject phoneStatusJson = phoneStatusesJson.getJSONObject(statusId);
+			PhoneStatus phoneStatus = new PhoneStatus(statusId, phoneStatusJson.getString("color"), phoneStatusJson.getString("longname"));
+			phoneStatuses.add(phoneStatus);
+		}
+		return phoneStatuses;
 	}
 
 	public List<Service> parseServices(JSONArray servicesJson) throws JSONException {
@@ -82,6 +94,7 @@ public class MessageParser {
 
 	public List<UserStatus> parseUserStatuses(JSONObject userStatusesJson) throws JSONException {
 		List<UserStatus> userStatuses = new ArrayList<UserStatus>();
+		@SuppressWarnings("unchecked")
 		Iterator<String> keys = userStatusesJson.keys();
 		while(keys.hasNext()) {
 			String key = (String) keys.next();
@@ -101,6 +114,7 @@ public class MessageParser {
 			}
 		}
 		JSONObject actionsJson = userStatusJson.getJSONObject("actions");
+		@SuppressWarnings("unchecked")
 		Iterator<String> actionNames = actionsJson.keys();
 		while(actionNames.hasNext()) {
 			String name = (String) actionNames.next();
