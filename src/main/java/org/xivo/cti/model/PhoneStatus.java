@@ -30,9 +30,9 @@ public class PhoneStatus {
 	@Override
 	public boolean equals(Object obj) {
 		PhoneStatus phoneStatus = (PhoneStatus) obj;
-		return (phoneStatus.getId().equals(this.id)
-				&& phoneStatus.getColor().equals(this.color)
-				&& phoneStatus.getLongName().equals(this.longName));
+		return (phoneStatus.id.equals(this.id)
+				&& phoneStatus.color.equals(this.color)
+				&& phoneStatus.longName.equals(this.longName));
 	}
 	
 	@Override

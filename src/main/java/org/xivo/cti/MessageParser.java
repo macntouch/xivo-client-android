@@ -16,6 +16,7 @@ import org.xivo.cti.model.Capacities;
 import org.xivo.cti.model.PhoneStatus;
 import org.xivo.cti.model.Service;
 import org.xivo.cti.model.UserStatus;
+import org.xivo.cti.model.Xlet;
 
 public class MessageParser {
 	
@@ -55,9 +56,24 @@ public class MessageParser {
 		loginCapasAck.userId = loginCapasAckJson.getString("userid");
 		loginCapasAck.applicationName = loginCapasAckJson.getString("appliname");
 		loginCapasAck.capacities = parseCapacities(loginCapasAckJson.getJSONObject("capas"));
+		loginCapasAck.xlets = parseXlets(loginCapasAckJson.getJSONArray("capaxlets"));
 		return loginCapasAck;
 	}
 	
+	protected List<Xlet> parseXlets(JSONArray xletsJson) throws JSONException {
+		List<Xlet> xlets = new ArrayList<Xlet>();
+
+		for (int i = 0; i < xletsJson.length(); i++) {
+			int order = 0;
+			if (xletsJson.getJSONArray(i).length() > 2) {
+				order = Integer.valueOf((xletsJson.getJSONArray(i).getString(2)));
+			}
+			Xlet xlet = new Xlet(xletsJson.getJSONArray(i).getString(0),xletsJson.getJSONArray(i).getString(1),order);
+			xlets.add(xlet);
+		}
+		return xlets;
+	}
+
 	public Capacities parseCapacities(JSONObject capacitiesJson) throws JSONException {
 		Capacities capacities = new Capacities();
 		capacities.setPreferences(capacitiesJson.getBoolean("preferences"));

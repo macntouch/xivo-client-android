@@ -21,6 +21,7 @@ import org.xivo.cti.model.Capacities;
 import org.xivo.cti.model.PhoneStatus;
 import org.xivo.cti.model.Service;
 import org.xivo.cti.model.UserStatus;
+import org.xivo.cti.model.Xlet;
 
 
 public class MessageParserTest {
@@ -31,7 +32,8 @@ public class MessageParserTest {
 	}
 
 	@Test public void parseLoginAck() throws JSONException {
-		JSONObject jsonobject = new JSONObject("{\"class\": \"login_id\",\"sessionid\": \"21UaGDfst7\",\"timenow\": 1361268824.64,\"xivoversion\": \"1.2\"}");
+		JSONObject jsonobject = new JSONObject("{\"class\": \"login_id\",\"sessionid\": \"21UaGDfst7\"," +
+				"\"timenow\": 1361268824.64,\"xivoversion\": \"1.2\"}");
 		
 		LoginAck loginAck = (LoginAck) messageParser.parse(jsonobject);
 		
@@ -43,7 +45,8 @@ public class MessageParserTest {
 	}
 	
 	@Test public void parseLoginPasswordAck() throws JSONException {
-		JSONObject jsonObject = new JSONObject("{\"capalist\": [2],\"class\": \"login_pass\",\"replyid\": 1646064863,\"timenow\": 1361268824.68}");
+		JSONObject jsonObject = new JSONObject("{\"capalist\": [2],\"class\": \"login_pass\"," +
+				"\"replyid\": 1646064863,\"timenow\": 1361268824.68}");
 		
 		LoginPassAck loginPassAck = (LoginPassAck) messageParser.parse(jsonObject);
 		assertNotNull("unable to decode login ack",loginPassAck);
@@ -91,8 +94,23 @@ public class MessageParserTest {
 		assertEquals("unable to decode user id",loginCapasAck.userId,"3");
 		assertEquals("unable to decode application name",loginCapasAck.applicationName,"Client");
 		assertNotNull("unable to decode capacitied",loginCapasAck.capacities);
-		
-		
+		assertNotNull("unable to decode xlets",loginCapasAck.xlets);
+
+	}
+
+	@Test
+	public void parseXlets() throws JSONException {
+		JSONArray xletsJson = new JSONArray("[[\"identity\", \"grid\"], [\"search\", \"tab\"], [\"customerinfo\", \"tab\", \"1\"], " +
+												"[\"fax\", \"tab\", \"2\"], [\"dial\", \"grid\", \"2\"], [\"tabber\", \"grid\", \"3\"], " +
+												"[\"history\", \"tab\", \"3\"], [\"remotedirectory\", \"tab\", \"4\"], " +
+												"[\"features\", \"tab\", \"5\"], [\"mylocaldir\", \"tab\", \"6\"], [\"conference\", \"tab\", \"7\"]]");
+		List<Xlet> xlets = messageParser.parseXlets(xletsJson);
+
+		assertNotNull("unable to decode xlets");
+
+		Xlet xlet = new Xlet("fax","tab",2);
+
+		assertThat(xlets, hasItem(xlet));
 	}
 
 	@Test
