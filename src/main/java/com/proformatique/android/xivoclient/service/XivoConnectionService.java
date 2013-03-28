@@ -77,7 +77,6 @@ public class XivoConnectionService extends Service {
     private long stateId = 0L;
     private String phoneStatusLongname = null;
     private String phoneStatusColor = Constants.DEFAULT_HINT_COLOR;
-    private String phoneStatusCode = null;
     private String lastCalledNumber = null;
     private String thisChannel = null;
     private String peerChannel = null;
@@ -404,18 +403,6 @@ public class XivoConnectionService extends Service {
             thread = null;
             dead.interrupt();
         }
-    }
-    
-    @Override
-    public void onStart(Intent i, int startId) {
-        super.onStart(i, startId);
-        Log.d(TAG, "XiVO connection service started");
-        // Disabled until I connection profiles are added
-        /*if (SettingsActivity.getStartOnBoot(this)) {
-            while (!connected && !authenticated && !wrongHostPort && !wrongLoginInfo) {
-                autoLogin();
-            }
-        }*/
     }
     
     private void autoLogin() {
@@ -834,7 +821,6 @@ public class XivoConnectionService extends Service {
      * @throws JSONException
      */
     private void sendMyNewHintstatus(JSONObject hintstatus) throws JSONException {
-        phoneStatusCode = hintstatus.getString("code");
         phoneStatusColor = hintstatus.getString("color");
         phoneStatusLongname = hintstatus.getString("longname");
         Intent i = new Intent();
@@ -1078,7 +1064,6 @@ public class XivoConnectionService extends Service {
                 mNumber = jPhone.getString("number");
                 phoneStatusLongname = jPhoneStatus.getString("longname");
                 phoneStatusColor = jPhoneStatus.getString("color");
-                phoneStatusCode = jPhoneStatus.getString("code");
                 Intent i = new Intent();
                 i.setAction(Constants.ACTION_MY_PHONE_CHANGE);
                 i.putExtra("color", phoneStatusColor);
