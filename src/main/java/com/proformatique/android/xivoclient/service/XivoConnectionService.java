@@ -6,8 +6,6 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -17,8 +15,11 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xivo.cti.MessageFactory;
 import org.xivo.cti.MessageParser;
+import org.xivo.cti.message.LoginAck;
 import org.xivo.cti.message.LoginCapasAck;
+import org.xivo.cti.message.LoginPassAck;
 import org.xivo.cti.model.UserStatus;
 import org.xivo.cti.model.Xlet;
 
@@ -72,7 +73,7 @@ public class XivoConnectionService extends Service {
     private String fullname = null;
     private String mNumber = null;
     private int[] mwi = new int[3];
-    private JSONArray capalist = null;
+    private int capaId = 0;
     private long stateId = 0L;
     private String phoneStatusLongname = null;
     private String phoneStatusColor = Constants.DEFAULT_HINT_COLOR;
@@ -89,6 +90,7 @@ public class XivoConnectionService extends Service {
     private boolean wrongLoginInfo = false;
     
     private MessageParser messageParser;
+    private MessageFactory messageFactory;
     
     /**
      * Messages to return from the main loop to the handler
@@ -121,6 +123,7 @@ public class XivoConnectionService extends Service {
     
     public XivoConnectionService() {
 		messageParser = new MessageParser();
+		messageFactory = new MessageFactory();
 	}
     /**
      * Implementation of the methods between the service and the activities
@@ -593,12 +596,9 @@ public class XivoConnectionService extends Service {
         
         /**
          * Creating first Json login array
-         */
-        JSONObject jLogin = JSONMessageFactory.getJsonLogin(this);
-       
-        /**
          * First step : check that login is allowed on server
          */
+        JSONObject jLogin = messageFactory.createLoginId(SettingsActivity.getLogin(this),"android-" + android.os.Build.VERSION.RELEASE);
         res = sendLoginCTI(jLogin);
         if (res != Constants.OK) return res;
         
@@ -1175,25 +1175,7 @@ public class XivoConnectionService extends Service {
      * @return error or success code
      */
     private int sendCapasCTI() {
-        JSONObject jsonCapas = new JSONObject();
-        String capaid = null;
-        try {
-            capaid = capalist.getString(0);
-        } catch (JSONException e1) {
-            Log.d(TAG, "Error while parsing capaid, using client");
-            capaid = "client";
-        }
-        try {
-            jsonCapas.accumulate("class", "login_capas");
-            jsonCapas.accumulate("agentlogin", "now");
-            jsonCapas.accumulate("capaid", capaid);
-            jsonCapas.accumulate("lastconnwins", "false");
-            jsonCapas.accumulate("loginkind", "agent");
-            jsonCapas.accumulate("phonenumber", "101");
-            jsonCapas.accumulate("state", "");
-        } catch (JSONException e) {
-            return Constants.JSON_POPULATE_ERROR;
-        }
+        JSONObject jsonCapas = messageFactory.createLoginCapas(capaId);
         
         int res = sendLine(jsonCapas.toString());
         if (res != Constants.OK) return res;
@@ -1210,20 +1192,9 @@ public class XivoConnectionService extends Service {
         userId = loginCapasAck.userId;
         configureXlets(loginCapasAck.xlets);
         configureUserStatuses(loginCapasAck.capacities.getUsersStatuses());
+        authenticated = true;
+        return Constants.AUTHENTICATION_OK;
         
-        try {
-            if (jsonCapas != null && jsonCapas.has("class") &&
-                    jsonCapas.getString("class").equals(Constants.XIVO_LOGIN_CAPAS_OK)) {
-                res = parseCapas(jsonCapas);
-                if (res != Constants.OK) return res;
-                authenticated = true;
-                return Constants.AUTHENTICATION_OK;
-            } else {
-                return parseLoginError(jsonCapas);
-            }
-        } catch (JSONException e) {
-            return Constants.JSON_POPULATE_ERROR;
-        }
     }
     
     /**
@@ -1286,7 +1257,6 @@ public class XivoConnectionService extends Service {
         getContentResolver().delete(CapaxletsProvider.CONTENT_URI, null, null);
         ContentValues values = new ContentValues();
         for (Xlet xlet : xlets) {
-        	Log.d(TAG,"inserting xlet ...." + xlet.getName() );
         	values.put(CapaxletsProvider.XLET, xlet.getName());
             getContentResolver().insert(CapaxletsProvider.CONTENT_URI, values);
         }
@@ -1304,60 +1274,22 @@ public class XivoConnectionService extends Service {
     }
     
     private int sendPasswordCTI() {
-        byte[] sDigest = null;
-        JSONObject jsonPasswordAuthent = new JSONObject();
-        String password = prefs.getString("password", "");
-        int res;
-        
-        /**
-         * Encrypt password for communication with algorithm SHA1
-         */
-        MessageDigest sha1;
-        try {
-            sha1 = MessageDigest.getInstance("SHA1");
-            sDigest = sha1.digest((sessionId + ":" + password).getBytes());
-        } catch (NoSuchAlgorithmException e) {
-            Log.d(TAG, "Encryption algorithm not available");
-            return Constants.ALGORITH_NOT_AVAILABLE;
-        }
-        
-        try {
-            jsonPasswordAuthent.accumulate("class", "login_pass");
-            jsonPasswordAuthent.accumulate("hashedpassword", bytes2String(sDigest));
-        } catch (JSONException e) {
-            return Constants.JSON_POPULATE_ERROR;
-        }
-        res = sendLine(jsonPasswordAuthent.toString());
+        JSONObject jsonPasswordAuthent = messageFactory.createLoginPass(prefs.getString("password", ""), sessionId);
+        int res = sendLine(jsonPasswordAuthent.toString());
         if (res != Constants.OK) return res;
+        
         
         JSONObject ctiAnswer = readJsonObjectCTI();
         try {
-            if (ctiAnswer != null && ctiAnswer.has("class") &&
-                    ctiAnswer.getString("class").equals(Constants.XIVO_PASSWORD_OK)) {
-                capalist = ctiAnswer.getJSONArray("capalist");
-                return Constants.OK;
-            } else {
-                return parseLoginError(ctiAnswer);
-            }
-        } catch (JSONException e) {
-            Log.d(TAG, "Unexpected answer from cti server");
+            LoginPassAck loginPassAck = (LoginPassAck) messageParser.parse(ctiAnswer);
+            capaId = loginPassAck.capalist.get(0);
+        } catch (JSONException e1) {
+            e1.printStackTrace();
             return Constants.JSON_POPULATE_ERROR;
         }
+        return Constants.OK;
     }
     
-    /**
-     * Convents an array of byte to an hexadecimal string
-     * @param bytes
-     * @return
-     */
-    private static String bytes2String(byte[] bytes) {
-        StringBuilder string = new StringBuilder();
-        for (byte b: bytes) {
-            String hexString = Integer.toHexString(0x00FF & b);
-            string.append(hexString.length() == 1 ? "0" + hexString : hexString);
-        }
-        return string.toString();
-    }
     
     /**
      * Sends login information to the cti server
@@ -1368,22 +1300,23 @@ public class XivoConnectionService extends Service {
         JSONObject nextJsonObject;
         int res;
         if ((res = sendLine(jLogin.toString())) != Constants.OK) return res;
-        if ((nextJsonObject = readJsonObjectCTI()) == null)
-            return Constants.JSON_POPULATE_ERROR;
-        try {
-            if (nextJsonObject.has("class") && nextJsonObject.getString("class")
-                    .equals(Constants.XIVO_LOGIN_OK)) {
-                sessionId = nextJsonObject.getString("sessionid");
-                return Constants.OK;
-            } else {
-                disconnectFromServer();
-                return parseLoginError(nextJsonObject);
-            }
-        } catch (JSONException e) {
-            Log.d(TAG, "Unexpected answer from cti server");
-            e.printStackTrace();
+        
+        if ((nextJsonObject = readJsonObjectCTI()) == null) {
             return Constants.JSON_POPULATE_ERROR;
         }
+        try {
+            LoginAck loginAck = (LoginAck) messageParser.parse(nextJsonObject);
+            sessionId = loginAck.sesssionId;
+        } catch (JSONException e1) {
+            Log.d(TAG, "Unexpected answer from cti server");
+            e1.printStackTrace();
+            return Constants.JSON_POPULATE_ERROR;
+        }
+        catch(IllegalArgumentException e2) {
+            disconnectFromServer();
+            return parseLoginError(nextJsonObject);            
+        }
+        return Constants.OK;
     }
     
     /**
@@ -1448,8 +1381,6 @@ public class XivoConnectionService extends Service {
     private void lostConnectionEvent() {
         Log.d(TAG, "lostConnectionEvent");
         disconnectFromServer();
-        // TODO: Send an intent to warn activities about the connection lost
-        // TODO: try to reconnect
     }
     
     /**

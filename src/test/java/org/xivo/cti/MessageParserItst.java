@@ -41,7 +41,7 @@ public class MessageParserItst {
 	public void test_login_sequence() throws IOException, JSONException, TimeoutException {
 		connectToServer();
 		
-		sendLogin("marice");
+		sendLogin("marice","integration-tests");
 		LoginAck loginAck = (LoginAck) waitForMessage(LoginAck.class.toString());
 		assertNotNull("unable to get login acknowledge",loginAck);
 		
@@ -63,8 +63,8 @@ public class MessageParserItst {
 		disconnect();
 	}
 
-	private void sendLogin(String username) throws IOException {
-		JSONObject message = messageFactory.createLoginId(username);
+	private void sendLogin(String username,String identity) throws IOException {
+		JSONObject message = messageFactory.createLoginId(username,identity);
 		sendMessage(message);
 	}
 	

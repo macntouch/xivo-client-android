@@ -3,14 +3,15 @@ package org.xivo.cti.message;
 public class LoginId {
 	private final String claz =  "login_id";
 	private final String company =  "default";
-	private final String ident = "X11-LE-24079";
+	private final String ident;
 	private final String userlogin;
 	private final String version =  "9999";
 	private final String xivoversion = "1.2";
 
 
-	public LoginId(String username) {
+	public LoginId(String username, String identity) {
 		userlogin = username;
+		ident = identity;
 	}
 
 
