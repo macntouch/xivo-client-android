@@ -15,11 +15,17 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xivo.cti.MessageDispatcher;
 import org.xivo.cti.MessageFactory;
 import org.xivo.cti.MessageParser;
+import org.xivo.cti.message.CtiEvent;
+import org.xivo.cti.message.CtiMessage;
 import org.xivo.cti.message.LoginAck;
 import org.xivo.cti.message.LoginCapasAck;
 import org.xivo.cti.message.LoginPassAck;
+import org.xivo.cti.message.UserConfigUpdate;
+import org.xivo.cti.message.UserStatusUpdate;
+import org.xivo.cti.message.UserUpdateListener;
 import org.xivo.cti.model.UserStatus;
 import org.xivo.cti.model.Xlet;
 
@@ -50,7 +56,7 @@ import com.proformatique.android.xivoclient.XivoNotification;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.JSONMessageFactory;
 
-public class XivoConnectionService extends Service {
+public class XivoConnectionService extends Service implements UserUpdateListener {
     
     private static final String TAG = "XiVO connection service";
     
@@ -89,7 +95,7 @@ public class XivoConnectionService extends Service {
     
     private MessageParser messageParser;
     private MessageFactory messageFactory;
-    
+    private MessageDispatcher messageDispatcher;
     /**
      * Messages to return from the main loop to the handler
      */
@@ -122,7 +128,15 @@ public class XivoConnectionService extends Service {
     public XivoConnectionService() {
 		messageParser = new MessageParser();
 		messageFactory = new MessageFactory();
+		messageDispatcher = new MessageDispatcher();
+		addDispatchers();
 	}
+
+    private void addDispatchers() {
+        messageDispatcher.addListener(UserStatusUpdate.class, this);
+        messageDispatcher.addListener(UserConfigUpdate.class, this);
+    }
+
     /**
      * Implementation of the methods between the service and the activities
      */
@@ -1176,9 +1190,25 @@ public class XivoConnectionService extends Service {
         userId = loginCapasAck.userId;
         configureXlets(loginCapasAck.xlets);
         configureUserStatuses(loginCapasAck.capacities.getUsersStatuses());
+
+        JSONObject jsonCtiMessage = readJsonObjectCTI();
+        try {
+            CtiMessage ctiMessage = messageParser.parse(jsonCtiMessage);
+            messageDispatcher.dispatch((CtiEvent<?>) ctiMessage);
+        } catch (JSONException e) {
+            return Constants.JSON_POPULATE_ERROR;
+        }
+        jsonCtiMessage = readJsonObjectCTI();
+        try {
+            CtiMessage ctiMessage = messageParser.parse(jsonCtiMessage);
+            messageDispatcher.dispatch((CtiEvent<?>) ctiMessage);
+        } catch (JSONException e) {
+            return Constants.JSON_POPULATE_ERROR;
+        }
+
         authenticated = true;
         return Constants.AUTHENTICATION_OK;
-        
+
     }
     
     /**
@@ -1429,5 +1459,18 @@ public class XivoConnectionService extends Service {
             }
         }
         
+    }
+
+    @Override
+    public void onUserConfigUpdate(UserConfigUpdate userConfigUpdate) {
+        Log.d(TAG, "user configuration updated " + userConfigUpdate.getUserId());
+
+    }
+
+    @Override
+    public void onUserStatusUpdate(UserStatusUpdate userStatusUpdate) {
+        Log.d(TAG, "user status updated " + userStatusUpdate.getUserId() + " satus [" + userStatusUpdate.getStatus()
+                + "]");
+
     }
 }
