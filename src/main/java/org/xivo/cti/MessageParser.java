@@ -46,7 +46,7 @@ public class MessageParser {
             return parserUserConfigUpdate(getListJson);
         if (function.equals("updatestatus"))
             return paserUserUpdateStatus(getListJson);
-        return null;
+        throw (new IllegalArgumentException("unknown message class"));
     }
 
     private CtiMessage paserUserUpdateStatus(JSONObject userConfigUpdateJson) throws NumberFormatException,

@@ -686,6 +686,14 @@ public class XivoConnectionService extends Service{
      * @return
      */
     protected Messages parseIncomingJson(JSONObject line) {
+        try {
+            CtiMessage ctiMessage = messageParser.parse(line);
+            messageDispatcher.dispatch((CtiEvent<?>) ctiMessage);
+        } catch (JSONException e1) {
+            Log.d(TAG,"unable to decode message received");
+        } catch (IllegalArgumentException e2) {
+            Log.d(TAG,"not decoded message received");
+        }
         if (cancel || line == null)
             return Messages.NO_MESSAGE;
         try {

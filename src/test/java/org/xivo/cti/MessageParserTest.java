@@ -57,6 +57,13 @@ public class MessageParserTest {
         assertFalse("unable to decode dnd enabled", userConfigUpdate.isDndEnabled());
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void parseUnknowGetListMessage() throws JSONException {
+        JSONObject jsonObject = new JSONObject(
+                "{\"capalist\": [2],\"class\": \"getlist\",\"replyid\": 1646064863,\"timenow\": 1361268824.68, \"function\": \"unkonwn\"}");
+        messageParser.parse(jsonObject);
+    }
+
     @Test
     public void paserUserSatusUpdate() throws JSONException {
         JSONObject userStatusUpdateJson = new JSONObject("{" + "\"class\": \"getlist\","
