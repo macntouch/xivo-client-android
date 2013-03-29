@@ -24,6 +24,7 @@ import org.xivo.cti.model.Capacities;
 import org.xivo.cti.model.PhoneStatus;
 import org.xivo.cti.model.Service;
 import org.xivo.cti.model.UserStatus;
+import org.xivo.cti.model.XiVOPreference;
 import org.xivo.cti.model.Xlet;
 
 public class MessageParserTest {
@@ -113,7 +114,7 @@ public class MessageParserTest {
                         + " \"capas\": {"
                         + "\"regcommands\": {},"
                         + "\"ipbxcommands\": {},"
-                        + "\"preferences\": false,"
+                        + "\"preferences\":  {\"xlet.identity.logagent\": \"1\", \"xlet.identity.pauseagent\": \"1\"},"
                         + " \"userstatus\": {"
                         + "\"available\": {\"color\": \"#08FD20\","
                         + " \"allowed\": [\"available\", \"away\",\"outtolunch\", \"donotdisturb\", \"berightback\"],"
@@ -165,8 +166,9 @@ public class MessageParserTest {
 
     @Test
     public void parseCapacities() throws JSONException {
-        JSONObject jsonObject = new JSONObject("{\"regcommands\": {}, \"preferences\": true," + " \"userstatus\": {"
-                + "\"available\": {\"color\": \"#08FD20\","
+        JSONObject jsonObject = new JSONObject("{\"regcommands\": {}, "
+                + "\"preferences\": {\"xlet.identity.logagent\": \"1\", \"xlet.identity.pauseagent\": \"1\"},"
+                + " \"userstatus\": {" + "\"available\": {\"color\": \"#08FD20\","
                 + " \"allowed\": [\"available\", \"away\",\"outtolunch\", \"donotdisturb\", \"berightback\"],"
                 + " \"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Disponible\"},"
                 + "\"disconnected\": {\"color\": \"#202020\", "
@@ -177,11 +179,40 @@ public class MessageParserTest {
 
         Capacities capacities = messageParser.parseCapacities(jsonObject);
         assertNotNull("unable to decode capacities", capacities);
-        assertTrue("unable to decode capacity preferences", capacities.isPreferences());
+        assertNotNull("unable to decode capacity preferences", capacities.getPreferences());
         assertNotNull("unable to decode userstatus", capacities.getUsersStatuses());
         assertNotNull("unable to decode services", capacities.getServices());
         assertNotNull("unable to decode phone statuses", capacities.getPhoneStatuses());
 
+    }
+
+    @Test
+    public void parseCapacitiesNoPreferences() throws JSONException {
+        JSONObject jsonObject = new JSONObject("{\"regcommands\": {}, " + "\"preferences\": false,"
+                + " \"userstatus\": {" + "\"available\": {\"color\": \"#08FD20\","
+                + " \"allowed\": [\"available\", \"away\",\"outtolunch\", \"donotdisturb\", \"berightback\"],"
+                + " \"actions\": {\"enablednd\": \"false\"}, \"longname\": \"Disponible\"},"
+                + "\"disconnected\": {\"color\": \"#202020\", "
+                + "\"actions\": {\"agentlogoff\": \"\"}, \"longname\": \"D\u00e9connect\u00e9\"}}, "
+                + "\"services\": [\"enablednd\", \"fwdunc\"], "
+                + "\"phonestatus\": {  \"16\": {\"color\": \"#F7FF05\", \"longname\": \"En Attente\"}, "
+                + "\"8\": {\"color\": \"#1B0AFF\", \"longname\": \"Sonne\"}}, " + "\"ipbxcommands\": {}" + "}");
+
+        Capacities capacities = messageParser.parseCapacities(jsonObject);
+        assertNotNull("unable to decode capacities", capacities);
+        assertNotNull("unable to decode capacity preferences", capacities.getPreferences());
+    }
+
+    @Test
+    public void parsePreferences() throws JSONException {
+        JSONObject jsonPreferences = new JSONObject(
+                "{\"xlet.identity.logagent\": \"1\", \"xlet.identity.pauseagent\": \"0\"}");
+
+        List<XiVOPreference> preferences = messageParser.parsePreferences(jsonPreferences);
+
+        assertNotNull("unable to decode preferences", preferences);
+        XiVOPreference xivoPreference = new XiVOPreference("xlet.identity.pauseagent", "0");
+        assertThat("unable to decode xivo preferences", preferences, hasItem(xivoPreference));
     }
 
     @Test

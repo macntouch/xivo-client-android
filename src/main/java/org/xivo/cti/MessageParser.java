@@ -18,6 +18,7 @@ import org.xivo.cti.model.Capacities;
 import org.xivo.cti.model.PhoneStatus;
 import org.xivo.cti.model.Service;
 import org.xivo.cti.model.UserStatus;
+import org.xivo.cti.model.XiVOPreference;
 import org.xivo.cti.model.Xlet;
 
 public class MessageParser {
@@ -115,12 +116,27 @@ public class MessageParser {
 
     public Capacities parseCapacities(JSONObject capacitiesJson) throws JSONException {
         Capacities capacities = new Capacities();
-        capacities.setPreferences(capacitiesJson.getBoolean("preferences"));
+        try {
+            capacities.setPreferences(parsePreferences(capacitiesJson.getJSONObject("preferences")));
+        }
+        catch(JSONException e){}
         capacities.setUsersStatuses(parseUserStatuses(capacitiesJson.getJSONObject("userstatus")));
         capacities.setServices(parseServices(capacitiesJson.getJSONArray("services")));
         capacities.setPhoneStatuses(parsePhoneStatuses(capacitiesJson.getJSONObject("phonestatus")));
         return capacities;
 
+    }
+
+    protected List<XiVOPreference> parsePreferences(JSONObject jsonPreferences) throws JSONException {
+        List<XiVOPreference> xiVOPreferences  = new ArrayList<XiVOPreference>();
+        @SuppressWarnings("unchecked")
+        Iterator<String> keys = jsonPreferences.keys();
+        while (keys.hasNext()) {
+            String parameter = keys.next();
+            XiVOPreference xiVOPreference = new XiVOPreference(parameter, jsonPreferences.getString(parameter));
+            xiVOPreferences.add(xiVOPreference);
+        }
+        return xiVOPreferences;
     }
 
     protected List<PhoneStatus> parsePhoneStatuses(JSONObject phoneStatusesJson) throws JSONException {
