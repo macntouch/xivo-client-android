@@ -25,7 +25,6 @@ import org.xivo.cti.message.LoginCapasAck;
 import org.xivo.cti.message.LoginPassAck;
 import org.xivo.cti.message.UserConfigUpdate;
 import org.xivo.cti.message.UserStatusUpdate;
-import org.xivo.cti.message.UserUpdateListener;
 import org.xivo.cti.model.UserStatus;
 import org.xivo.cti.model.Xlet;
 
@@ -56,7 +55,7 @@ import com.proformatique.android.xivoclient.XivoNotification;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.JSONMessageFactory;
 
-public class XivoConnectionService extends Service implements UserUpdateListener {
+public class XivoConnectionService extends Service{
     
     private static final String TAG = "XiVO connection service";
     
@@ -80,7 +79,7 @@ public class XivoConnectionService extends Service implements UserUpdateListener
     private String mNumber = null;
     private int[] mwi = new int[3];
     private int capaId = 0;
-    private long stateId = 0L;
+    //private long stateId = 0L;
     private String phoneStatusLongname = null;
     private String phoneStatusColor = Constants.DEFAULT_HINT_COLOR;
     private String lastCalledNumber = null;
@@ -96,6 +95,7 @@ public class XivoConnectionService extends Service implements UserUpdateListener
     private MessageParser messageParser;
     private MessageFactory messageFactory;
     private MessageDispatcher messageDispatcher;
+    private UserUpdateManager userUpdateManager;
     /**
      * Messages to return from the main loop to the handler
      */
@@ -129,12 +129,13 @@ public class XivoConnectionService extends Service implements UserUpdateListener
 		messageParser = new MessageParser();
 		messageFactory = new MessageFactory();
 		messageDispatcher = new MessageDispatcher();
+		userUpdateManager = new UserUpdateManager(this);
 		addDispatchers();
 	}
 
     private void addDispatchers() {
-        messageDispatcher.addListener(UserStatusUpdate.class, this);
-        messageDispatcher.addListener(UserConfigUpdate.class, this);
+        messageDispatcher.addListener(UserStatusUpdate.class, userUpdateManager);
+        messageDispatcher.addListener(UserConfigUpdate.class, userUpdateManager);
     }
 
     /**
@@ -188,7 +189,7 @@ public class XivoConnectionService extends Service implements UserUpdateListener
         
         @Override
         public long getStateId() throws RemoteException {
-            return stateId;
+            return userUpdateManager.getStateId();
         }
         
         @Override
@@ -267,7 +268,6 @@ public class XivoConnectionService extends Service implements UserUpdateListener
             return XivoConnectionService.this.xivoId;
         }
     };
-    
     /**
      * Check the phone status returns true if it's off hook
      * @return
@@ -1152,13 +1152,13 @@ public class XivoConnectionService extends Service implements UserUpdateListener
             String astid = line.getString("astid");
             String stateid = line.getJSONObject("capapresence").getJSONObject("state")
                     .getString("stateid");
-            this.stateId = CapapresenceProvider.getIndex(this, stateid);
+            // TODO this.stateId = CapapresenceProvider.getIndex(this, stateid);
             long index = UserProvider.getIndex(this, astid, id);
             UserProvider.updatePresence(this, index, stateid);
             if (id.equals(xivoId) && astid.equals(astId)) {
                 Intent iUpdate = new Intent();
                 iUpdate.setAction(Constants.ACTION_MY_STATUS_CHANGE);
-                iUpdate.putExtra("id", this.stateId);
+                //TODO iUpdate.putExtra("id", this.stateId);
                 sendBroadcast(iUpdate);
             }
         } catch (JSONException e) {
@@ -1210,22 +1210,7 @@ public class XivoConnectionService extends Service implements UserUpdateListener
         return Constants.AUTHENTICATION_OK;
 
     }
-    
-    /**
-     * Parses configuration values received from the CTI server
-     * @return error or success code
-     */
-    private int parseCapas(JSONObject jCapa) {
-        try {
-            if (jCapa.has("userstatus")) {
-                parseCapapresence(jCapa.getJSONObject("userstatus"));
-            }
-        } catch (JSONException e) {
-            return Constants.JSON_POPULATE_ERROR;
-        }
-        return Constants.OK;
-    }
-    
+
     private void configureUserStatuses(List<UserStatus> userStatuses) {
     	Log.d(TAG, "user statuses configuration");
         getContentResolver().delete(CapapresenceProvider.CONTENT_URI, null, null);
@@ -1239,31 +1224,6 @@ public class XivoConnectionService extends Service implements UserUpdateListener
         	presence.clear();
         }
     }
-    
-    /**
-     * Parses the incoming capapresence message and update the DB
-     */
-    private void parseCapapresence(JSONObject jPresence) {
-        /*
-         * Fill the DB
-         */
-        try {
-            JSONObject myPresence = jPresence.getJSONObject("state");
-            String code = myPresence.getString("stateid");
-            Cursor presence = getContentResolver().query(CapapresenceProvider.CONTENT_URI,
-                    new String[] {CapapresenceProvider._ID, CapapresenceProvider.NAME},
-                    CapapresenceProvider.NAME + " = '" + code + "'", null, null);
-            presence.moveToFirst();
-            stateId = presence.getLong(presence.getColumnIndex(CapapresenceProvider._ID));
-            presence.close();
-            Intent i = new Intent();
-            i.setAction(Constants.ACTION_MY_STATUS_CHANGE);
-            i.putExtra("id", stateId);
-        } catch (JSONException e) {
-            Log.d(TAG, "Could not get my presence");
-        }
-    }
-    
 
     private void configureXlets(List<Xlet> xlets) {
         Log.d(TAG, "Setting xlets");
@@ -1459,18 +1419,5 @@ public class XivoConnectionService extends Service implements UserUpdateListener
             }
         }
         
-    }
-
-    @Override
-    public void onUserConfigUpdate(UserConfigUpdate userConfigUpdate) {
-        Log.d(TAG, "user configuration updated " + userConfigUpdate.getUserId());
-
-    }
-
-    @Override
-    public void onUserStatusUpdate(UserStatusUpdate userStatusUpdate) {
-        Log.d(TAG, "user status updated " + userStatusUpdate.getUserId() + " satus [" + userStatusUpdate.getStatus()
-                + "]");
-
     }
 }
