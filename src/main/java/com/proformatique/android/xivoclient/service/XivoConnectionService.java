@@ -18,6 +18,8 @@ import org.json.JSONObject;
 import org.xivo.cti.MessageDispatcher;
 import org.xivo.cti.MessageFactory;
 import org.xivo.cti.MessageParser;
+import org.xivo.cti.listener.CallHistoryListener;
+import org.xivo.cti.message.CallHistoryReply;
 import org.xivo.cti.message.CtiEvent;
 import org.xivo.cti.message.CtiMessage;
 import org.xivo.cti.message.LoginAck;
@@ -26,6 +28,7 @@ import org.xivo.cti.message.LoginPassAck;
 import org.xivo.cti.message.UserConfigUpdate;
 import org.xivo.cti.message.UserStatusUpdate;
 import org.xivo.cti.model.UserStatus;
+import org.xivo.cti.model.XiVOCall;
 import org.xivo.cti.model.Xlet;
 
 import android.app.Service;
@@ -55,7 +58,7 @@ import com.proformatique.android.xivoclient.XivoNotification;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.JSONMessageFactory;
 
-public class XivoConnectionService extends Service{
+public class XivoConnectionService extends Service implements CallHistoryListener {
     
     private static final String TAG = "XiVO connection service";
     
@@ -136,6 +139,7 @@ public class XivoConnectionService extends Service{
     private void addDispatchers() {
         messageDispatcher.addListener(UserStatusUpdate.class, userUpdateManager);
         messageDispatcher.addListener(UserConfigUpdate.class, userUpdateManager);
+        messageDispatcher.addListener(CallHistoryReply.class, this);
     }
 
     /**
@@ -706,8 +710,6 @@ public class XivoConnectionService extends Service{
                 return parseUsers(line);
             else if (classRec.equals("phones"))
                 return parsePhones(line);
-            else if (classRec.equals("history"))
-                return JsonParserHelper.parseHistory(XivoConnectionService.this, line);
             else if (classRec.equals("features"))
                 return parseFeatures(line);
             else if (classRec.equals("groups"))
@@ -1427,5 +1429,20 @@ public class XivoConnectionService extends Service{
             }
         }
         
+    }
+
+    @Override
+    public void onCallHistoryUpdated(List<XiVOCall> callHistory) {
+        for (XiVOCall xiVOCall : callHistory) {
+            ContentValues values = new ContentValues();
+            values.put(HistoryProvider.DURATION, xiVOCall.getDuration());
+            values.put(HistoryProvider.TERMIN, "termin");
+            values.put(HistoryProvider.DIRECTION, xiVOCall.getCallType().toString());
+            values.put(HistoryProvider.FULLNAME, xiVOCall.getFullName());
+            values.put(HistoryProvider.TS, xiVOCall.getCallDate());
+            this.getApplicationContext().getContentResolver().insert(HistoryProvider.CONTENT_URI, values);
+            values.clear();
+        }
+
     }
 }

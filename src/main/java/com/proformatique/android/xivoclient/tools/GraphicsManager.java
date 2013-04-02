@@ -19,6 +19,8 @@
 
 package com.proformatique.android.xivoclient.tools;
 
+import org.xivo.cti.model.CallType;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -30,7 +32,7 @@ import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.widget.ImageView;
 
-import com.proformatique.android.xivoclient.*;
+import com.proformatique.android.xivoclient.R;
 
 public class GraphicsManager {
 	
@@ -63,18 +65,19 @@ public class GraphicsManager {
 		return iconId;
 	}
 
-	public static int getCallIcon(String direction) {
-		int iconId = 0;
-		
-		if (direction.equals("IN")) {
-			iconId = R.drawable.call_received;
-		}
-		else if (direction.equals("OUT")) {
-			iconId = R.drawable.call_sent;
-		}
-		
-		return iconId;
-	}
+    public static int getCallIcon(String direction) {
+        int iconId = 0;
+
+        if (direction.equals(CallType.INBOUND.toString())) {
+            iconId = R.drawable.call_received;
+        } else if (direction.equals(CallType.OUTBOUND.toString())) {
+            iconId = R.drawable.call_sent;
+        } else {
+            iconId = R.drawable.call_missed;
+        }
+
+        return iconId;
+    }
 
 	public static void setIconStateDisplay(Context context, ImageView icon, 
 			String color) {

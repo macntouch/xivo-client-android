@@ -19,25 +19,6 @@
 
 package com.proformatique.android.xivoclient.xlets;
 
-import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.DialogInterface.OnClickListener;
-import android.os.Bundle;
-import android.os.RemoteException;
-import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
-import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -48,6 +29,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
+import android.os.RemoteException;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
@@ -135,7 +135,6 @@ public class XletHisto extends XivoActivity implements OnItemClickListener {
             
             HashMap<String, String> line = (HashMap<String, String>) lv.getItemAtPosition(position);
             String direction = line.get("direction");
-            
             ImageView icon = (ImageView) view.findViewById(R.id.callStatus);
             icon.setBackgroundResource(GraphicsManager.getCallIcon(direction));
             

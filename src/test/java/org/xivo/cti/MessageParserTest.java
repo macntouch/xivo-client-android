@@ -15,15 +15,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
+import org.xivo.cti.message.CallHistoryReply;
 import org.xivo.cti.message.LoginAck;
 import org.xivo.cti.message.LoginCapasAck;
 import org.xivo.cti.message.LoginPassAck;
 import org.xivo.cti.message.UserConfigUpdate;
 import org.xivo.cti.message.UserStatusUpdate;
+import org.xivo.cti.model.CallType;
 import org.xivo.cti.model.Capacities;
 import org.xivo.cti.model.PhoneStatus;
 import org.xivo.cti.model.Service;
 import org.xivo.cti.model.UserStatus;
+import org.xivo.cti.model.XiVOCall;
 import org.xivo.cti.model.XiVOPreference;
 import org.xivo.cti.model.Xlet;
 
@@ -63,6 +66,48 @@ public class MessageParserTest {
         JSONObject jsonObject = new JSONObject(
                 "{\"capalist\": [2],\"class\": \"getlist\",\"replyid\": 1646064863,\"timenow\": 1361268824.68, \"function\": \"unkonwn\"}");
         messageParser.parse(jsonObject);
+    }
+
+    @Test
+    public void parseCallHistoryOutbound() throws JSONException {
+        JSONObject callHistoryJson = new JSONObject("{\"class\": \"history\"," + "\"history\": ["
+                + "{\"calldate\": \"2013-03-29T08:44:35.273998\", \"duration\": 0.148765, \"fullname\": \"*844201\"},"
+                + "{\"calldate\": \"2013-03-28T16:56:48.071213\", \"duration\": 58.834744, \"fullname\": \"41400\"}],"
+                + "\"mode\": 0, " + "\"replyid\": 529422441, " + "\"timenow\": 1364571477.33}");
+        XiVOCall xivoCall = new XiVOCall("2013-03-28 16:56:48", 59, "41400", CallType.OUTBOUND);
+        CallHistoryReply callHistoryReply = (CallHistoryReply) messageParser.parse(callHistoryJson);
+
+        assertNotNull("cannot parse history", callHistoryReply);
+
+        assertThat("cannot parse call history", callHistoryReply.getCallHistory(), hasItem(xivoCall));
+    }
+
+    @Test
+    public void parseCallHistoryInbound() throws JSONException {
+        JSONObject callHistoryJson = new JSONObject("{\"class\": \"history\"," + "\"history\": ["
+                + "{\"calldate\": \"2013-03-29T08:44:35.273998\", \"duration\": 0.148765, \"fullname\": \"*844201\"},"
+                + "{\"calldate\": \"2013-03-28T16:56:48.071213\", \"duration\": 58.834744, \"fullname\": \"41400\"}],"
+                + "\"mode\": 1, " + "\"replyid\": 529422441, " + "\"timenow\": 1364571477.33}");
+        XiVOCall xivoCall = new XiVOCall("2013-03-28 16:56:48", 59, "41400", CallType.INBOUND);
+        CallHistoryReply callHistoryReply = (CallHistoryReply) messageParser.parse(callHistoryJson);
+
+        assertNotNull("cannot parse history", callHistoryReply);
+
+        assertThat("cannot parse call history", callHistoryReply.getCallHistory(), hasItem(xivoCall));
+    }
+
+    @Test
+    public void parseCallHistoryMissed() throws JSONException {
+        JSONObject callHistoryJson = new JSONObject("{\"class\": \"history\"," + "\"history\": ["
+                + "{\"calldate\": \"2013-03-29T08:44:35.273998\", \"duration\": 0.148765, \"fullname\": \"*844201\"},"
+                + "{\"calldate\": \"2013-03-28T16:56:48.071213\", \"duration\": 58.834744, \"fullname\": \"41400\"}],"
+                + "\"mode\": 2, " + "\"replyid\": 529422441, " + "\"timenow\": 1364571477.33}");
+        XiVOCall xivoCall = new XiVOCall("2013-03-28 16:56:48", 59, "41400", CallType.MISSED);
+        CallHistoryReply callHistoryReply = (CallHistoryReply) messageParser.parse(callHistoryJson);
+
+        assertNotNull("cannot parse history", callHistoryReply);
+
+        assertThat("cannot parse call history", callHistoryReply.getCallHistory(), hasItem(xivoCall));
     }
 
     @Test

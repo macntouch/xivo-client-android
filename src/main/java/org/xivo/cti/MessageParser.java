@@ -7,6 +7,7 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xivo.cti.message.CallHistoryReply;
 import org.xivo.cti.message.CtiMessage;
 import org.xivo.cti.message.LoginAck;
 import org.xivo.cti.message.LoginCapasAck;
@@ -14,10 +15,12 @@ import org.xivo.cti.message.LoginPassAck;
 import org.xivo.cti.message.UserConfigUpdate;
 import org.xivo.cti.message.UserStatusUpdate;
 import org.xivo.cti.model.Action;
+import org.xivo.cti.model.CallType;
 import org.xivo.cti.model.Capacities;
 import org.xivo.cti.model.PhoneStatus;
 import org.xivo.cti.model.Service;
 import org.xivo.cti.model.UserStatus;
+import org.xivo.cti.model.XiVOCall;
 import org.xivo.cti.model.XiVOPreference;
 import org.xivo.cti.model.Xlet;
 
@@ -27,6 +30,7 @@ public class MessageParser {
     private static final String LOGIN_PASS = "login_pass";
     private static final String GETLIST = "getlist";
     private static final String LOGINID = "login_id";
+    private static final String HISTORY = "history";
 
     public CtiMessage parse(JSONObject jsonObject) throws JSONException {
         String messageClass = jsonObject.getString("class");
@@ -38,7 +42,31 @@ public class MessageParser {
             return parseLoginCapasAck(jsonObject);
         else if (messageClass.equals(GETLIST))
             return parseGetList(jsonObject);
+        else if (messageClass.equals(HISTORY))
+            return parseHistoryReply(jsonObject);
         throw (new IllegalArgumentException("unknown message class"));
+    }
+
+    private CtiMessage parseHistoryReply(JSONObject jsonCallHistoryReply) throws JSONException {
+        CallHistoryReply callHistoryReply = new CallHistoryReply();
+        JSONArray jsonCallHistory = jsonCallHistoryReply.getJSONArray("history");
+
+        for (int i = 0; i < jsonCallHistory.length(); i++) {
+            JSONObject jsonCall = jsonCallHistory.getJSONObject(i);
+            String callDate = jsonCall.getString("calldate").replace("T", " ");
+            callDate = callDate.substring(0, callDate.indexOf('.'));
+            long callDuration = Math.round(jsonCall.getDouble("duration"));
+            XiVOCall xiVOCall;
+            if (jsonCallHistoryReply.getString("mode").equals("0"))
+                xiVOCall = new XiVOCall(callDate, callDuration, jsonCall.getString("fullname"), CallType.OUTBOUND);
+            else if (jsonCallHistoryReply.getString("mode").equals("1"))
+                xiVOCall = new XiVOCall(callDate, callDuration, jsonCall.getString("fullname"), CallType.INBOUND);
+            else
+                xiVOCall = new XiVOCall(callDate, callDuration, jsonCall.getString("fullname"), CallType.MISSED);
+            callHistoryReply.addCall(xiVOCall);
+        }
+
+        return callHistoryReply;
     }
 
     private CtiMessage parseGetList(JSONObject getListJson) throws NumberFormatException, JSONException {
@@ -118,8 +146,8 @@ public class MessageParser {
         Capacities capacities = new Capacities();
         try {
             capacities.setPreferences(parsePreferences(capacitiesJson.getJSONObject("preferences")));
+        } catch (JSONException e) {
         }
-        catch(JSONException e){}
         capacities.setUsersStatuses(parseUserStatuses(capacitiesJson.getJSONObject("userstatus")));
         capacities.setServices(parseServices(capacitiesJson.getJSONArray("services")));
         capacities.setPhoneStatuses(parsePhoneStatuses(capacitiesJson.getJSONObject("phonestatus")));
@@ -128,7 +156,7 @@ public class MessageParser {
     }
 
     protected List<XiVOPreference> parsePreferences(JSONObject jsonPreferences) throws JSONException {
-        List<XiVOPreference> xiVOPreferences  = new ArrayList<XiVOPreference>();
+        List<XiVOPreference> xiVOPreferences = new ArrayList<XiVOPreference>();
         @SuppressWarnings("unchecked")
         Iterator<String> keys = jsonPreferences.keys();
         while (keys.hasNext()) {

@@ -1,16 +1,14 @@
 package com.proformatique.android.xivoclient.service;
 
-import android.content.ContentValues;
-import android.content.Context;
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import android.content.Context;
+import android.util.Log;
 
 import com.proformatique.android.xivoclient.SettingsActivity;
 import com.proformatique.android.xivoclient.service.XivoConnectionService.Messages;
@@ -134,32 +132,7 @@ public class JsonParserHelper {
         Log.d(TAG, "Parsing groups: " + line.toString());
         return Messages.NO_MESSAGE;
     }
-    
-    /**
-     * Parses the content of an history update from the CTI server and update the HistoryProvider
-     * @param context
-     * @param json line
-     * @return Messages.HISTORY_LOADED if successful
-     * @throws JSONException
-     */
-    public static Messages parseHistory(Context context, JSONObject line) throws JSONException {
-        Log.d(TAG, "Parsing history:\n" + line.toString());
-        JSONArray payload = line.getJSONArray("payload");
-        int len = payload.length();
-        for (int i = 0; i < len; i++) {
-            JSONObject item = payload.getJSONObject(i);
-            ContentValues values = new ContentValues();
-            values.put(HistoryProvider.DURATION, item.getString("duration"));
-            values.put(HistoryProvider.TERMIN, item.getString("termin"));
-            values.put(HistoryProvider.DIRECTION, item.getString("direction"));
-            values.put(HistoryProvider.FULLNAME, item.getString("fullname"));
-            values.put(HistoryProvider.TS, item.getString("ts"));
-            context.getContentResolver().insert(HistoryProvider.CONTENT_URI, values);
-            values.clear();
-        }
-        return Messages.HISTORY_LOADED;
-    }
-    
+
     public static Messages parseMeetme(Context context, JSONObject line) {
         Log.d(TAG, "Not doing anything with meetme now");
         return Messages.NO_MESSAGE;
