@@ -51,14 +51,19 @@ public class MessageParserTest {
         UserIdsList usersList = (UserIdsList) messageParser.parse(jsonUsersList);
         assertNotNull("unable to decode users list",usersList);
         assertThat("list not decoded",usersList.getUserIds(),hasItem(new Integer(25)));
-        
+
     }
     /*
     {"function": "updateconfig", 
     "listname": "users", 
     "tipbxid": "xivo", 
     "timenow": 1364975899.38, "tid": "9", 
-    "config": {"enablednd": 0, "destrna": "", "enablerna": 0, "firstname": "Alice", "profileclient": null, "lastname": "Johnson", "enableunc": 0, "destbusy": "", "enablebusy": 0, "voicemailid": null, "incallfilter": 0, "destunc": "", "enablevoicemail": 0, "enablexfer": 1, "fullname": "Alice Johnson", "agentid": null, "enableclient": 0, "linelist": ["5"], "mobilephonenumber": ""}, "class": "getlist"}
+    "config": {"enablednd": 0, "destrna": "", "enablerna": 0, "firstname": "Alice", 
+    "profileclient": null, "lastname": "Johnson", 
+    "enableunc": 0, "destbusy": "", "enablebusy": 0, 
+    "voicemailid": null, "incallfilter": 0, "destunc": "", 
+    "enablevoicemail": 0, "enablexfer": 1, 
+    "fullname": "Alice Johnson", "agentid": null, "enableclient": 0, "linelist": ["5"], "mobilephonenumber": ""}, "class": "getlist"}
     */
     @Test
     public void parseUserConfigUpdate() throws JSONException {
@@ -66,7 +71,8 @@ public class MessageParserTest {
                 + "\"function\": \"updateconfig\", " + "\"listname\": \"users\", " + "\"tipbxid\": \"xivo\","
                 + "\"timenow\": 1361440830.99," + "\"tid\": \"3\"," + 
                 "\"config\": {" +
-                    "\"enablednd\": true, \"destrna\": \"4561\",\"enablerna\": 1, \"firstname\": \"Alice\"}" + "}");
+                    "\"enablednd\": true, \"destrna\": \"4561\",\"enablerna\": 1, " +
+                    "\"firstname\": \"Alice\", \"lastname\": \"Johnson\", \"fullname\": \"Alice Johnson\"}" + "}");
 
         UserConfigUpdate userConfigUpdate = (UserConfigUpdate) messageParser.parse(userConfigUpdateJson);
         assertNotNull("unable de decode user configuration update", userConfigUpdate);
@@ -75,6 +81,8 @@ public class MessageParserTest {
         assertTrue("unable to decode rna enabled", userConfigUpdate.isRnaEnabled());
         assertEquals("unable to decode rna destination","4561",userConfigUpdate.getRnaDestination());
         assertEquals("unable to decode first name","Alice",userConfigUpdate.getFirstName());
+        assertEquals("unable to decode last name","Johnson",userConfigUpdate.getLastName());
+        assertEquals("unable to decode full name","Alice Johnson",userConfigUpdate.getFullName());
     }
 
     @Test
@@ -363,5 +371,10 @@ public class MessageParserTest {
 
         messageParser.parse(jsonObject);
 
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void parseNullMessage() throws JSONException {
+        messageParser.parse(null);
     }
 }

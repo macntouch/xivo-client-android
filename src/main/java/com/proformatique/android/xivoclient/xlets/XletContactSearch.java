@@ -32,16 +32,17 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
-import android.provider.ContactsContract.Contacts;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.provider.ContactsContract.Contacts;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -49,7 +50,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
 
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
@@ -212,6 +212,7 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 		
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
+		    Log.d(TAG, "User adapter view " + position);
 			View v;
 			if (convertView == null) {
 				final LayoutInflater inflater = LayoutInflater.from(XletContactSearch.this);
@@ -271,6 +272,7 @@ public class XletContactSearch extends XivoActivity implements OnItemClickListen
 	 * Refresh the user list and notify the list adapter
 	 */
 	private void getUserList() {
+	    Log.d(LOG_TAG,"**************** get user list ***********************");
 		if (user != null && user.isClosed() == false) {
 			user.close();
 			user = null;

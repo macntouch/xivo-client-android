@@ -38,6 +38,8 @@ public class MessageParser {
     private static final String HISTORY = "history";
 
     public CtiMessage parse(JSONObject jsonObject) throws JSONException {
+        if (jsonObject == null)
+            throw (new IllegalArgumentException("unable to parse null message"));
         String messageClass = jsonObject.getString("class");
         if (messageClass.equals(LOGINID))
             return parseLoginAck(jsonObject);
@@ -120,6 +122,12 @@ public class MessageParser {
         }
         if (userConfigJson.has("firstname")) {
             userConfigUpdate.setFirstName(userConfigJson.getString("firstname"));
+        }
+        if (userConfigJson.has("lastname")) {
+            userConfigUpdate.setLastName(userConfigJson.getString("lastname"));
+        }
+        if (userConfigJson.has("fullname")) {
+            userConfigUpdate.setFullName(userConfigJson.getString("fullname"));
         }
         return userConfigUpdate;
     }

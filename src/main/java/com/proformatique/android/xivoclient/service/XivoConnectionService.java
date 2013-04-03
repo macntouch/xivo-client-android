@@ -179,6 +179,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         
         @Override
         public void loadData() throws RemoteException {
+            getContentResolver().delete(UserProvider.CONTENT_URI, null, null);
             XivoConnectionService.this.refreshFeatures();
             XivoConnectionService.this.refreshHistory();
             XivoConnectionService.this.loadList("users");

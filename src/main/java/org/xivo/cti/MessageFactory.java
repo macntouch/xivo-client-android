@@ -105,4 +105,9 @@ public class MessageFactory {
         }
         return addFields(jsonGetConfig);
     }
+
+    public JSONObject createGetUserStatus(Integer userId) {
+        // TODO Auto-generated method stub
+        return new JSONObject();
+    }
 }

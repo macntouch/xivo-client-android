@@ -6,6 +6,8 @@ public class UserConfigUpdate extends CtiMessage implements CtiEvent<UserUpdateL
     private boolean rnaEnabled;
     private String rnaDestination;
     private String firstName;
+    private String lastName;
+    private String fullName;
 
     public void setUserId(int userId) {
         this.userId = userId;
@@ -51,6 +53,22 @@ public class UserConfigUpdate extends CtiMessage implements CtiEvent<UserUpdateL
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
 }
