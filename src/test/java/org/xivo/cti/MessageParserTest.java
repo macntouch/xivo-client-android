@@ -20,6 +20,7 @@ import org.xivo.cti.message.LoginAck;
 import org.xivo.cti.message.LoginCapasAck;
 import org.xivo.cti.message.LoginPassAck;
 import org.xivo.cti.message.UserConfigUpdate;
+import org.xivo.cti.message.UserIdsList;
 import org.xivo.cti.message.UserStatusUpdate;
 import org.xivo.cti.model.CallType;
 import org.xivo.cti.model.Capacities;
@@ -39,15 +40,41 @@ public class MessageParserTest {
     }
 
     @Test
+    public void getUsersList() throws JSONException {
+        JSONObject jsonUsersList = new JSONObject("{\"function\": \"listid\", " +
+                                                    "\"listname\": \"users\", " +
+                                                    "\"class\": \"getlist\"," +
+                                                    "\"tipbxid\": \"xivo\", " +
+                                                    "\"list\": [\"11\", \"25\", \"12\", \"14\"], " +
+                                                    "\"timenow\": 1364919114.1 " +
+                                                    "}");
+        UserIdsList usersList = (UserIdsList) messageParser.parse(jsonUsersList);
+        assertNotNull("unable to decode users list",usersList);
+        assertThat("list not decoded",usersList.getUserIds(),hasItem(new Integer(25)));
+        
+    }
+    /*
+    {"function": "updateconfig", 
+    "listname": "users", 
+    "tipbxid": "xivo", 
+    "timenow": 1364975899.38, "tid": "9", 
+    "config": {"enablednd": 0, "destrna": "", "enablerna": 0, "firstname": "Alice", "profileclient": null, "lastname": "Johnson", "enableunc": 0, "destbusy": "", "enablebusy": 0, "voicemailid": null, "incallfilter": 0, "destunc": "", "enablevoicemail": 0, "enablexfer": 1, "fullname": "Alice Johnson", "agentid": null, "enableclient": 0, "linelist": ["5"], "mobilephonenumber": ""}, "class": "getlist"}
+    */
+    @Test
     public void parseUserConfigUpdate() throws JSONException {
         JSONObject userConfigUpdateJson = new JSONObject("{" + "\"class\": \"getlist\","
                 + "\"function\": \"updateconfig\", " + "\"listname\": \"users\", " + "\"tipbxid\": \"xivo\","
-                + "\"timenow\": 1361440830.99," + "\"tid\": \"3\"," + "\"config\": {\"enablednd\": true}" + "}");
+                + "\"timenow\": 1361440830.99," + "\"tid\": \"3\"," + 
+                "\"config\": {" +
+                    "\"enablednd\": true, \"destrna\": \"4561\",\"enablerna\": 1, \"firstname\": \"Alice\"}" + "}");
 
         UserConfigUpdate userConfigUpdate = (UserConfigUpdate) messageParser.parse(userConfigUpdateJson);
         assertNotNull("unable de decode user configuration update", userConfigUpdate);
         assertEquals("unable to decode user id ", 3, userConfigUpdate.getUserId());
         assertTrue("unable to decode dnd enabled", userConfigUpdate.isDndEnabled());
+        assertTrue("unable to decode rna enabled", userConfigUpdate.isRnaEnabled());
+        assertEquals("unable to decode rna destination","4561",userConfigUpdate.getRnaDestination());
+        assertEquals("unable to decode first name","Alice",userConfigUpdate.getFirstName());
     }
 
     @Test

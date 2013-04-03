@@ -5,11 +5,12 @@ import org.json.JSONObject;
 import org.xivo.cti.message.LoginCapas;
 import org.xivo.cti.message.LoginId;
 import org.xivo.cti.message.LoginPass;
+import org.xivo.cti.message.request.GetConfig;
+import org.xivo.cti.message.request.GetUserConfig;
+import org.xivo.cti.message.request.GetUsersList;
 
 public class MessageFactory {
     private static String KEY_COMMANDID = "commandid";
-    private static String KEY_CLASS = "class";
-    private static String KEY_CLAZ = "claz";
 
     private static long commandId = 1;
 
@@ -72,4 +73,36 @@ public class MessageFactory {
         return addFields(jsonLoginCapas);
     }
 
+    public JSONObject createGetUsersList() {
+        GetUsersList getUsersList = new GetUsersList();
+        JSONObject jsonGetUsersList = new JSONObject();
+        jsonGetUsersList = createGetConfig(getUsersList);
+
+        return  jsonGetUsersList;
+    }
+
+    public JSONObject createGetUserConfig(Integer userId) {
+        GetUserConfig getUserConfig = new GetUserConfig(userId);
+        JSONObject jsonGetUserConfig = createGetConfig(getUserConfig);
+        
+        try {
+            jsonGetUserConfig.accumulate("tid", userId.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonGetUserConfig;
+    }
+
+    protected JSONObject createGetConfig(GetConfig getConfig) {
+        JSONObject jsonGetConfig = new JSONObject();
+        try {
+            jsonGetConfig.accumulate("class",getConfig.getClaz());
+            jsonGetConfig.accumulate("tipbxid",getConfig.getTipBxid());
+            jsonGetConfig.accumulate("listname",getConfig.getListName());
+            jsonGetConfig.accumulate("function",getConfig.getFunction());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return addFields(jsonGetConfig);
+    }
 }

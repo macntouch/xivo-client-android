@@ -13,6 +13,7 @@ import org.xivo.cti.message.LoginAck;
 import org.xivo.cti.message.LoginCapasAck;
 import org.xivo.cti.message.LoginPassAck;
 import org.xivo.cti.message.UserConfigUpdate;
+import org.xivo.cti.message.UserIdsList;
 import org.xivo.cti.message.UserStatusUpdate;
 import org.xivo.cti.model.Action;
 import org.xivo.cti.model.CallType;
@@ -23,9 +24,13 @@ import org.xivo.cti.model.UserStatus;
 import org.xivo.cti.model.XiVOCall;
 import org.xivo.cti.model.XiVOPreference;
 import org.xivo.cti.model.Xlet;
+import org.xivo.cti.parser.BooleanParser;
 
 public class MessageParser {
 
+    private static final String FUNCT_LISTID = "listid";
+    private static final String FUNCT_UPDATESTATUS = "updatestatus";
+    private static final String FUNCT_UPDATECONFIG = "updateconfig";
     private static final String LOGIN_CAPAS = "login_capas";
     private static final String LOGIN_PASS = "login_pass";
     private static final String GETLIST = "getlist";
@@ -71,11 +76,22 @@ public class MessageParser {
 
     private CtiMessage parseGetList(JSONObject getListJson) throws NumberFormatException, JSONException {
         String function = getListJson.getString("function");
-        if (function.equals("updateconfig"))
+        if (function.equals(FUNCT_UPDATECONFIG))
             return parserUserConfigUpdate(getListJson);
-        if (function.equals("updatestatus"))
+        if (function.equals(FUNCT_UPDATESTATUS))
             return paserUserUpdateStatus(getListJson);
+        if (function.equals(FUNCT_LISTID))
+            return parseUsersIdsList(getListJson);
         throw (new IllegalArgumentException("unknown message class"));
+    }
+    
+    private CtiMessage parseUsersIdsList(JSONObject userIdsList) throws JSONException {
+        UserIdsList usersIdsList = new UserIdsList();
+        JSONArray jsonUserIds = userIdsList.getJSONArray("list");
+        for (int i = 0; i < jsonUserIds.length();i++) {
+            usersIdsList.add(Integer.valueOf((String) jsonUserIds.get(i)));
+        }
+        return usersIdsList;
     }
 
     private CtiMessage paserUserUpdateStatus(JSONObject userConfigUpdateJson) throws NumberFormatException,
@@ -94,7 +110,16 @@ public class MessageParser {
 
         JSONObject userConfigJson = userConfigUpdateJson.getJSONObject("config");
         if (userConfigJson.has("enablednd")) {
-            userConfigUpdate.setDndEnabled(userConfigJson.getBoolean("enablednd"));
+            userConfigUpdate.setDndEnabled(BooleanParser.parse(userConfigJson.getString("enablednd")));
+        }
+        if (userConfigJson.has("enablerna")) {
+            userConfigUpdate.setRnaEnabled(BooleanParser.parse(userConfigJson.getString("enablerna")));
+        }
+        if (userConfigJson.has("destrna")) {
+            userConfigUpdate.setRnaDestination(userConfigJson.getString("destrna"));
+        }
+        if (userConfigJson.has("firstname")) {
+            userConfigUpdate.setFirstName(userConfigJson.getString("firstname"));
         }
         return userConfigUpdate;
     }

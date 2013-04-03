@@ -19,6 +19,7 @@ import org.xivo.cti.MessageDispatcher;
 import org.xivo.cti.MessageFactory;
 import org.xivo.cti.MessageParser;
 import org.xivo.cti.listener.CallHistoryListener;
+import org.xivo.cti.listener.UserIdsListener;
 import org.xivo.cti.message.CallHistoryReply;
 import org.xivo.cti.message.CtiEvent;
 import org.xivo.cti.message.CtiMessage;
@@ -26,6 +27,7 @@ import org.xivo.cti.message.LoginAck;
 import org.xivo.cti.message.LoginCapasAck;
 import org.xivo.cti.message.LoginPassAck;
 import org.xivo.cti.message.UserConfigUpdate;
+import org.xivo.cti.message.UserIdsList;
 import org.xivo.cti.message.UserStatusUpdate;
 import org.xivo.cti.model.UserStatus;
 import org.xivo.cti.model.XiVOCall;
@@ -58,7 +60,7 @@ import com.proformatique.android.xivoclient.XivoNotification;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.JSONMessageFactory;
 
-public class XivoConnectionService extends Service implements CallHistoryListener {
+public class XivoConnectionService extends Service implements CallHistoryListener,UserIdsListener {
     
     private static final String TAG = "XiVO connection service";
     
@@ -140,6 +142,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         messageDispatcher.addListener(UserStatusUpdate.class, userUpdateManager);
         messageDispatcher.addListener(UserConfigUpdate.class, userUpdateManager);
         messageDispatcher.addListener(CallHistoryReply.class, this);
+        messageDispatcher.addListener(UserIdsList.class, this);
     }
 
     /**
@@ -374,11 +377,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
     private void loadList(String list) {
         if (thread == null)
             startLooping(getApplicationContext());
-        JSONObject query = JSONMessageFactory.getJsonClassFunction(list, "getlist");
-        if (query == null) {
-            Log.d(TAG, "Error while creating the getlist query");
-            return;
-        }
+        JSONObject query = messageFactory.createGetUsersList();//JSONMessageFactory.getJsonClassFunction(list, "getlist");
         int res;
         if ((res = sendLine(query.toString())) != Constants.OK) {
             Log.d(TAG, "Could not send the getlist query");
@@ -694,6 +693,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             CtiMessage ctiMessage = messageParser.parse(line);
             messageDispatcher.dispatch((CtiEvent<?>) ctiMessage);
         } catch (JSONException e1) {
+            e1.printStackTrace();
             Log.d(TAG,"unable to decode message received");
         } catch (IllegalArgumentException e2) {
             Log.d(TAG,"not decoded message received");
@@ -1443,6 +1443,28 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             this.getApplicationContext().getContentResolver().insert(HistoryProvider.CONTENT_URI, values);
             values.clear();
         }
+        Intent iLoadHistory = new Intent();
+        iLoadHistory.setAction(Constants.ACTION_LOAD_HISTORY_LIST);
+        sendBroadcast(iLoadHistory);
+    }
 
+    @Override
+    public void onUserIdsLoaded(UserIdsList userIdsList) {
+        for (Integer userId : userIdsList.getUserIds()) {
+            Log.d(TAG,"User id : " + userId);
+            JSONObject getUserMessage = messageFactory.createGetUserConfig(userId);
+            int res;
+            if ((res = sendLine(getUserMessage.toString())) != Constants.OK) {
+                Log.d(TAG, "Could not send the getlist query");
+                switch (res) {
+                case Constants.NO_NETWORK_AVAILABLE:
+                    Log.d(TAG, "No network");
+                    resetState();
+                    break;
+                }
+            }
+
+        }
+        
     }
 }

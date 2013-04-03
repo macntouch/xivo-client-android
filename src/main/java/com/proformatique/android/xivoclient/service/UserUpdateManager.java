@@ -25,7 +25,7 @@ public class UserUpdateManager implements UserUpdateListener {
     
     @Override
     public void onUserConfigUpdate(UserConfigUpdate userConfigUpdate) {
-        // TODO Auto-generated method stub
+        Log.d(TAG,"user config update : " +userConfigUpdate.getUserId());
 
     }
 
