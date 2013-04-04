@@ -6,8 +6,9 @@ import org.xivo.cti.message.LoginCapas;
 import org.xivo.cti.message.LoginId;
 import org.xivo.cti.message.LoginPass;
 import org.xivo.cti.message.request.GetConfig;
-import org.xivo.cti.message.request.GetUserConfig;
+import org.xivo.cti.message.request.GetObjectConfig;
 import org.xivo.cti.message.request.GetUsersList;
+import org.xivo.cti.model.ObjectType;
 
 public class MessageFactory {
     private static String KEY_COMMANDID = "commandid";
@@ -82,7 +83,7 @@ public class MessageFactory {
     }
 
     public JSONObject createGetUserConfig(Integer userId) {
-        GetUserConfig getUserConfig = new GetUserConfig(userId);
+        GetObjectConfig getUserConfig = new GetObjectConfig(ObjectType.USERS,userId);
         JSONObject jsonGetUserConfig = createGetConfig(getUserConfig);
         
         try {
@@ -109,5 +110,17 @@ public class MessageFactory {
     public JSONObject createGetUserStatus(Integer userId) {
         // TODO Auto-generated method stub
         return new JSONObject();
+    }
+
+    public JSONObject createGetPhoneConfig(Integer lineId) {
+        GetObjectConfig getPhoneConfig = new GetObjectConfig(ObjectType.PHONES,lineId);
+        JSONObject jsonGetUserConfig = createGetConfig(getPhoneConfig);
+        
+        try {
+            jsonGetUserConfig.accumulate("tid", getPhoneConfig.getObjectId().toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonGetUserConfig;
     }
 }

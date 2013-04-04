@@ -26,12 +26,14 @@ import org.xivo.cti.message.CtiMessage;
 import org.xivo.cti.message.LoginAck;
 import org.xivo.cti.message.LoginCapasAck;
 import org.xivo.cti.message.LoginPassAck;
+import org.xivo.cti.message.PhoneConfigUpdate;
 import org.xivo.cti.message.UserConfigUpdate;
 import org.xivo.cti.message.UserIdsList;
 import org.xivo.cti.message.UserStatusUpdate;
 import org.xivo.cti.model.UserStatus;
 import org.xivo.cti.model.XiVOCall;
 import org.xivo.cti.model.Xlet;
+import org.xivo.cti.network.XiVOLink;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -60,10 +62,10 @@ import com.proformatique.android.xivoclient.XivoNotification;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.JSONMessageFactory;
 
-public class XivoConnectionService extends Service implements CallHistoryListener,UserIdsListener {
-    
+public class XivoConnectionService extends Service implements CallHistoryListener, UserIdsListener, XiVOLink {
+
     private static final String TAG = "XiVO connection service";
-    
+
     private SharedPreferences prefs = null;
     private Socket networkConnection = null;
     private BufferedReader inputBuffer = null;
@@ -74,7 +76,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
     private XivoNotification xivoNotif;
     private IntentReceiver receiver = null;
     private DisconnectTask disconnectTask = null;
-    
+
     // Informations that is relevant to a specific connection
     private String sessionId = null;
     private String xivoId = null;
@@ -82,9 +84,9 @@ public class XivoConnectionService extends Service implements CallHistoryListene
     private String userId = null;
     private String fullname = null;
     private String mNumber = null;
-    private int[] mwi = new int[3];
+    private final int[] mwi = new int[3];
     private int capaId = 0;
-    //private long stateId = 0L;
+    // private long stateId = 0L;
     private String phoneStatusLongname = null;
     private String phoneStatusColor = Constants.DEFAULT_HINT_COLOR;
     private String lastCalledNumber = null;
@@ -96,19 +98,19 @@ public class XivoConnectionService extends Service implements CallHistoryListene
     private boolean connecting = false;
     private boolean authenticated = false;
     private boolean authenticating = false;
-    
-    private MessageParser messageParser;
-    private MessageFactory messageFactory;
-    private MessageDispatcher messageDispatcher;
-    private UserUpdateManager userUpdateManager;
+
+    private final MessageParser messageParser;
+    private final MessageFactory messageFactory;
+    private final MessageDispatcher messageDispatcher;
+    private final UserUpdateManager userUpdateManager;
+
     /**
      * Messages to return from the main loop to the handler
      */
     public enum Messages {
-        NO_MESSAGE(0), NO_CLASS(1), DISCONNECT(2), UNKNOWN(3), JSON_EXCEPTION(4),
-        USERS_LIST_COMPLETE(5), PHONES_LOADED(6), PRESENCE_UPDATE(7), HISTORY_LOADED(8),
-        FEATURES_LOADED(9);
-        
+        NO_MESSAGE(0), NO_CLASS(1), DISCONNECT(2), UNKNOWN(3), JSON_EXCEPTION(4), USERS_LIST_COMPLETE(5), PHONES_LOADED(
+                6), PRESENCE_UPDATE(7), HISTORY_LOADED(8), FEATURES_LOADED(9);
+
         private int id;
         private static final Map<Integer, Messages> lookup = new HashMap<Integer, Messages>();
         static {
@@ -116,31 +118,33 @@ public class XivoConnectionService extends Service implements CallHistoryListene
                 lookup.put(m.getId(), m);
             }
         }
-        
+
         public int getId() {
             return id;
         }
-        
+
         private Messages(int id) {
             this.id = id;
         }
-        
+
         public static Messages get(int id) {
             return lookup.get(id);
         }
     }
-    
+
     public XivoConnectionService() {
-		messageParser = new MessageParser();
-		messageFactory = new MessageFactory();
-		messageDispatcher = new MessageDispatcher();
-		userUpdateManager = new UserUpdateManager(this);
-		addDispatchers();
-	}
+        messageParser = new MessageParser();
+        messageFactory = new MessageFactory();
+        messageDispatcher = new MessageDispatcher();
+        userUpdateManager = new UserUpdateManager(this);
+        userUpdateManager.setXivoLink(this);
+        addDispatchers();
+    }
 
     private void addDispatchers() {
         messageDispatcher.addListener(UserStatusUpdate.class, userUpdateManager);
         messageDispatcher.addListener(UserConfigUpdate.class, userUpdateManager);
+        messageDispatcher.addListener(PhoneConfigUpdate.class, userUpdateManager);
         messageDispatcher.addListener(CallHistoryReply.class, this);
         messageDispatcher.addListener(UserIdsList.class, this);
     }
@@ -149,34 +153,33 @@ public class XivoConnectionService extends Service implements CallHistoryListene
      * Implementation of the methods between the service and the activities
      */
     private final IXivoConnectionService.Stub binder = new IXivoConnectionService.Stub() {
-        
+
         @Override
         public int connect() throws RemoteException {
             return XivoConnectionService.this.connect();
         }
-        
+
         @Override
         public int disconnect() throws RemoteException {
             return disconnectFromServer();
         }
-        
+
         @Override
         public boolean isConnected() throws RemoteException {
-            return (networkConnection != null && networkConnection.isConnected()
-                    && inputBuffer != null && (disconnectTask == null || disconnectTask.getStatus()
-                            != AsyncTask.Status.RUNNING));
+            return (networkConnection != null && networkConnection.isConnected() && inputBuffer != null && (disconnectTask == null || disconnectTask
+                    .getStatus() != AsyncTask.Status.RUNNING));
         }
-        
+
         @Override
         public int authenticate() throws RemoteException {
             return XivoConnectionService.this.authenticate();
         }
-        
+
         @Override
         public boolean isAuthenticated() throws RemoteException {
             return authenticated && this.isConnected();
         }
-        
+
         @Override
         public void loadData() throws RemoteException {
             getContentResolver().delete(UserProvider.CONTENT_URI, null, null);
@@ -184,42 +187,42 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             XivoConnectionService.this.refreshHistory();
             XivoConnectionService.this.loadList("users");
         }
-        
+
         @Override
         public long getReceivedBytes() throws RemoteException {
             return bytesReceived;
         }
-        
+
         @Override
         public boolean hasNewVoiceMail() throws RemoteException {
             return mwi != null ? mwi[0] == 1 : false;
         }
-        
+
         @Override
         public long getStateId() throws RemoteException {
             return userUpdateManager.getStateId();
         }
-        
+
         @Override
         public String getPhoneStatusColor() throws RemoteException {
             return phoneStatusColor;
         }
-        
+
         @Override
         public String getPhoneStatusLongname() throws RemoteException {
             return phoneStatusLongname;
         }
-        
+
         @Override
         public String getFullname() throws RemoteException {
             return fullname == null ? getString(R.string.user_identity) : fullname;
         }
-        
+
         @Override
         public int call(String number) throws RemoteException {
             return XivoConnectionService.this.call(number);
         }
-        
+
         @Override
         public boolean isOnThePhone() throws RemoteException {
             if (SettingsActivity.getUseMobile(XivoConnectionService.this)) {
@@ -228,61 +231,61 @@ public class XivoConnectionService extends Service implements CallHistoryListene
                 return thisChannel != null;
             }
         }
-        
+
         @Override
         public void setState(String stateId) throws RemoteException {
             XivoConnectionService.this.setState(stateId);
         }
-        
+
         @Override
         public void sendFeature(String feature, String value, String phone) throws RemoteException {
-             XivoConnectionService.this.sendFeature(feature, value, phone);
+            XivoConnectionService.this.sendFeature(feature, value, phone);
         }
-        
+
         @Override
         public boolean hasChannels() throws RemoteException {
             return thisChannel != null && peerChannel != null;
         }
-        
+
         @Override
         public void hangup() throws RemoteException {
             XivoConnectionService.this.hangup();
         }
-        
+
         @Override
         public void atxfer(String number) throws RemoteException {
             XivoConnectionService.this.atxfer(number);
         }
-        
+
         @Override
         public void transfer(String number) throws RemoteException {
-        	XivoConnectionService.this.transfer(number);
+            XivoConnectionService.this.transfer(number);
         }
-        
+
         @Override
         public boolean killDialer() throws RemoteException {
-            return SettingsActivity.getUseMobile(XivoConnectionService.this)
-                && lastCalledNumber != null
-                && lastCalledNumber.length() < Constants.MAX_PHONE_NUMBER_LEN;
+            return SettingsActivity.getUseMobile(XivoConnectionService.this) && lastCalledNumber != null
+                    && lastCalledNumber.length() < Constants.MAX_PHONE_NUMBER_LEN;
         }
-        
+
         @Override
         public String getAstId() throws RemoteException {
             return XivoConnectionService.this.astId;
         }
-        
+
         @Override
         public String getXivoId() throws RemoteException {
             return XivoConnectionService.this.xivoId;
         }
     };
+
     /**
      * Check the phone status returns true if it's off hook
+     *
      * @return
      */
     private boolean isMobileOffHook() {
-        switch (((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE))
-                .getCallState()) {
+        switch (((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE)).getCallState()) {
         case TelephonyManager.CALL_STATE_OFFHOOK:
         case TelephonyManager.CALL_STATE_RINGING:
             return true;
@@ -290,7 +293,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             return false;
         }
     }
-    
+
     private void transfer(String number) {
         Log.d(TAG, "Blind transfer to " + number);
         if (this.peerChannel != null) {
@@ -300,7 +303,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             Log.d(TAG, "Cannot transfer from a null channel");
         }
     }
-    
+
     private void atxfer(String number) {
         if (this.thisChannel != null) {
             String src = "chan:" + astId + "/" + xivoId + ":" + this.thisChannel;
@@ -309,16 +312,16 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             Log.d(TAG, "Cannot atxfer from a null. this = " + thisChannel);
         }
     }
-    
+
     /**
-     * Hang-up the current call if AndroidTools.hangup did not work
-     * If we have a Local/ channel we hang-up our peer's channel
+     * Hang-up the current call if AndroidTools.hangup did not work If we have a
+     * Local/ channel we hang-up our peer's channel
      */
     private void hangup() {
         String channel = null;
         if (thisChannel != null) {
             channel = "chan:" + astId + "/" + xivoId + ":" + thisChannel;
-        } else if (peerChannel != null){
+        } else if (peerChannel != null) {
             channel = "chan:" + astId + "/" + xivoId + ":" + peerChannel;
         } else if (oldChannel != null) {
             channel = "chan:" + astId + "/" + xivoId + ":" + oldChannel;
@@ -329,18 +332,18 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         sendLine(JSONMessageFactory.createJsonHangupObject(this, channel).toString());
         resetChannels();
     }
-    
+
     /**
      * Change a feature value
+     *
      * @param feature
      * @param value
      * @param phone
      */
     private void sendFeature(String feature, String value, String phone) {
-        sendLine(JSONMessageFactory.createJsonFeaturePut(
-                astId, xivoId, feature, value, phone).toString());
+        sendLine(JSONMessageFactory.createJsonFeaturePut(astId, xivoId, feature, value, phone).toString());
     }
-    
+
     /**
      * Sends an history reques to the CTI server
      */
@@ -350,47 +353,39 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         sendLine(JSONMessageFactory.getJsonHistoRefresh(astId, xivoId, "1", "10").toString());
         sendLine(JSONMessageFactory.getJsonHistoRefresh(astId, xivoId, "2", "10").toString());
     }
-    
+
     /**
      * Set a new status to the user
      */
     private void setState(String stateId) {
         sendLine(JSONMessageFactory.getJsonState(stateId).toString());
     }
-    
+
     /**
      * Initiate a call
+     *
      * @param number
      * @return OK or error code
      */
     private int call(String number) {
         Log.d(TAG, "Calling " + number);
         lastCalledNumber = number;
-        JSONObject jCall = JSONMessageFactory.getJsonCallingObject(
-                "originate", SettingsActivity.getMobileNumber(getApplicationContext()), number);
+        JSONObject jCall = JSONMessageFactory.getJsonCallingObject("originate",
+                SettingsActivity.getMobileNumber(getApplicationContext()), number);
         sendLine(jCall.toString());
         return Constants.OK;
     }
-    
+
     /**
      * Asks the CTI server for a list
      */
     private void loadList(String list) {
         if (thread == null)
             startLooping(getApplicationContext());
-        JSONObject query = messageFactory.createGetUsersList();//JSONMessageFactory.getJsonClassFunction(list, "getlist");
-        int res;
-        if ((res = sendLine(query.toString())) != Constants.OK) {
-            Log.d(TAG, "Could not send the getlist query");
-            switch (res) {
-            case Constants.NO_NETWORK_AVAILABLE:
-                Log.d(TAG, "No network");
-                resetState();
-                break;
-            }
-        }
+        JSONObject query = messageFactory.createGetUsersList();
+        sendMessage(query);
     }
-    
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -403,7 +398,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         phoneStatusLongname = getString(R.string.default_hint_longname);
     }
-    
+
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
@@ -412,7 +407,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         unregisterReceiver(receiver);
         super.onDestroy();
     }
-    
+
     private void stopThread() {
         cancel = true;
         if (thread != null) {
@@ -421,33 +416,39 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             dead.interrupt();
         }
     }
-    
+
     private void autoLogin() {
         Log.d(TAG, "Trying to auto-logon");
-        if (!connected) connect();
-        if (connected && !authenticated) authenticate();
-        if (connected && authenticated) refreshLists();
+        if (!connected)
+            connect();
+        if (connected && !authenticated)
+            authenticate();
+        if (connected && authenticated)
+            refreshLists();
     }
-    
+
     private void refreshLists() {
         XivoConnectionService.this.refreshFeatures();
         XivoConnectionService.this.refreshHistory();
         XivoConnectionService.this.loadList("users");
     }
-    
+
     private int authenticate() {
         authenticated = false;
-        if (authenticating) return Constants.ALREADY_AUTHENTICATING;
+        if (authenticating)
+            return Constants.ALREADY_AUTHENTICATING;
         authenticating = true;
         int res = loginCTI();
         authenticating = false;
-        if (res == Constants.AUTHENTICATION_OK) authenticated = true;
+        if (res == Constants.AUTHENTICATION_OK)
+            authenticated = true;
         return res;
     }
-    
+
     private int connect() {
         connected = false;
-        if (connecting == true) return Constants.ALREADY_CONNECTING;
+        if (connecting == true)
+            return Constants.ALREADY_CONNECTING;
         while (disconnectTask != null && disconnectTask.getStatus() == AsyncTask.Status.RUNNING) {
             try {
                 Thread.sleep(200);
@@ -471,7 +472,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         }
         return res;
     }
-    
+
     /**
      * Clean up the network connection and input/output streams
      */
@@ -504,30 +505,31 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             }
         }
     }
-    
+
     @Override
     public boolean onUnbind(Intent i) {
         Log.d(TAG, "Unbind called");
         return super.onUnbind(i);
     }
-    
+
     @Override
     public IBinder onBind(Intent intent) {
         return binder;
     }
-    
+
     /**
      * Starts a network connection with the server
+     *
      * @return connection status
      */
     private int connectToServer() {
-        if (wrongHostPort) return Constants.BAD_HOST;
+        if (wrongHostPort)
+            return Constants.BAD_HOST;
         resetChannels();
         authenticated = false;
         int port = Constants.XIVO_DEFAULT_PORT;
         try {
-            port = Integer.parseInt(prefs.getString("server_port",
-                    Integer.toString(Constants.XIVO_DEFAULT_PORT)));
+            port = Integer.parseInt(prefs.getString("server_port", Integer.toString(Constants.XIVO_DEFAULT_PORT)));
         } catch (NumberFormatException e) {
             Log.d(TAG, "Port number cannot be parsed to int, using default port");
         }
@@ -553,29 +555,29 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         bytesReceived = 0L;
         xivoNotif = new XivoNotification(getApplicationContext());
         xivoNotif.createNotification();
-        Log.d(TAG,"connected .....");
+        Log.d(TAG, "connected .....");
         try {
-            inputBuffer = new BufferedReader(
-                    new InputStreamReader(networkConnection.getInputStream()));
-            
+            inputBuffer = new BufferedReader(new InputStreamReader(networkConnection.getInputStream()));
+
         } catch (IOException e) {
             return Constants.NO_NETWORK_AVAILABLE;
         }
         return Constants.CONNECTION_OK;
     }
-    
+
     private int disconnectFromServer() {
         Log.d(TAG, "Disconnecting");
-        if (xivoNotif != null) xivoNotif.removeNotif();
+        if (xivoNotif != null)
+            xivoNotif.removeNotif();
         if (!(disconnectTask != null && disconnectTask.getStatus() == AsyncTask.Status.RUNNING)) {
             disconnectTask = new DisconnectTask();
             disconnectTask.execute();
         }
         return Constants.OK;
     }
-    
+
     private class DisconnectTask extends AsyncTask<Void, Void, Integer> {
-        
+
         @Override
         protected Integer doInBackground(Void... params) {
             stopThread();
@@ -584,51 +586,58 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             return 0;
         }
     }
-    
+
     private void refreshFeatures() {
         if (thread == null)
             startLooping(getApplicationContext());
         sendLine(JSONMessageFactory.getJsonFeaturesRefresh(astId, xivoId).toString());
     }
-    
+
     /**
      * Perform authentication on the XiVO CTI server
+     *
      * @return error or success code
      */
     private int loginCTI() {
         int res;
-        
+
         /**
-         * Creating first Json login array
-         * First step : check that login is allowed on server
+         * Creating first Json login array First step : check that login is
+         * allowed on server
          */
-        JSONObject jLogin = messageFactory.createLoginId(SettingsActivity.getLogin(this),"android-" + android.os.Build.VERSION.RELEASE);
+        JSONObject jLogin = messageFactory.createLoginId(SettingsActivity.getLogin(this), "android-"
+                + android.os.Build.VERSION.RELEASE);
         res = sendLoginCTI(jLogin);
-        if (res != Constants.OK) return res;
-        
+        if (res != Constants.OK)
+            return res;
+
         /**
-         Second step : check that password is allowed on server
+         * Second step : check that password is allowed on server
          */
         res = sendPasswordCTI();
-        if (res != Constants.OK) return res;
-        
+        if (res != Constants.OK)
+            return res;
+
         /**
          * Third step : send configuration options on server
          */
         return sendCapasCTI();
     }
-    
+
     /**
-     * Starts the main loop to listen to incoming JSON messages from the CTI server
+     * Starts the main loop to listen to incoming JSON messages from the CTI
+     * server
      */
     private void startLooping(Context context) {
         cancel = false;
         handler = new Handler() {
             /**
-             * Receives messages from the json loop and broadcast intents accordingly.
+             * Receives messages from the json loop and broadcast intents
+             * accordingly.
              */
+            @Override
             public void handleMessage(Message msg) {
-                switch(Messages.get(msg.what)) {
+                switch (Messages.get(msg.what)) {
                 case USERS_LIST_COMPLETE:
                     Log.d(TAG, "Users list loaded");
                     Intent iLoadUser = new Intent();
@@ -669,24 +678,27 @@ public class XivoConnectionService extends Service implements CallHistoryListene
                 }
             }
         };
-        
+
         thread = new Thread() {
+            @Override
             public void run() {
                 Looper.prepare();
                 JSONObject newLine = null;
                 Log.d(TAG, "Starting the main loop");
                 while (!(cancel)) {
-                    while ((newLine = readJsonObjectCTI()) == null && !(cancel));
+                    while ((newLine = readJsonObjectCTI()) == null && !(cancel))
+                        ;
                     handler.sendEmptyMessage(parseIncomingJson(newLine).getId());
                 }
             };
         };
         thread.start();
     }
-    
+
     /**
-     * Parses an incoming json message from the cti server and dispatches it to other methods
-     * for better message handling.
+     * Parses an incoming json message from the cti server and dispatches it to
+     * other methods for better message handling.
+     *
      * @return
      */
     protected Messages parseIncomingJson(JSONObject line) {
@@ -695,9 +707,9 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             messageDispatcher.dispatch((CtiEvent<?>) ctiMessage);
         } catch (JSONException e1) {
             e1.printStackTrace();
-            Log.d(TAG,"unable to decode message received");
+            Log.d(TAG, "unable to decode message received");
         } catch (IllegalArgumentException e2) {
-            Log.d(TAG,"not decoded message received");
+            Log.d(TAG, "not decoded message received");
         }
         if (cancel || line == null)
             return Messages.NO_MESSAGE;
@@ -727,27 +739,27 @@ public class XivoConnectionService extends Service implements CallHistoryListene
                 return Messages.UNKNOWN;
             }
         } catch (JSONException e) {
-            Log.d(TAG, "Unhandled JSONException in the main loop.\n" +
-                    "Important exceptions are checked before this point");
+            Log.d(TAG, "Unhandled JSONException in the main loop.\n"
+                    + "Important exceptions are checked before this point");
             e.printStackTrace();
             return Messages.NO_MESSAGE;
         }
     }
-    
+
     private Messages parseFeatures(JSONObject line) throws JSONException {
         Log.d(TAG, "Parsing features:\n" + line.toString());
-        if (!line.has("payload")) return Messages.NO_MESSAGE;
-        final String[] features = {"enablednd", "callrecord", "incallfilter", "enablevoicemail",
-            "busy", "rna", "unc"};
+        if (!line.has("payload"))
+            return Messages.NO_MESSAGE;
+        final String[] features = { "enablednd", "callrecord", "incallfilter", "enablevoicemail", "busy", "rna", "unc" };
         JSONObject payload = line.getJSONObject("payload");
         if (line.has("function") && line.getString("function").equals("put")) {
-            for (@SuppressWarnings("unchecked") Iterator<String> keyIter = payload.keys();
-                    keyIter.hasNext(); ) {
+            for (@SuppressWarnings("unchecked")
+            Iterator<String> keyIter = payload.keys(); keyIter.hasNext();) {
                 String feature = keyIter.next();
                 JSONObject jFeature = payload.getJSONObject(feature);
                 ContentValues values = new ContentValues();
-                values.put(CapaservicesProvider.ENABLED,
-                        jFeature.has("enabled") && jFeature.getBoolean("enabled") == true ? 1 : 0);
+                values.put(CapaservicesProvider.ENABLED, jFeature.has("enabled")
+                        && jFeature.getBoolean("enabled") == true ? 1 : 0);
                 if (jFeature.has("number")) {
                     values.put(CapaservicesProvider.NUMBER, jFeature.getString("number"));
                 }
@@ -759,29 +771,30 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             }
         } else {
             getContentResolver().delete(CapaservicesProvider.CONTENT_URI, null, null);
-            for (String feature: features) {
+            for (String feature : features) {
                 if (payload.has(feature)) {
                     JSONObject jFeature = payload.getJSONObject(feature);
                     ContentValues values = new ContentValues();
                     values.put(CapaservicesProvider.SERVICE, feature);
-                    values.put(CapaservicesProvider.ENABLED, (jFeature.has("enabled") && 
-                            jFeature.getBoolean("enabled")) == true ? 1 : 0);
+                    values.put(CapaservicesProvider.ENABLED,
+                            (jFeature.has("enabled") && jFeature.getBoolean("enabled")) == true ? 1 : 0);
                     if (jFeature.has("number")) {
                         values.put(CapaservicesProvider.NUMBER, jFeature.getString("number"));
                     }
                     getContentResolver().insert(CapaservicesProvider.CONTENT_URI, values);
-                values.clear();
+                    values.clear();
                 }
             }
         }
         return Messages.FEATURES_LOADED;
     }
-    
+
     /**
      * Parses incoming messages from the CTI server with class phones
+     *
      * @param line
      * @return msg to the handler
-     * @throws JSONException 
+     * @throws JSONException
      */
     private Messages parsePhones(JSONObject line) throws JSONException {
         if (line.has("function")) {
@@ -794,32 +807,32 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         }
         return Messages.NO_MESSAGE;
     }
-    
+
     /**
      * Parses phone updates
+     *
      * @param line
      * @return Message to the handler
-     * @throws JSONException 
+     * @throws JSONException
      */
     private Messages parsePhoneUpdate(JSONObject line) throws JSONException {
         /*
          * Check if the update concerns a call I'm doing
          */
         if (lastCalledNumber != null) {
-            String number = SettingsActivity.getUseMobile(this) ?
-                    SettingsActivity.getMobileNumber(this) : this.mNumber;
+            String number = SettingsActivity.getUseMobile(this) ? SettingsActivity.getMobileNumber(this) : this.mNumber;
             String callerIdNum = JsonParserHelper.getCallerIdNum(line);
             if (number != null && number.equals(callerIdNum)) {
-                if (SettingsActivity.getUseMobile(this)) parseMyMobilePhoneUpdate(line);
+                if (SettingsActivity.getUseMobile(this))
+                    parseMyMobilePhoneUpdate(line);
                 updatePeerStatus(line);
             }
         }
-        
+
         if (JSONMessageFactory.checkIdMatch(line, astId, xivoId)) {
             parseMyPhoneUpdate(line);
             try {
-                sendMyNewHintstatus(line.getJSONObject("status")
-                        .getJSONObject("hintstatus"));
+                sendMyNewHintstatus(line.getJSONObject("status").getJSONObject("hintstatus"));
             } catch (JSONException e) {
                 // No update to send if there's no status or hintstatus
             }
@@ -828,19 +841,19 @@ public class XivoConnectionService extends Service implements CallHistoryListene
          * For all updates
          */
         try {
-            long id = UserProvider.getUserId(this, line.getString("astid"),
-                    line.getJSONObject("status").getString("id"));
+            long id = UserProvider.getUserId(this, line.getString("astid"), line.getJSONObject("status")
+                    .getString("id"));
             if (id > 0)
-                return updateUserHintStatus(id,
-                        line.getJSONObject("status").getJSONObject("hintstatus"));
+                return updateUserHintStatus(id, line.getJSONObject("status").getJSONObject("hintstatus"));
         } catch (JSONException e) {
             Log.d(TAG, "Could not find and astid and an id for this update");
         }
         return Messages.NO_MESSAGE;
     }
-    
+
     /**
      * Sends my new phone status
+     *
      * @param hintstatus
      * @throws JSONException
      */
@@ -853,21 +866,21 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         i.putExtra("longname", phoneStatusLongname);
         sendBroadcast(i);
     }
-    
+
     /**
      * Updates a user hintstatus and sends an update intent
+     *
      * @param id
      * @param hintstatus
      * @return
-     * @throws JSONException 
+     * @throws JSONException
      */
     private Messages updateUserHintStatus(long id, JSONObject hintstatus) throws JSONException {
         ContentValues values = new ContentValues();
         values.put(UserProvider.HINTSTATUS_CODE, hintstatus.getString("code"));
         values.put(UserProvider.HINTSTATUS_COLOR, hintstatus.getString("color"));
         values.put(UserProvider.HINTSTATUS_LONGNAME, hintstatus.getString("longname"));
-        getContentResolver().update(
-                Uri.parse(UserProvider.CONTENT_URI + "/" + id), values, null, null);
+        getContentResolver().update(Uri.parse(UserProvider.CONTENT_URI + "/" + id), values, null, null);
         Intent iUpdateIntent = new Intent();
         iUpdateIntent.setAction(Constants.ACTION_LOAD_USER_LIST);
         iUpdateIntent.putExtra("id", id);
@@ -875,15 +888,17 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         Log.d(TAG, "Update intent sent");
         return Messages.NO_MESSAGE;
     }
-    
+
     /**
      * Parses phones update for a call from the user (not using his mobile)
+     *
      * @param line
-     * @throws JSONException 
+     * @throws JSONException
      */
     private void parseMyPhoneUpdate(JSONObject line) throws JSONException {
         Log.d(TAG, "Parsing my phone update");
-        if (!line.has("status")) return;
+        if (!line.has("status"))
+            return;
         JSONObject status = line.getJSONObject("status");
         /*
          * Sends the new call progress status
@@ -903,8 +918,8 @@ public class XivoConnectionService extends Service implements CallHistoryListene
          */
         if (status.has("comms") && !SettingsActivity.getUseMobile(this)) {
             JSONObject comms = status.getJSONObject("comms");
-            for (@SuppressWarnings("unchecked") Iterator<String> iterKey = comms.keys();
-                    iterKey.hasNext(); ) {
+            for (@SuppressWarnings("unchecked")
+            Iterator<String> iterKey = comms.keys(); iterKey.hasNext();) {
                 String key = iterKey.next();
                 JSONObject comm = comms.getJSONObject(key);
                 if (comm.has("thischannel"))
@@ -914,17 +929,18 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             }
         }
     }
-    
+
     /**
      * Updates channels from the information contained in a given comm.
-     * @param comm -- JSON comm
-     * @param myChannel 
-     *      True if the update is coming for my userid
-     *      False if it's the peer's update
-     * @throws JSONException 
+     *
+     * @param comm
+     *            -- JSON comm
+     * @param myChannel
+     *            True if the update is coming for my userid False if it's the
+     *            peer's update
+     * @throws JSONException
      */
-    private void updateChannels(final JSONObject comm, final boolean myChannel)
-            throws JSONException {
+    private void updateChannels(final JSONObject comm, final boolean myChannel) throws JSONException {
         if (comm.has("thischannel")) {
             if (myChannel) {
                 if (thisChannel != null && !thisChannel.startsWith("Local/")) {
@@ -935,7 +951,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
                 peerChannel = comm.getString("thischannel");
             }
         }
-        
+
         if (comm.has("peerchannel")) {
             if (myChannel) {
                 peerChannel = comm.getString("peerchannel");
@@ -948,17 +964,19 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         }
         Log.d(TAG, "Updating channels: this = " + thisChannel + " peer = " + peerChannel);
     }
-    
+
     /**
-     * Parses our peer's phone update and send an intent containing his new hintstatus
+     * Parses our peer's phone update and send an intent containing his new
+     * hintstatus
+     *
      * @param line
-     * @throws JSONException 
+     * @throws JSONException
      */
     private void updatePeerStatus(JSONObject line) throws JSONException {
         if (line.has("status") && line.getJSONObject("status").has("comms")) {
             JSONObject comms = line.getJSONObject("status").getJSONObject("comms");
-            for (@SuppressWarnings("unchecked")Iterator<String> iter = comms.keys();
-                    iter.hasNext(); ) {
+            for (@SuppressWarnings("unchecked")
+            Iterator<String> iter = comms.keys(); iter.hasNext();) {
                 String key = iter.next();
                 if (comms.getJSONObject(key).has("status")) {
                     String status = comms.getJSONObject(key).getString("status");
@@ -971,25 +989,26 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             }
         }
     }
-    
+
     /**
      * Parses phones for a call from the user's mobile
+     *
      * @param line
-     * @throws JSONException 
+     * @throws JSONException
      */
     private void parseMyMobilePhoneUpdate(JSONObject line) throws JSONException {
         List<JSONObject> comms = JsonParserHelper.getMyComms(this, line);
-        for (JSONObject comm: comms) {
+        for (JSONObject comm : comms) {
             String status = JsonParserHelper.getChannelStatus(comm);
             if (status.equals("ringing") || status.equals("linked-called")) {
                 updateChannels(comm, false);
             }
         }
-        for (JSONObject comm: comms) {
+        for (JSONObject comm : comms) {
             if (JsonParserHelper.channelsMatch(comm, peerChannel, thisChannel)) {
                 try {
-                    if (line.getJSONObject("status").getJSONObject("hintstatus")
-                            .getString("code").equals(Constants.CALLING_STATUS_CODE)) {
+                    if (line.getJSONObject("status").getJSONObject("hintstatus").getString("code")
+                            .equals(Constants.CALLING_STATUS_CODE)) {
                         Intent iOnGoingCall = new Intent();
                         iOnGoingCall.setAction(Constants.ACTION_ONGOING_CALL);
                         sendBroadcast(iOnGoingCall);
@@ -1007,12 +1026,13 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             }
         }
     }
-    
+
     /**
      * Parses the phone list received at the beginning of a session.
+     *
      * @param line
      * @return Message to the handler
-     * @throws JSONException 
+     * @throws JSONException
      */
     private Messages parsePhoneList(JSONObject line) throws JSONException {
         Log.d(TAG, "Parsing phone list");
@@ -1020,16 +1040,16 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             return Messages.NO_MESSAGE;
         JSONObject payloads = line.getJSONObject("payload");
         JSONArray jAllPhones = new JSONArray();
-        for (@SuppressWarnings("unchecked") Iterator<String> keyIter = payloads.keys();
-                keyIter.hasNext(); ) {
+        for (@SuppressWarnings("unchecked")
+        Iterator<String> keyIter = payloads.keys(); keyIter.hasNext();) {
             jAllPhones.put(payloads.getJSONObject(keyIter.next()));
         }
-        
+
         // logAllPhones(jAllPhones);
-        
+
         /**
-         * For each users in the userslist, find the corresponding phone and update the user's
-         * status
+         * For each users in the userslist, find the corresponding phone and
+         * update the user's status
          */
         Cursor user = getContentResolver().query(UserProvider.CONTENT_URI, null, null, null, null);
         user.moveToFirst();
@@ -1046,7 +1066,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         user.close();
         return Messages.PHONES_LOADED;
     }
-    
+
     @SuppressWarnings("unused")
     private void logAllPhones(JSONArray list) {
         try {
@@ -1064,9 +1084,9 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             Log.d(TAG, "JSON exception while logging phones");
         }
     }
-    
+
     private void setPhoneForUser(Cursor user, JSONObject jPhone) {
-        
+
         long id = user.getLong(user.getColumnIndex(UserProvider._ID));
         JSONObject jPhoneStatus = null;
         final ContentValues values = new ContentValues();
@@ -1076,13 +1096,12 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             values.put(UserProvider.HINTSTATUS_COLOR, jPhoneStatus.getString("color"));
             values.put(UserProvider.HINTSTATUS_CODE, jPhoneStatus.getString("code"));
             values.put(UserProvider.HINTSTATUS_LONGNAME, jPhoneStatus.getString("longname"));
-            getContentResolver().update(
-                    Uri.parse(UserProvider.CONTENT_URI + "/" + id), values, null, null);
+            getContentResolver().update(Uri.parse(UserProvider.CONTENT_URI + "/" + id), values, null, null);
         } catch (JSONException e) {
             Log.d(TAG, "JSONException, could not update phone status");
         }
         values.clear();
-        
+
         if (user.getString(user.getColumnIndex(UserProvider.XIVO_USERID)).equals(xivoId)) {
             try {
                 mNumber = jPhone.getString("number");
@@ -1098,12 +1117,13 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             }
         }
     }
-    
+
     /**
      * Parses incoming cti messages of class users
+     *
      * @param json
      * @return result parsed by the main loop handler
-     * @throws JSONException 
+     * @throws JSONException
      */
     private Messages parseUsers(JSONObject line) throws JSONException {
         Log.d(TAG, "Parsing users");
@@ -1115,7 +1135,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             for (int i = 0; i < len; i++) {
                 JSONObject jUser = payload.getJSONObject(i);
                 JSONObject jUserState = jUser.getJSONObject("statedetails");
-                
+
                 /**
                  * Feed the useful fields to store in the list
                  */
@@ -1132,8 +1152,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
                 user.put(UserProvider.TECHLIST, jUser.getJSONArray("techlist").getString(0));
                 user.put(UserProvider.HINTSTATUS_COLOR, Constants.DEFAULT_HINT_COLOR);
                 user.put(UserProvider.HINTSTATUS_CODE, Constants.DEFAULT_HINT_CODE);
-                user.put(UserProvider.HINTSTATUS_LONGNAME, getString(
-                        R.string.default_hint_longname));
+                user.put(UserProvider.HINTSTATUS_LONGNAME, getString(R.string.default_hint_longname));
                 if (userId.equals(this.userId)) {
                     fullname = jUser.getString("fullname");
                     Intent iUpdateIdentity = new Intent();
@@ -1155,21 +1174,20 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         }
         return Messages.NO_MESSAGE;
     }
-    
+
     private Messages parsePresence(JSONObject line) {
         Log.d(TAG, "Parsing presences: " + line.toString());
         try {
             String id = line.getString("xivo_userid");
             String astid = line.getString("astid");
-            String stateid = line.getJSONObject("capapresence").getJSONObject("state")
-                    .getString("stateid");
+            String stateid = line.getJSONObject("capapresence").getJSONObject("state").getString("stateid");
             // TODO this.stateId = CapapresenceProvider.getIndex(this, stateid);
             long index = UserProvider.getIndex(this, astid, id);
             UserProvider.updatePresence(this, index, stateid);
             if (id.equals(xivoId) && astid.equals(astId)) {
                 Intent iUpdate = new Intent();
                 iUpdate.setAction(Constants.ACTION_MY_STATUS_CHANGE);
-                //TODO iUpdate.putExtra("id", this.stateId);
+                // TODO iUpdate.putExtra("id", this.stateId);
                 sendBroadcast(iUpdate);
             }
         } catch (JSONException e) {
@@ -1178,25 +1196,27 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         }
         return Messages.PRESENCE_UPDATE;
     }
-    
+
     /**
      * Send capacity options to the CTI server
+     *
      * @return error or success code
      */
     private int sendCapasCTI() {
         JSONObject jsonCapas = messageFactory.createLoginCapas(capaId);
-        
+
         int res = sendLine(jsonCapas.toString());
-        if (res != Constants.OK) return res;
-        
+        if (res != Constants.OK)
+            return res;
+
         jsonCapas = readJsonObjectCTI();
         LoginCapasAck loginCapasAck = null;
         try {
-			loginCapasAck = (LoginCapasAck) messageParser.parse(jsonCapas);
-		} catch (JSONException e1) {
-			Log.d(TAG,"Unable to parser login capas ack : "+e1.getMessage());
-			return Constants.VERSION_MISMATCH;
-		}
+            loginCapasAck = (LoginCapasAck) messageParser.parse(jsonCapas);
+        } catch (JSONException e1) {
+            Log.d(TAG, "Unable to parser login capas ack : " + e1.getMessage());
+            return Constants.VERSION_MISMATCH;
+        }
         resetState();
         userId = loginCapasAck.userId;
         configureXlets(loginCapasAck.xlets);
@@ -1223,16 +1243,16 @@ public class XivoConnectionService extends Service implements CallHistoryListene
     }
 
     private void configureUserStatuses(List<UserStatus> userStatuses) {
-    	Log.d(TAG, "user statuses configuration");
+        Log.d(TAG, "user statuses configuration");
         getContentResolver().delete(CapapresenceProvider.CONTENT_URI, null, null);
         ContentValues presence = new ContentValues();
         for (UserStatus userStatus : userStatuses) {
-        	presence.put(CapapresenceProvider.NAME, userStatus.getName());
-        	presence.put(CapapresenceProvider.COLOR, userStatus.getColor());
-        	presence.put(CapapresenceProvider.LONGNAME, userStatus.getLongName());
-        	presence.put(CapapresenceProvider.ALLOWED, 1);
-        	getContentResolver().insert(CapapresenceProvider.CONTENT_URI, presence);
-        	presence.clear();
+            presence.put(CapapresenceProvider.NAME, userStatus.getName());
+            presence.put(CapapresenceProvider.COLOR, userStatus.getColor());
+            presence.put(CapapresenceProvider.LONGNAME, userStatus.getLongName());
+            presence.put(CapapresenceProvider.ALLOWED, 1);
+            getContentResolver().insert(CapapresenceProvider.CONTENT_URI, presence);
+            presence.clear();
         }
     }
 
@@ -1242,13 +1262,13 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         getContentResolver().delete(CapaxletsProvider.CONTENT_URI, null, null);
         ContentValues values = new ContentValues();
         for (Xlet xlet : xlets) {
-        	values.put(CapaxletsProvider.XLET, xlet.getName());
+            values.put(CapaxletsProvider.XLET, xlet.getName());
             getContentResolver().insert(CapaxletsProvider.CONTENT_URI, values);
         }
         Intent i = new Intent();
         i.setAction(Constants.ACTION_LOAD_XLETS);
     }
-    
+
     /**
      * Reset information about a session
      */
@@ -1257,13 +1277,13 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         sessionId = null;
         astId = null;
     }
-    
+
     private int sendPasswordCTI() {
         JSONObject jsonPasswordAuthent = messageFactory.createLoginPass(prefs.getString("password", ""), sessionId);
         int res = sendLine(jsonPasswordAuthent.toString());
-        if (res != Constants.OK) return res;
-        
-        
+        if (res != Constants.OK)
+            return res;
+
         JSONObject ctiAnswer = readJsonObjectCTI();
         try {
             LoginPassAck loginPassAck = (LoginPassAck) messageParser.parse(ctiAnswer);
@@ -1274,18 +1294,19 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         }
         return Constants.OK;
     }
-    
-    
+
     /**
      * Sends login information to the cti server
+     *
      * @param jLogin
      * @return error or success code
      */
     private int sendLoginCTI(JSONObject jLogin) {
         JSONObject nextJsonObject;
         int res;
-        if ((res = sendLine(jLogin.toString())) != Constants.OK) return res;
-        
+        if ((res = sendLine(jLogin.toString())) != Constants.OK)
+            return res;
+
         if ((nextJsonObject = readJsonObjectCTI()) == null) {
             return Constants.JSON_POPULATE_ERROR;
         }
@@ -1296,33 +1317,33 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             Log.d(TAG, "Unexpected answer from cti server");
             e1.printStackTrace();
             return Constants.JSON_POPULATE_ERROR;
-        }
-        catch(IllegalArgumentException e2) {
+        } catch (IllegalArgumentException e2) {
             disconnectFromServer();
-            return parseLoginError(nextJsonObject);            
+            return parseLoginError(nextJsonObject);
         }
         return Constants.OK;
     }
-    
+
     /**
      * Retrieves the error when the CTI server doesnt return a LOGIN_OK
+     *
      * @return error code
      */
     private int parseLoginError(JSONObject jsonObject) {
         try {
             if (jsonObject != null && jsonObject.has("errorstring")) {
                 String error = jsonObject.getString("errorstring");
-                if (error.equals(Constants.XIVO_LOGIN_PASSWORD)
-                        || error.equals(Constants.XIVO_LOGIN_UNKNOWN_USER)) {
+                if (error.equals(Constants.XIVO_LOGIN_PASSWORD) || error.equals(Constants.XIVO_LOGIN_UNKNOWN_USER)) {
                     return Constants.LOGIN_PASSWORD_ERROR;
                 } else if (error.contains(Constants.XIVO_CTI_VERSION_NOT_SUPPORTED)) {
                     return Constants.CTI_SERVER_NOT_SUPPORTED;
                 } else if (error.equals(Constants.XIVO_VERSION_NOT_COMPATIBLE)) {
                     return Constants.VERSION_MISMATCH;
                 }
-            } else if (jsonObject != null && jsonObject.has("class")
-                    && (jsonObject.getString("class").equals("disconn") ||
-                            jsonObject.getString("class").equals("disconnect"))) {
+            } else if (jsonObject != null
+                    && jsonObject.has("class")
+                    && (jsonObject.getString("class").equals("disconn") || jsonObject.getString("class").equals(
+                            "disconnect"))) {
                 return Constants.FORCED_DISCONNECT;
             }
         } catch (JSONException e) {
@@ -1330,23 +1351,23 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         }
         return Constants.LOGIN_KO;
     }
-    
+
     /**
      * Perform a read action on the stream from CTI server
+     *
      * @return JSON object retrieved
      */
     public JSONObject readJsonObjectCTI() {
         JSONObject ReadLineObject;
         String responseLine;
-        
+
         try {
             while ((responseLine = getLine()) != null) {
                 try {
                     ReadLineObject = new JSONObject(responseLine);
                     Log.d(TAG, "Server: " + responseLine);
                     return ReadLineObject;
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     Log.e(TAG, "readJsonObjectCTI error");
                     e.printStackTrace();
                 }
@@ -1359,7 +1380,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         }
         return null;
     }
-    
+
     /**
      * Handles a connection lost
      */
@@ -1367,22 +1388,24 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         Log.d(TAG, "lostConnectionEvent");
         disconnectFromServer();
     }
-    
+
     /**
-     * Reads the next incoming line and increment the byte counter and returns the line
-     * @throws IOException 
+     * Reads the next incoming line and increment the byte counter and returns
+     * the line
+     *
+     * @throws IOException
      */
     private String getLine() throws IOException {
         if (inputBuffer == null)
             return null;
-        
+
         String line = inputBuffer.readLine();
         if (line != null) {
             bytesReceived += line.getBytes().length;
         }
         return line;
     }
-    
+
     /**
      * Sends a line to the networkConnection
      */
@@ -1400,11 +1423,11 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         }
         if (output == null)
             return Constants.NO_NETWORK_AVAILABLE;
-        Log.d(TAG, "Client: " + line);
+        Log.d(TAG, "Client >>>> " + line);
         output.println(line);
         return Constants.OK;
     }
-    
+
     /**
      * Clears all channels
      */
@@ -1417,9 +1440,22 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         peerChannel = null;
         lastCalledNumber = null;
     }
-    
+
+    private void sendMessage(JSONObject message) {
+        int res;
+        if ((res = sendLine(message.toString())) != Constants.OK) {
+            Log.d(TAG, "Could not send message");
+            switch (res) {
+            case Constants.NO_NETWORK_AVAILABLE:
+                Log.d(TAG, "No network");
+                resetState();
+                break;
+            }
+        }
+    }
+
     private class IntentReceiver extends BroadcastReceiver {
-        
+
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
@@ -1429,7 +1465,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
                 wrongHostPort = false;
             }
         }
-        
+
     }
 
     @Override
@@ -1452,20 +1488,15 @@ public class XivoConnectionService extends Service implements CallHistoryListene
     @Override
     public void onUserIdsLoaded(UserIdsList userIdsList) {
         for (Integer userId : userIdsList.getUserIds()) {
-            Log.d(TAG,"User id : " + userId);
+            Log.d(TAG, "User id : " + userId);
             JSONObject getUserMessage = messageFactory.createGetUserConfig(userId);
-            int res;
-            if ((res = sendLine(getUserMessage.toString())) != Constants.OK) {
-                Log.d(TAG, "Could not send the getlist query");
-                switch (res) {
-                case Constants.NO_NETWORK_AVAILABLE:
-                    Log.d(TAG, "No network");
-                    resetState();
-                    break;
-                }
-            }
-
+            sendMessage(getUserMessage);
         }
-        
+    }
+
+    @Override
+    public void sendGetPhoneConfig(Integer lineId) {
+        JSONObject getPhoneConfigMessage = messageFactory.createGetPhoneConfig(lineId);
+        sendMessage(getPhoneConfigMessage);
     }
 }

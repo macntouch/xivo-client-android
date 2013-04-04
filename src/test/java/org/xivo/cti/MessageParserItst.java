@@ -19,6 +19,7 @@ import org.xivo.cti.message.CtiMessage;
 import org.xivo.cti.message.LoginAck;
 import org.xivo.cti.message.LoginCapasAck;
 import org.xivo.cti.message.LoginPassAck;
+import org.xivo.cti.message.PhoneConfigUpdate;
 import org.xivo.cti.message.UserConfigUpdate;
 import org.xivo.cti.message.UserStatusUpdate;
 import org.xivo.cti.message.UserUpdateListener;
@@ -27,8 +28,8 @@ public class MessageParserItst implements UserUpdateListener {
     public static final int XIVO_DEFAULT_PORT = 5003;
 
     private Thread thread = null;
-    private String host = "192.168.56.101";
-    private int port = 5003;
+    private final String host = "192.168.56.101";
+    private final int port = 5003;
     private Socket networkConnection = null;
     private BufferedReader inputBuffer = null;
     private MessageParser messageParser;
@@ -192,6 +193,12 @@ public class MessageParserItst implements UserUpdateListener {
     @Override
     public void onUserStatusUpdate(UserStatusUpdate userStatusUpdate) {
         System.out.println("User " + userStatusUpdate.getUserId() + " status update " + userStatusUpdate.getStatus());
+
+    }
+
+    @Override
+    public void onPhoneConfigUpdate(PhoneConfigUpdate phoneConfigUpdate) {
+        // TODO Auto-generated method stub
 
     }
 }

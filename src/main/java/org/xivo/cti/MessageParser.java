@@ -12,12 +12,14 @@ import org.xivo.cti.message.CtiMessage;
 import org.xivo.cti.message.LoginAck;
 import org.xivo.cti.message.LoginCapasAck;
 import org.xivo.cti.message.LoginPassAck;
+import org.xivo.cti.message.PhoneConfigUpdate;
 import org.xivo.cti.message.UserConfigUpdate;
 import org.xivo.cti.message.UserIdsList;
 import org.xivo.cti.message.UserStatusUpdate;
 import org.xivo.cti.model.Action;
 import org.xivo.cti.model.CallType;
 import org.xivo.cti.model.Capacities;
+import org.xivo.cti.model.ObjectType;
 import org.xivo.cti.model.PhoneStatus;
 import org.xivo.cti.model.Service;
 import org.xivo.cti.model.UserStatus;
@@ -79,14 +81,42 @@ public class MessageParser {
     private CtiMessage parseGetList(JSONObject getListJson) throws NumberFormatException, JSONException {
         String function = getListJson.getString("function");
         if (function.equals(FUNCT_UPDATECONFIG))
-            return parserUserConfigUpdate(getListJson);
+            return parseConfigUpdate(getListJson);
         if (function.equals(FUNCT_UPDATESTATUS))
             return paserUserUpdateStatus(getListJson);
         if (function.equals(FUNCT_LISTID))
             return parseUsersIdsList(getListJson);
         throw (new IllegalArgumentException("unknown message class"));
     }
-    
+
+    private CtiMessage parseConfigUpdate(JSONObject jsonConfigUpdate) throws JSONException {
+        String listName = jsonConfigUpdate.getString("listname");
+        ObjectType objectType = ObjectType.valueOf(listName.toUpperCase());
+        switch(objectType) {
+            case USERS:
+                return parserUserConfigUpdate(jsonConfigUpdate);
+            case PHONES:
+                return parsePhoneConfigUpdate(jsonConfigUpdate);
+            default:
+                break;
+        }
+        return null;
+    }
+
+    private CtiMessage parsePhoneConfigUpdate(JSONObject jsonPhoneConfigUpdate) throws JSONException {
+        PhoneConfigUpdate phoneConfigUpdate = new PhoneConfigUpdate();
+        phoneConfigUpdate.setId(jsonPhoneConfigUpdate.getInt("tid"));
+        JSONObject phoneConfigJson = jsonPhoneConfigUpdate.getJSONObject("config");
+
+        if (phoneConfigJson.has("iduserfeatures")) {
+            phoneConfigUpdate.setUserId(Integer.valueOf(phoneConfigJson.getInt("iduserfeatures")));
+        }
+        if (phoneConfigJson.has("number")) {
+            phoneConfigUpdate.setNumber(phoneConfigJson.getString("number"));
+        }
+
+        return phoneConfigUpdate;
+    }
     private CtiMessage parseUsersIdsList(JSONObject userIdsList) throws JSONException {
         UserIdsList usersIdsList = new UserIdsList();
         JSONArray jsonUserIds = userIdsList.getJSONArray("list");
@@ -120,6 +150,18 @@ public class MessageParser {
         if (userConfigJson.has("destrna")) {
             userConfigUpdate.setRnaDestination(userConfigJson.getString("destrna"));
         }
+        if (userConfigJson.has("enableunc")) {
+            userConfigUpdate.setUncEnabled(BooleanParser.parse(userConfigJson.getString("enableunc")));
+        }
+        if (userConfigJson.has("destunc")) {
+            userConfigUpdate.setUncDestination(userConfigJson.getString("destunc"));
+        }
+        if (userConfigJson.has("enablebusy")) {
+            userConfigUpdate.setBusyEnabled(BooleanParser.parse(userConfigJson.getString("enablebusy")));
+        }
+        if (userConfigJson.has("destbusy")) {
+            userConfigUpdate.setBusyDestination(userConfigJson.getString("destbusy"));
+        }
         if (userConfigJson.has("firstname")) {
             userConfigUpdate.setFirstName(userConfigJson.getString("firstname"));
         }
@@ -128,6 +170,15 @@ public class MessageParser {
         }
         if (userConfigJson.has("fullname")) {
             userConfigUpdate.setFullName(userConfigJson.getString("fullname"));
+        }
+        if (userConfigJson.has("mobilephonenumber")) {
+            userConfigUpdate.setMobileNumber(userConfigJson.getString("mobilephonenumber"));
+        }
+        if (userConfigJson.has("linelist")) {
+            JSONArray jsonLines = userConfigJson.getJSONArray("linelist");
+            for(int i = 0; i < jsonLines.length();i++) {
+                userConfigUpdate.addLineId(Integer.valueOf((String) jsonLines.get(i)));
+            }
         }
         return userConfigUpdate;
     }
@@ -205,7 +256,7 @@ public class MessageParser {
         @SuppressWarnings("unchecked")
         Iterator<String> keys = phoneStatusesJson.keys();
         while (keys.hasNext()) {
-            String statusId = (String) keys.next();
+            String statusId = keys.next();
             JSONObject phoneStatusJson = phoneStatusesJson.getJSONObject(statusId);
             PhoneStatus phoneStatus = new PhoneStatus(statusId, phoneStatusJson.getString("color"),
                     phoneStatusJson.getString("longname"));
@@ -229,7 +280,7 @@ public class MessageParser {
         @SuppressWarnings("unchecked")
         Iterator<String> keys = userStatusesJson.keys();
         while (keys.hasNext()) {
-            String key = (String) keys.next();
+            String key = keys.next();
             userStatuses.add(parseUserStatus(key, userStatusesJson.getJSONObject(key)));
         }
         return userStatuses;
@@ -249,7 +300,7 @@ public class MessageParser {
         @SuppressWarnings("unchecked")
         Iterator<String> actionNames = actionsJson.keys();
         while (actionNames.hasNext()) {
-            String name = (String) actionNames.next();
+            String name = actionNames.next();
             Action action = new Action(name, actionsJson.getString(name));
             status.addAction(action);
         }

@@ -50,6 +50,14 @@ public class MessageFactoryTest {
     }
 
     @Test
+    public void createGetPhoneConfig() throws JSONException {
+        JSONObject message = messageFactory.createGetPhoneConfig(32);
+        assertNotNull("unable to create get phone config", message);
+        assertEquals("invalid phone id", "32", message.get("tid"));
+        assertEquals("invalid listname","phones", message.get("listname"));
+    }
+
+    @Test
     public void createGetUsersList() throws JSONException {
         JSONObject message = messageFactory.createGetUsersList();
         assertNotNull("unable to create a get users list message", message);
@@ -60,12 +68,13 @@ public class MessageFactoryTest {
     public void createGetUserConfig() throws JSONException {
         JSONObject message = messageFactory.createGetUserConfig(56);
         assertNotNull("unable to create a get users list message", message);
+        assertEquals("invalid listname", "users",message.get("listname"));
         assertEquals("invalid user id", "56", message.get("tid"));
     }
 
     @Test
     public void createGetConfig() throws JSONException {
-        GetConfig getConfig = new GetConfig("test_function");
+        GetConfig getConfig = new GetConfig("test_function","users");
         JSONObject message = messageFactory.createGetConfig(getConfig);
         assertNotNull("unable to create a get users list message", message);
         assertEquals("invalid class", message.get("class"), "getlist");

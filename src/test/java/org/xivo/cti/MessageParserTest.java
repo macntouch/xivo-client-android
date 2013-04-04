@@ -19,6 +19,7 @@ import org.xivo.cti.message.CallHistoryReply;
 import org.xivo.cti.message.LoginAck;
 import org.xivo.cti.message.LoginCapasAck;
 import org.xivo.cti.message.LoginPassAck;
+import org.xivo.cti.message.PhoneConfigUpdate;
 import org.xivo.cti.message.UserConfigUpdate;
 import org.xivo.cti.message.UserIdsList;
 import org.xivo.cti.message.UserStatusUpdate;
@@ -32,7 +33,7 @@ import org.xivo.cti.model.XiVOPreference;
 import org.xivo.cti.model.Xlet;
 
 public class MessageParserTest {
-    MessageParser messageParser;
+    private MessageParser messageParser;
 
     @Before
     public void setUp() {
@@ -50,29 +51,64 @@ public class MessageParserTest {
                                                     "}");
         UserIdsList usersList = (UserIdsList) messageParser.parse(jsonUsersList);
         assertNotNull("unable to decode users list",usersList);
-        assertThat("list not decoded",usersList.getUserIds(),hasItem(new Integer(25)));
+        assertThat("list not decoded",usersList.getUserIds(),hasItem(Integer.valueOf(25)));
+
+    }
+
+    @Test
+    public void parsePhoneConfigUpdate() throws JSONException {
+        JSONObject phoneConfigUpdateJson = new JSONObject("{\"function\": \"updateconfig\", " +
+                        "\"class\": \"getlist\"," +
+                        "\"listname\": \"phones\"," +
+                        "\"tipbxid\": \"xivo\", " +
+                        "\"timenow\": 1365079540.57, " +
+                        "\"tid\": \"3\"," +
+                        "\"config\":{\"protocol\": \"sip\", " +
+                                        "\"number\": \"1002\", \"iduserfeatures\": 34, " +
+                                        "\"allowtransfer\": null, " +
+                                        "\"context\": \"default\", " +
+                                        "\"initialized\": null, " +
+                                        "\"rules_order\": 1, \"identity\": \"SIP/x2gjtw\"}" +
+                                        "}");
+        PhoneConfigUpdate phoneConfigUpdate = (PhoneConfigUpdate) messageParser.parse(phoneConfigUpdateJson);
+        assertNotNull("unable to parse phone configuration update",phoneConfigUpdate);
+        assertEquals("unable to parse phone id",Integer.valueOf(3),phoneConfigUpdate.getId());
+        assertEquals("unable to parse user id",Integer.valueOf(34),phoneConfigUpdate.getUserId());
+        assertEquals("unable to parse number","1002",phoneConfigUpdate.getNumber());
+    }
+
+    @Test
+    public void parsePhoneConfigUpdateNoConfiguration() throws JSONException {
+        JSONObject phoneConfigUpdateJson = new JSONObject("{\"function\": \"updateconfig\", " +
+                "\"class\": \"getlist\"," +
+                "\"listname\": \"phones\"," +
+                "\"tipbxid\": \"xivo\", " +
+                "\"timenow\": 1365079540.57, " +
+                "\"tid\": \"3\"," +
+                "\"config\":{}" +
+                                "}");
+        PhoneConfigUpdate phoneConfigUpdate = (PhoneConfigUpdate) messageParser.parse(phoneConfigUpdateJson);
+        assertNotNull("unable to parse phone configuration update",phoneConfigUpdate);
 
     }
     /*
-    {"function": "updateconfig", 
-    "listname": "users", 
-    "tipbxid": "xivo", 
-    "timenow": 1364975899.38, "tid": "9", 
-    "config": {"enablednd": 0, "destrna": "", "enablerna": 0, "firstname": "Alice", 
-    "profileclient": null, "lastname": "Johnson", 
-    "enableunc": 0, "destbusy": "", "enablebusy": 0, 
-    "voicemailid": null, "incallfilter": 0, "destunc": "", 
-    "enablevoicemail": 0, "enablexfer": 1, 
-    "fullname": "Alice Johnson", "agentid": null, "enableclient": 0, "linelist": ["5"], "mobilephonenumber": ""}, "class": "getlist"}
+    {
+    "config": {
+    "profileclient": null,
+    "voicemailid": null, "incallfilter": 0,
+    "enablevoicemail": 0, "enablexfer": 1,
+    "agentid": null, "enableclient": 0}}
     */
     @Test
     public void parseUserConfigUpdate() throws JSONException {
         JSONObject userConfigUpdateJson = new JSONObject("{" + "\"class\": \"getlist\","
                 + "\"function\": \"updateconfig\", " + "\"listname\": \"users\", " + "\"tipbxid\": \"xivo\","
-                + "\"timenow\": 1361440830.99," + "\"tid\": \"3\"," + 
+                + "\"timenow\": 1361440830.99," + "\"tid\": \"3\"," +
                 "\"config\": {" +
-                    "\"enablednd\": true, \"destrna\": \"4561\",\"enablerna\": 1, " +
-                    "\"firstname\": \"Alice\", \"lastname\": \"Johnson\", \"fullname\": \"Alice Johnson\"}" + "}");
+                    "\"enablednd\": true, \"destrna\": \"4561\",\"enablerna\": 1," +
+                    "\"enableunc\": 1, \"destunc\": \"7890\",\"enablebusy\": True, \"destbusy\": \"54321\"," +
+                    "\"firstname\": \"Alice\", \"lastname\": \"Johnson\", \"fullname\": \"Alice Johnson\", \"mobilephonenumber\": \"0677889922\", " +
+                    "\"linelist\": [\"5\",\"12\",\"22\"]}" + "}");
 
         UserConfigUpdate userConfigUpdate = (UserConfigUpdate) messageParser.parse(userConfigUpdateJson);
         assertNotNull("unable de decode user configuration update", userConfigUpdate);
@@ -80,9 +116,15 @@ public class MessageParserTest {
         assertTrue("unable to decode dnd enabled", userConfigUpdate.isDndEnabled());
         assertTrue("unable to decode rna enabled", userConfigUpdate.isRnaEnabled());
         assertEquals("unable to decode rna destination","4561",userConfigUpdate.getRnaDestination());
+        assertTrue("unable to decode unc enabled", userConfigUpdate.isUncEnabled());
+        assertEquals("unable to decode unc destination","7890",userConfigUpdate.getUncDestination());
+        assertTrue("unable to decode busy enabled", userConfigUpdate.isBusyEnabled());
+        assertEquals("unable to decode busy destination","54321",userConfigUpdate.getBusyDestination());
         assertEquals("unable to decode first name","Alice",userConfigUpdate.getFirstName());
         assertEquals("unable to decode last name","Johnson",userConfigUpdate.getLastName());
         assertEquals("unable to decode full name","Alice Johnson",userConfigUpdate.getFullName());
+        assertEquals("unable to decode mobile phone number","0677889922",userConfigUpdate.getMobileNumber());
+        assertThat("line list not decoded",userConfigUpdate.getLineIds(),hasItem(Integer.valueOf(12)));
     }
 
     @Test
