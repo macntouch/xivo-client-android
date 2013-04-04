@@ -2,17 +2,9 @@ package org.xivo.cti.message.request;
 
 import org.xivo.cti.model.ObjectType;
 
-public class GetObjectConfig extends GetConfig {
-
-    private final Integer objectId;
+public class GetObjectConfig extends GetStatusOrConfig {
 
     public GetObjectConfig(ObjectType objectType, Integer objectId) {
-        super("updateconfig",objectType.toString());
-        this.objectId = objectId;
+        super("updateconfig",objectType,objectId);
     }
-
-    public Integer getObjectId() {
-        return objectId;
-    }
-
 }

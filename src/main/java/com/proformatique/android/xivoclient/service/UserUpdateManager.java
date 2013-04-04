@@ -24,6 +24,7 @@ public class UserUpdateManager implements UserUpdateListener {
     private final Service service;
     private long stateId = 0L;
     private XiVOLink xivoLink;
+    private Integer userId;
 
     public UserUpdateManager(Service service) {
         this.service = service;
@@ -54,6 +55,7 @@ public class UserUpdateManager implements UserUpdateListener {
         if (userConfigUpdate.getLineIds().size() > 0) {
             sendGetPhoneConfig(userConfigUpdate.getLineIds().get(0));
         }
+        xivoLink.sendGetUserStatus(userConfigUpdate.getUserId());
     }
 
     @Override
@@ -68,10 +70,21 @@ public class UserUpdateManager implements UserUpdateListener {
         presence.moveToFirst();
         stateId = presence.getLong(presence.getColumnIndex(CapapresenceProvider._ID));
         presence.close();
-        Intent iUpdate = new Intent();
-        iUpdate.setAction(Constants.ACTION_MY_STATUS_CHANGE);
-        iUpdate.putExtra("id", stateId);
-        context.sendBroadcast(iUpdate);
+        if (userStatusUpdate.getUserId() == this.userId) {
+            Intent iUpdate = new Intent();
+            iUpdate.setAction(Constants.ACTION_MY_STATUS_CHANGE);
+            iUpdate.putExtra("id", stateId);
+            context.sendBroadcast(iUpdate);
+        }
+        else {
+            String userId = String.valueOf(userStatusUpdate.getUserId());
+            long id = UserProvider.getUserId(context,userId,userId);
+            UserProvider.updatePresence(context, id, userStatusUpdate.getStatus());
+            Intent iLoadPresence = new Intent();
+            iLoadPresence.setAction(Constants.ACTION_LOAD_USER_LIST);
+            context.sendBroadcast(iLoadPresence);
+
+        }
 
     }
 
@@ -102,6 +115,10 @@ public class UserUpdateManager implements UserUpdateListener {
         iUpdateIntent.setAction(Constants.ACTION_LOAD_USER_LIST);
         iUpdateIntent.putExtra("id", id);
         context.sendBroadcast(iUpdateIntent);
+    }
+
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 
 }

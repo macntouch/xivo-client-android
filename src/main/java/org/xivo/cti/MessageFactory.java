@@ -7,6 +7,7 @@ import org.xivo.cti.message.LoginId;
 import org.xivo.cti.message.LoginPass;
 import org.xivo.cti.message.request.GetConfig;
 import org.xivo.cti.message.request.GetObjectConfig;
+import org.xivo.cti.message.request.GetObjectStatus;
 import org.xivo.cti.message.request.GetUsersList;
 import org.xivo.cti.model.ObjectType;
 
@@ -43,13 +44,13 @@ public class MessageFactory {
 
     public JSONObject createLoginPass(String password, String sessionId) {
         LoginPass loginPass = new LoginPass(password, sessionId);
-        
+
         JSONObject jsonLoginPass = new JSONObject();
-        
+
         try {
             jsonLoginPass.accumulate("class", loginPass.getClaz());
             jsonLoginPass.accumulate("hashedpassword", loginPass.getHashedpassword());
-            
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -58,9 +59,9 @@ public class MessageFactory {
 
     public JSONObject createLoginCapas(int capaId) {
         LoginCapas loginCapas = new LoginCapas(capaId);
-        
+
         JSONObject jsonLoginCapas = new JSONObject();
-        
+
         try {
             jsonLoginCapas.accumulate("class", loginCapas.getClaz());
             jsonLoginCapas.accumulate("capaid", loginCapas.getCapaid());
@@ -85,7 +86,7 @@ public class MessageFactory {
     public JSONObject createGetUserConfig(Integer userId) {
         GetObjectConfig getUserConfig = new GetObjectConfig(ObjectType.USERS,userId);
         JSONObject jsonGetUserConfig = createGetConfig(getUserConfig);
-        
+
         try {
             jsonGetUserConfig.accumulate("tid", userId.toString());
         } catch (JSONException e) {
@@ -108,14 +109,20 @@ public class MessageFactory {
     }
 
     public JSONObject createGetUserStatus(Integer userId) {
-        // TODO Auto-generated method stub
-        return new JSONObject();
+        GetObjectStatus getUserStatus = new GetObjectStatus(ObjectType.USERS,userId);
+        JSONObject jsonGetUserConfig = createGetConfig(getUserStatus);
+        try {
+            jsonGetUserConfig.accumulate("tid", getUserStatus.getObjectId().toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonGetUserConfig;
     }
 
     public JSONObject createGetPhoneConfig(Integer lineId) {
         GetObjectConfig getPhoneConfig = new GetObjectConfig(ObjectType.PHONES,lineId);
         JSONObject jsonGetUserConfig = createGetConfig(getPhoneConfig);
-        
+
         try {
             jsonGetUserConfig.accumulate("tid", getPhoneConfig.getObjectId().toString());
         } catch (JSONException e) {

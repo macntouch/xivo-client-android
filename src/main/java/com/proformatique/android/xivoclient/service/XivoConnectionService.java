@@ -1219,6 +1219,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         }
         resetState();
         userId = loginCapasAck.userId;
+        userUpdateManager.setUserId(Integer.valueOf(userId));
         configureXlets(loginCapasAck.xlets);
         configureUserStatuses(loginCapasAck.capacities.getUsersStatuses());
 
@@ -1498,5 +1499,11 @@ public class XivoConnectionService extends Service implements CallHistoryListene
     public void sendGetPhoneConfig(Integer lineId) {
         JSONObject getPhoneConfigMessage = messageFactory.createGetPhoneConfig(lineId);
         sendMessage(getPhoneConfigMessage);
+    }
+
+    @Override
+    public void sendGetUserStatus(Integer userId) {
+        JSONObject jsonGetUserStatusMessage = messageFactory.createGetUserStatus(userId);
+        sendMessage(jsonGetUserStatusMessage);
     }
 }

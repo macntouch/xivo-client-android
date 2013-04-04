@@ -44,9 +44,10 @@ public class MessageFactoryTest {
     }
 
     @Test
-    public void createGetUserStatus() {
+    public void createGetUserStatus() throws JSONException {
         JSONObject message = messageFactory.createGetUserStatus(78);
         assertNotNull("unable to create get user status message", message);
+        assertEquals("invalid user id", "78", message.get("tid"));
     }
 
     @Test
@@ -74,12 +75,12 @@ public class MessageFactoryTest {
 
     @Test
     public void createGetConfig() throws JSONException {
-        GetConfig getConfig = new GetConfig("test_function","users");
+        GetConfig getConfig = new GetConfig("test_function","test_list");
         JSONObject message = messageFactory.createGetConfig(getConfig);
         assertNotNull("unable to create a get users list message", message);
         assertEquals("invalid class", message.get("class"), "getlist");
         assertEquals("invalid tipbxid", message.get("tipbxid"), "xivo");
-        assertEquals("invalid listname", message.get("listname"), "users");
+        assertEquals("invalid listname", message.get("listname"), "test_list");
         assertEquals("invalid function", message.get("function"), "test_function");
         assertTrue("no command id", message.has("commandid"));
     }

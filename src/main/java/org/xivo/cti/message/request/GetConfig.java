@@ -8,7 +8,8 @@ public class GetConfig {
     private final String tipBxid = XIVO;
     private final String listName;
     private final String function;
-    
+
+
     public GetConfig(String function, String listName) {
         this.function = function;
         this.listName = listName.toLowerCase();
