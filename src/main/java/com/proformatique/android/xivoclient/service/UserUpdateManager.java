@@ -4,6 +4,7 @@ import org.xivo.cti.message.PhoneConfigUpdate;
 import org.xivo.cti.message.UserConfigUpdate;
 import org.xivo.cti.message.UserStatusUpdate;
 import org.xivo.cti.message.UserUpdateListener;
+import org.xivo.cti.message.request.PhoneStatusUpdate;
 import org.xivo.cti.network.XiVOLink;
 
 import android.app.Service;
@@ -54,6 +55,7 @@ public class UserUpdateManager implements UserUpdateListener {
         user.clear();
         if (userConfigUpdate.getLineIds().size() > 0) {
             sendGetPhoneConfig(userConfigUpdate.getLineIds().get(0));
+            xivoLink.sendGetPhoneStatus(userConfigUpdate.getLineIds().get(0));
         }
         xivoLink.sendGetUserStatus(userConfigUpdate.getUserId());
     }
@@ -119,6 +121,12 @@ public class UserUpdateManager implements UserUpdateListener {
 
     public void setUserId(Integer userId) {
         this.userId = userId;
+    }
+
+    @Override
+    public void onUserStatusUpdate(PhoneStatusUpdate phoneStatusUpdate) {
+        Log.d(TAG,"Phone"+phoneStatusUpdate.getLineId()+ "status updated "+phoneStatusUpdate.getHintStatus());
+
     }
 
 }

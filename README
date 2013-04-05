@@ -1,0 +1,3 @@
+- Build with maven 3.0
+- Needs local android sdk
+- mvn -Dandroid.sdk.path=/home/jylebleu/tools/adt-bundle-linux/sdk package android:deploy

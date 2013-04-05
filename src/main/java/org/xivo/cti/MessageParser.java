@@ -16,6 +16,7 @@ import org.xivo.cti.message.PhoneConfigUpdate;
 import org.xivo.cti.message.UserConfigUpdate;
 import org.xivo.cti.message.UserIdsList;
 import org.xivo.cti.message.UserStatusUpdate;
+import org.xivo.cti.message.request.PhoneStatusUpdate;
 import org.xivo.cti.model.Action;
 import org.xivo.cti.model.CallType;
 import org.xivo.cti.model.Capacities;
@@ -83,7 +84,7 @@ public class MessageParser {
         if (function.equals(FUNCT_UPDATECONFIG))
             return parseConfigUpdate(getListJson);
         if (function.equals(FUNCT_UPDATESTATUS))
-            return paserUserUpdateStatus(getListJson);
+            return parseUpdateStatus(getListJson);
         if (function.equals(FUNCT_LISTID))
             return parseUsersIdsList(getListJson);
         throw (new IllegalArgumentException("unknown message class"));
@@ -126,11 +127,33 @@ public class MessageParser {
         return usersIdsList;
     }
 
-    private CtiMessage paserUserUpdateStatus(JSONObject userConfigUpdateJson) throws NumberFormatException,
+    private CtiMessage parseUpdateStatus(JSONObject jsonStatusUpdate) throws JSONException {
+        String listName = jsonStatusUpdate.getString("listname");
+        ObjectType objectType = ObjectType.valueOf(listName.toUpperCase());
+        switch(objectType) {
+            case USERS:
+                return parseUserUpdateStatus(jsonStatusUpdate);
+            case PHONES:
+                return parsePhoneStatusUpdate(jsonStatusUpdate);
+            default:
+                break;
+        }
+        return null;
+    }
+
+    private CtiMessage parsePhoneStatusUpdate(JSONObject jsonPhoneStatusUpdate) throws JSONException {
+        PhoneStatusUpdate phoneStatusUpdate =  new PhoneStatusUpdate();
+        phoneStatusUpdate.setLineId(Integer.valueOf(jsonPhoneStatusUpdate.getInt("tid")));
+        JSONObject jsonStatus = jsonPhoneStatusUpdate.getJSONObject("status");
+        phoneStatusUpdate.setHintStatus(jsonStatus.getString("hintstatus"));
+
+        return phoneStatusUpdate;
+    }
+    private CtiMessage parseUserUpdateStatus(JSONObject userStatusUpdateJson) throws NumberFormatException,
             JSONException {
         UserStatusUpdate userStatusUpdate = new UserStatusUpdate();
-        userStatusUpdate.setUserId(Integer.valueOf(userConfigUpdateJson.getString("tid")));
-        JSONObject statusJson = userConfigUpdateJson.getJSONObject("status");
+        userStatusUpdate.setUserId(Integer.valueOf(userStatusUpdateJson.getString("tid")));
+        JSONObject statusJson = userStatusUpdateJson.getJSONObject("status");
         userStatusUpdate.setStatus(statusJson.getString("availstate"));
         return userStatusUpdate;
     }

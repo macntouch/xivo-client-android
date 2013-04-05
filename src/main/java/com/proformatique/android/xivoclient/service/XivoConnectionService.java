@@ -30,6 +30,7 @@ import org.xivo.cti.message.PhoneConfigUpdate;
 import org.xivo.cti.message.UserConfigUpdate;
 import org.xivo.cti.message.UserIdsList;
 import org.xivo.cti.message.UserStatusUpdate;
+import org.xivo.cti.message.request.PhoneStatusUpdate;
 import org.xivo.cti.model.UserStatus;
 import org.xivo.cti.model.XiVOCall;
 import org.xivo.cti.model.Xlet;
@@ -145,6 +146,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         messageDispatcher.addListener(UserStatusUpdate.class, userUpdateManager);
         messageDispatcher.addListener(UserConfigUpdate.class, userUpdateManager);
         messageDispatcher.addListener(PhoneConfigUpdate.class, userUpdateManager);
+        messageDispatcher.addListener(PhoneStatusUpdate.class, userUpdateManager);
         messageDispatcher.addListener(CallHistoryReply.class, this);
         messageDispatcher.addListener(UserIdsList.class, this);
     }
@@ -1505,5 +1507,11 @@ public class XivoConnectionService extends Service implements CallHistoryListene
     public void sendGetUserStatus(Integer userId) {
         JSONObject jsonGetUserStatusMessage = messageFactory.createGetUserStatus(userId);
         sendMessage(jsonGetUserStatusMessage);
+    }
+
+    @Override
+    public void sendGetPhoneStatus(Integer lineId) {
+        JSONObject jsonGetPhoneStatusMessage = messageFactory.createGetPhoneStatus(lineId);
+        sendMessage(jsonGetPhoneStatusMessage);
     }
 }

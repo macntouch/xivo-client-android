@@ -6,4 +6,6 @@ public interface XiVOLink {
 
     void sendGetUserStatus(Integer userId);
 
+    void sendGetPhoneStatus(Integer lineId);
+
 }

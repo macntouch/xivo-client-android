@@ -110,13 +110,13 @@ public class MessageFactory {
 
     public JSONObject createGetUserStatus(Integer userId) {
         GetObjectStatus getUserStatus = new GetObjectStatus(ObjectType.USERS,userId);
-        JSONObject jsonGetUserConfig = createGetConfig(getUserStatus);
+        JSONObject jsonGetUserStatus = createGetConfig(getUserStatus);
         try {
-            jsonGetUserConfig.accumulate("tid", getUserStatus.getObjectId().toString());
+            jsonGetUserStatus.accumulate("tid", getUserStatus.getObjectId().toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return jsonGetUserConfig;
+        return jsonGetUserStatus;
     }
 
     public JSONObject createGetPhoneConfig(Integer lineId) {
@@ -129,5 +129,16 @@ public class MessageFactory {
             e.printStackTrace();
         }
         return jsonGetUserConfig;
+    }
+
+    public JSONObject createGetPhoneStatus(Integer lineId) {
+        GetObjectStatus getPhoneStatus = new GetObjectStatus(ObjectType.PHONES,lineId);
+        JSONObject jsonGetPhoneStatus = createGetConfig(getPhoneStatus);
+        try {
+            jsonGetPhoneStatus.accumulate("tid", getPhoneStatus.getObjectId().toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonGetPhoneStatus;
     }
 }

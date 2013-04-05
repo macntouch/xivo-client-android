@@ -23,6 +23,7 @@ import org.xivo.cti.message.PhoneConfigUpdate;
 import org.xivo.cti.message.UserConfigUpdate;
 import org.xivo.cti.message.UserIdsList;
 import org.xivo.cti.message.UserStatusUpdate;
+import org.xivo.cti.message.request.PhoneStatusUpdate;
 import org.xivo.cti.model.CallType;
 import org.xivo.cti.model.Capacities;
 import org.xivo.cti.model.PhoneStatus;
@@ -90,6 +91,24 @@ public class MessageParserTest {
         PhoneConfigUpdate phoneConfigUpdate = (PhoneConfigUpdate) messageParser.parse(phoneConfigUpdateJson);
         assertNotNull("unable to parse phone configuration update",phoneConfigUpdate);
 
+    }
+    /*
+     {"function": "updatestatus", "listname": "phones", "tipbxid": "xivo", "timenow": 1365090036.94, "status": {"channels": [], "queues": [], "hintstatus": "0", "groups": []}, "tid": "2", "class": "getlist"}
+
+     */
+    @Test
+    public void parsePhoneStatusUpdate() throws JSONException {
+        JSONObject jsonPhoneStatusUpdate = new JSONObject("{\"function\": \"updatestatus\", " +
+                                    "\"listname\": \"phones\", " +
+                                    "\"tipbxid\": \"xivo\", " +
+                                    "\"timenow\": 1365090036.94, " +
+                                    "\"status\": {\"channels\": [], \"queues\": [], \"hintstatus\": \"4\", \"groups\": []}, " +
+                                    "\"tid\": \"2\", \"class\": \"getlist\"}");
+
+        PhoneStatusUpdate phoneStatusUpdate = (PhoneStatusUpdate) messageParser.parse(jsonPhoneStatusUpdate);
+        assertNotNull("unable de decode phone status update", phoneStatusUpdate);
+        assertEquals("unable de decode id", Integer.valueOf(2),phoneStatusUpdate.getLineId());
+        assertEquals("unable to decode hintstatus","4",phoneStatusUpdate.getHintStatus());
     }
     /*
     {

@@ -23,6 +23,7 @@ import org.xivo.cti.message.PhoneConfigUpdate;
 import org.xivo.cti.message.UserConfigUpdate;
 import org.xivo.cti.message.UserStatusUpdate;
 import org.xivo.cti.message.UserUpdateListener;
+import org.xivo.cti.message.request.PhoneStatusUpdate;
 
 public class MessageParserItst implements UserUpdateListener {
     public static final int XIVO_DEFAULT_PORT = 5003;
@@ -198,6 +199,12 @@ public class MessageParserItst implements UserUpdateListener {
 
     @Override
     public void onPhoneConfigUpdate(PhoneConfigUpdate phoneConfigUpdate) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void onUserStatusUpdate(PhoneStatusUpdate phoneStatusUpdate) {
         // TODO Auto-generated method stub
 
     }
