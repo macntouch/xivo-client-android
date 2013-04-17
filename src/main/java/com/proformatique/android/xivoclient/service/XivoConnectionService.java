@@ -1224,6 +1224,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         userUpdateManager.setUserId(Integer.valueOf(userId));
         configureXlets(loginCapasAck.xlets);
         configureUserStatuses(loginCapasAck.capacities.getUsersStatuses());
+        userUpdateManager.setCapacities(loginCapasAck.capacities);
 
         JSONObject jsonCtiMessage = readJsonObjectCTI();
         try {

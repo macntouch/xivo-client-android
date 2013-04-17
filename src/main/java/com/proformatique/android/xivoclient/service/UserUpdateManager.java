@@ -5,6 +5,8 @@ import org.xivo.cti.message.UserConfigUpdate;
 import org.xivo.cti.message.UserStatusUpdate;
 import org.xivo.cti.message.UserUpdateListener;
 import org.xivo.cti.message.request.PhoneStatusUpdate;
+import org.xivo.cti.model.Capacities;
+import org.xivo.cti.model.PhoneStatus;
 import org.xivo.cti.network.XiVOLink;
 
 import android.app.Service;
@@ -26,6 +28,7 @@ public class UserUpdateManager implements UserUpdateListener {
     private long stateId = 0L;
     private XiVOLink xivoLink;
     private Integer userId;
+    private Capacities capacities;
 
     public UserUpdateManager(Service service) {
         this.service = service;
@@ -112,6 +115,7 @@ public class UserUpdateManager implements UserUpdateListener {
 
         ContentValues values = new ContentValues();
         values.put(UserProvider.PHONENUM, phoneConfigUpdate.getNumber());
+        values.put(UserProvider.LINEID, phoneConfigUpdate.getId().toString());
         context.getContentResolver().update(Uri.parse(UserProvider.CONTENT_URI + "/" + id), values, null, null);
         Intent iUpdateIntent = new Intent();
         iUpdateIntent.setAction(Constants.ACTION_LOAD_USER_LIST);
@@ -119,14 +123,37 @@ public class UserUpdateManager implements UserUpdateListener {
         context.sendBroadcast(iUpdateIntent);
     }
 
+    @Override
+    public void onUserStatusUpdate(PhoneStatusUpdate phoneStatusUpdate) {
+        Context context = service.getApplicationContext();
+        long userId = UserProvider.getUserIdWithLineId(context, phoneStatusUpdate.getLineId().toString());
+
+        Log.d(TAG,"User : "+userId+" Phone"+phoneStatusUpdate.getLineId()+ "status updated "+phoneStatusUpdate.getHintStatus());
+        ContentValues values = new ContentValues();
+        for(PhoneStatus phoneStatus : capacities.getPhoneStatuses()) {
+            if  (phoneStatus.getId() == phoneStatusUpdate.getHintStatus()) {
+                values.put(UserProvider.HINTSTATUS_CODE, phoneStatus.getId());
+                values.put(UserProvider.HINTSTATUS_COLOR, phoneStatus.getColor());
+                values.put(UserProvider.HINTSTATUS_LONGNAME, phoneStatus.getLongName());
+                context.getContentResolver().update(Uri.parse(UserProvider.CONTENT_URI + "/" + userId), values, null, null);
+
+            }
+        }
+        Intent iUpdateIntent = new Intent();
+        iUpdateIntent.setAction(Constants.ACTION_LOAD_USER_LIST);
+        iUpdateIntent.putExtra("id", userId);
+        context.sendBroadcast(iUpdateIntent);
+
+
+    }
+
     public void setUserId(Integer userId) {
         this.userId = userId;
     }
 
-    @Override
-    public void onUserStatusUpdate(PhoneStatusUpdate phoneStatusUpdate) {
-        Log.d(TAG,"Phone"+phoneStatusUpdate.getLineId()+ "status updated "+phoneStatusUpdate.getHintStatus());
-
+    public void setCapacities(Capacities capacities) {
+        this.capacities = capacities;
     }
+
 
 }
