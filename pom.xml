@@ -21,6 +21,21 @@
 			<version>3.1</version>
 		</dependency>
 		<dependency>
+			<groupId>org.xivo</groupId>
+			<artifactId>xivo-javactilib</artifactId>
+			<version>0.0.4-SNAPSHOT</version>
+			<exclusions>
+			    <exclusion>
+					<groupId>org.json</groupId>
+					<artifactId>json</artifactId>
+			    </exclusion>
+			    <exclusion>
+		            <groupId>javax.xml.bind</groupId>
+		            <artifactId>jaxb-api</artifactId>
+			    </exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.11</version>

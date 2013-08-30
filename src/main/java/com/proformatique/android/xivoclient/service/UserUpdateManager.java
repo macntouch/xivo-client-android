@@ -1,13 +1,13 @@
 package com.proformatique.android.xivoclient.service;
 
-import org.xivo.cti.message.PhoneConfigUpdate;
-import org.xivo.cti.message.UserConfigUpdate;
-import org.xivo.cti.message.UserStatusUpdate;
-import org.xivo.cti.message.UserUpdateListener;
-import org.xivo.cti.message.request.PhoneStatusUpdate;
 import org.xivo.cti.model.Capacities;
 import org.xivo.cti.model.PhoneStatus;
-import org.xivo.cti.network.XiVOLink;
+import org.xivo.ctiold.message.PhoneConfigUpdate;
+import org.xivo.ctiold.message.UserConfigUpdate;
+import org.xivo.ctiold.message.UserStatusUpdate;
+import org.xivo.ctiold.message.UserUpdateListener;
+import org.xivo.ctiold.message.request.PhoneStatusUpdate;
+import org.xivo.ctiold.network.XiVOLink;
 
 import android.app.Service;
 import android.content.ContentValues;
