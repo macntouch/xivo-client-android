@@ -56,10 +56,19 @@ public class UserUpdateManager implements UserUpdateListener {
                 service.getApplicationContext().getString(R.string.default_hint_longname));
         service.getApplicationContext().getContentResolver().insert(UserProvider.CONTENT_URI, user);
         user.clear();
+        if (userConfigUpdate.getUserId() == this.userId) {
+            Log.d(TAG, "user config update : updating full name :" + userConfigUpdate.getFullName());
+            Intent iUpdateIdentity = new Intent();
+            iUpdateIdentity.setAction(Constants.ACTION_UPDATE_IDENTITY);
+            iUpdateIdentity.putExtra("fullname", userConfigUpdate.getFullName());
+            Context context = service.getApplicationContext();
+            context.sendBroadcast(iUpdateIdentity);
+        }
         if (userConfigUpdate.getLineIds().size() > 0) {
             sendGetPhoneConfig(userConfigUpdate.getLineIds().get(0));
             xivoLink.sendGetPhoneStatus(userConfigUpdate.getLineIds().get(0));
         }
+
         xivoLink.sendGetUserStatus(userConfigUpdate.getUserId());
     }
 

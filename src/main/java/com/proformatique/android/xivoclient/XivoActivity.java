@@ -161,7 +161,7 @@ public class XivoActivity extends Activity implements OnClickListener {
             updateMyStatus(xivoConnectionService.getStateId());
             updatePhoneStatus(xivoConnectionService.getPhoneStatusColor(), xivoConnectionService
                     .getPhoneStatusLongname());
-            updateFullname();
+            displayFullname();
         } catch (RemoteException e) {
             Log.d(TAG, "Could not set my state id");
         }
@@ -448,7 +448,7 @@ public class XivoActivity extends Activity implements OnClickListener {
     /**
      * Update the fullname of the identity bar
      */
-    private void updateFullname() {
+    private void displayFullname() {
         String name = null;
         try {
             if (xivoConnectionService == null) {
@@ -751,6 +751,15 @@ public class XivoActivity extends Activity implements OnClickListener {
         }
     }
     
+    private void updateFullname(String fullname) {
+        try {
+            xivoConnectionService.setFullname(fullname);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        displayFullname();
+    }
+
     private class IntentReceiver extends BroadcastReceiver {
         
         @Override
@@ -762,7 +771,7 @@ public class XivoActivity extends Activity implements OnClickListener {
                 updatePhoneStatus(intent.getStringExtra("color"),
                         intent.getStringExtra("longname"));
             } else if (action.equals(Constants.ACTION_UPDATE_IDENTITY)) {
-                updateFullname();
+                updateFullname(intent.getStringExtra("fullname"));
             } else if (action.equals(Constants.ACTION_SETTINGS_CHANGE)
                     || action.equals(ConnectivityManager.CONNECTIVITY_ACTION)
                     || action.equals(WifiManager.WIFI_STATE_CHANGED_ACTION)) {
@@ -770,7 +779,6 @@ public class XivoActivity extends Activity implements OnClickListener {
             }
         }
     }
-    
     /**
      * Runnable to update Longname
      */
@@ -778,7 +786,7 @@ public class XivoActivity extends Activity implements OnClickListener {
         
         @Override
         public void run() {
-            updateFullname();
+            displayFullname();
             mHandler.postDelayed(mUpdateIdentity, UPDATE_DELAY);
         }
     };

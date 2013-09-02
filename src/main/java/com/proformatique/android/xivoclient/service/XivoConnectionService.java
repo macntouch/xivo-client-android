@@ -278,6 +278,11 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         public String getXivoId() throws RemoteException {
             return XivoConnectionService.this.xivoId;
         }
+
+        @Override
+        public void setFullname(String fullname) throws RemoteException {
+            XivoConnectionService.this.fullname = fullname;
+        }
     };
 
     /**
@@ -720,8 +725,6 @@ public class XivoConnectionService extends Service implements CallHistoryListene
                 return Messages.NO_CLASS;
             if (classRec.equals("presence"))
                 return parsePresence(line);
-            else if (classRec.equals("users"))
-                return parseUsers(line);
             else if (classRec.equals("phones"))
                 return parsePhones(line);
             else if (classRec.equals("features"))
@@ -1117,63 +1120,6 @@ public class XivoConnectionService extends Service implements CallHistoryListene
                 Log.d(TAG, "Failled to set our status");
             }
         }
-    }
-
-    /**
-     * Parses incoming cti messages of class users
-     *
-     * @param json
-     * @return result parsed by the main loop handler
-     * @throws JSONException
-     */
-    private Messages parseUsers(JSONObject line) throws JSONException {
-        Log.d(TAG, "Parsing users");
-        if (line.has("payload")) {
-            JSONArray payload = line.getJSONArray("payload");
-            int len = payload != null ? payload.length() : 0;
-            getContentResolver().delete(UserProvider.CONTENT_URI, null, null);
-            ContentValues user = new ContentValues();
-            for (int i = 0; i < len; i++) {
-                JSONObject jUser = payload.getJSONObject(i);
-                JSONObject jUserState = jUser.getJSONObject("statedetails");
-
-                /**
-                 * Feed the useful fields to store in the list
-                 */
-                String xivoId = jUser.getString("xivo_userid");
-                String astId = jUser.getString("astid");
-                String userId = astId + "/" + xivoId;
-                user.put(UserProvider.ASTID, astId);
-                user.put(UserProvider.XIVO_USERID, xivoId);
-                user.put(UserProvider.FULLNAME, jUser.getString("fullname"));
-                user.put(UserProvider.PHONENUM, jUser.getString("phonenum"));
-                user.put(UserProvider.STATEID, jUserState.getString("stateid"));
-                user.put(UserProvider.STATEID_LONGNAME, jUserState.getString("longname"));
-                user.put(UserProvider.STATEID_COLOR, jUserState.getString("color"));
-                user.put(UserProvider.TECHLIST, jUser.getJSONArray("techlist").getString(0));
-                user.put(UserProvider.HINTSTATUS_COLOR, Constants.DEFAULT_HINT_COLOR);
-                user.put(UserProvider.HINTSTATUS_CODE, Constants.DEFAULT_HINT_CODE);
-                user.put(UserProvider.HINTSTATUS_LONGNAME, getString(R.string.default_hint_longname));
-                if (userId.equals(this.userId)) {
-                    fullname = jUser.getString("fullname");
-                    Intent iUpdateIdentity = new Intent();
-                    iUpdateIdentity.setAction(Constants.ACTION_UPDATE_IDENTITY);
-                    iUpdateIdentity.putExtra("fullname", fullname);
-                    sendBroadcast(iUpdateIdentity);
-                    if (jUser.has("mwi")) {
-                        JSONArray mwi = jUser.getJSONArray("mwi");
-                        int lenmwi = mwi != null ? mwi.length() : 0;
-                        for (int j = 0; j < lenmwi; j++) {
-                            this.mwi[j] = mwi.getInt(j);
-                        }
-                    }
-                }
-                getContentResolver().insert(UserProvider.CONTENT_URI, user);
-                user.clear();
-            }
-            return Messages.USERS_LIST_COMPLETE;
-        }
-        return Messages.NO_MESSAGE;
     }
 
     private Messages parsePresence(JSONObject line) {
