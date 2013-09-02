@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="credits">XiVO client Android</string>
-    <string name="version">version 3.0.2</string>
+    <string name="version">version 3.0.3</string>
     <string name="copyright">© 2010 2013 Proformatique-Avencall</string>
     <string name="credits_part0">by Avencall</string>
     <string name="credits_part1">Authors :\nClement Quaquin (Linagora)\nPascal Cadotte-Michaud (Avencall)\nJirka HLAVACEK\nJean-Yves LEBLEU</string>

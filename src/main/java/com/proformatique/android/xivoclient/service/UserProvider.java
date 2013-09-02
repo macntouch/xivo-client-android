@@ -61,7 +61,7 @@ public class UserProvider extends ContentProvider {
 	private SQLiteDatabase xivouserDB;
 	private static final String DATABASE_NAME = "xivo_user";
 	private static final String DATABASE_TABLE = "user";
-	private static final int DATABASE_VERSION = 4;
+	private static final int DATABASE_VERSION = 5;
 	private static final String DATABASE_CREATE =
 		"create table " + DATABASE_TABLE + " (" +
 		_ID + " integer primary key autoincrement, " +
@@ -69,7 +69,7 @@ public class UserProvider extends ContentProvider {
 		XIVO_USERID + " text not null, " +
 		FULLNAME + " text not null, " +
 		PHONENUM + " text not null, "+
-        LINEID + " text not null, "+
+        LINEID + " text, "+
 		STATEID + " text not null, " +
 		STATEID_LONGNAME + " text not null, " +
 		STATEID_COLOR + " text not null, " +
@@ -273,7 +273,7 @@ public class UserProvider extends ContentProvider {
 	}
     public static long getUserIdWithLineId(Context context, String lineId) {
         Cursor user = context.getContentResolver().query(UserProvider.CONTENT_URI,
-                new String[] {UserProvider.LINEID},
+                new String[] {UserProvider._ID, UserProvider.LINEID},
                     UserProvider.LINEID + " = '" + lineId + "'", null, null);
         if (user.getCount() > 0) {
             user.moveToFirst();

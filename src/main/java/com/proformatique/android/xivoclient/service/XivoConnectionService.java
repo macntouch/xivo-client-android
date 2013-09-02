@@ -15,26 +15,25 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.xivo.cti.message.CtiResponseMessage;
 import org.xivo.cti.model.UserStatus;
 import org.xivo.cti.model.Xlet;
 import org.xivo.cti.model.XiVOCall;
-import org.xivo.ctiold.MessageDispatcher;
-import org.xivo.ctiold.MessageFactory;
-import org.xivo.ctiold.MessageParser;
-import org.xivo.ctiold.listener.CallHistoryListener;
-import org.xivo.ctiold.listener.UserIdsListener;
-import org.xivo.ctiold.message.CallHistoryReply;
-import org.xivo.ctiold.message.CtiEvent;
-import org.xivo.ctiold.message.CtiMessage;
-import org.xivo.ctiold.message.LoginAck;
-import org.xivo.ctiold.message.LoginCapasAck;
-import org.xivo.ctiold.message.LoginPassAck;
-import org.xivo.ctiold.message.PhoneConfigUpdate;
-import org.xivo.ctiold.message.UserConfigUpdate;
-import org.xivo.ctiold.message.UserIdsList;
-import org.xivo.ctiold.message.UserStatusUpdate;
-import org.xivo.ctiold.message.request.PhoneStatusUpdate;
-import org.xivo.ctiold.network.XiVOLink;
+import org.xivo.cti.MessageDispatcher;
+import org.xivo.cti.MessageFactory;
+import org.xivo.cti.MessageParser;
+import org.xivo.cti.listener.CallHistoryListener;
+import org.xivo.cti.listener.UserIdsListener;
+import org.xivo.cti.message.CallHistoryReply;
+import org.xivo.cti.message.LoginCapasAck;
+import org.xivo.cti.message.LoginIdAck;
+import org.xivo.cti.message.LoginPassAck;
+import org.xivo.cti.message.PhoneConfigUpdate;
+import org.xivo.cti.message.UserConfigUpdate;
+import org.xivo.cti.message.UserIdsList;
+import org.xivo.cti.message.UserStatusUpdate;
+import org.xivo.cti.message.PhoneStatusUpdate;
+import org.xivo.cti.network.XiVOLink;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -705,8 +704,8 @@ public class XivoConnectionService extends Service implements CallHistoryListene
      */
     protected Messages parseIncomingJson(JSONObject line) {
         try {
-            CtiMessage ctiMessage = messageParser.parse(line);
-            messageDispatcher.dispatch((CtiEvent<?>) ctiMessage);
+            CtiResponseMessage<?> ctiResponseMessage = messageParser.parse(line);
+            messageDispatcher.dispatch(ctiResponseMessage);
         } catch (JSONException e1) {
             e1.printStackTrace();
             Log.d(TAG, "unable to decode message received");
@@ -1228,15 +1227,15 @@ public class XivoConnectionService extends Service implements CallHistoryListene
 
         JSONObject jsonCtiMessage = readJsonObjectCTI();
         try {
-            CtiMessage ctiMessage = messageParser.parse(jsonCtiMessage);
-            messageDispatcher.dispatch((CtiEvent<?>) ctiMessage);
+            CtiResponseMessage<?> ctiResponseMessage = messageParser.parse(jsonCtiMessage);
+            messageDispatcher.dispatch(ctiResponseMessage);
         } catch (JSONException e) {
             return Constants.JSON_POPULATE_ERROR;
         }
         jsonCtiMessage = readJsonObjectCTI();
         try {
-            CtiMessage ctiMessage = messageParser.parse(jsonCtiMessage);
-            messageDispatcher.dispatch((CtiEvent<?>) ctiMessage);
+            CtiResponseMessage<?> ctiResponseMessage = messageParser.parse(jsonCtiMessage);
+            messageDispatcher.dispatch(ctiResponseMessage);
         } catch (JSONException e) {
             return Constants.JSON_POPULATE_ERROR;
         }
@@ -1315,7 +1314,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             return Constants.JSON_POPULATE_ERROR;
         }
         try {
-            LoginAck loginAck = (LoginAck) messageParser.parse(nextJsonObject);
+            LoginIdAck loginAck = (LoginIdAck) messageParser.parse(nextJsonObject);
             sessionId = loginAck.sesssionId;
         } catch (JSONException e1) {
             Log.d(TAG, "Unexpected answer from cti server");
