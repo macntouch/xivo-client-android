@@ -703,6 +703,8 @@ public class XivoConnectionService extends Service implements CallHistoryListene
      * @return
      */
     protected Messages parseIncomingJson(JSONObject line) {
+        if (cancel || line == null)
+            return Messages.NO_MESSAGE;
         try {
             CtiResponseMessage<?> ctiResponseMessage = messageParser.parse(line);
             messageDispatcher.dispatch(ctiResponseMessage);
@@ -712,8 +714,6 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         } catch (IllegalArgumentException e2) {
             Log.d(TAG, "not decoded message received");
         }
-        if (cancel || line == null)
-            return Messages.NO_MESSAGE;
         try {
             String classRec = line.has("class") ? line.getString("class") : null;
             if (classRec == null)
@@ -1294,7 +1294,11 @@ public class XivoConnectionService extends Service implements CallHistoryListene
         } catch (JSONException e1) {
             e1.printStackTrace();
             return Constants.JSON_POPULATE_ERROR;
+        } catch (IllegalArgumentException e2) {
+            disconnectFromServer();
+            return parseLoginError(ctiAnswer);
         }
+
         return Constants.OK;
     }
 
