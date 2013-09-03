@@ -725,8 +725,6 @@ public class XivoConnectionService extends Service implements CallHistoryListene
             String classRec = line.has("class") ? line.getString("class") : null;
             if (classRec == null)
                 return Messages.NO_CLASS;
-            if (classRec.equals("presence"))
-                return parsePresence(line);
             else if (classRec.equals("phones"))
                 return parsePhones(line);
             else if (classRec.equals("features"))
@@ -1122,28 +1120,6 @@ public class XivoConnectionService extends Service implements CallHistoryListene
                 Log.d(TAG, "Failled to set our status");
             }
         }
-    }
-
-    private Messages parsePresence(JSONObject line) {
-        Log.d(TAG, "Parsing presences: " + line.toString());
-        try {
-            String id = line.getString("xivo_userid");
-            String astid = line.getString("astid");
-            String stateid = line.getJSONObject("capapresence").getJSONObject("state").getString("stateid");
-            // TODO this.stateId = CapapresenceProvider.getIndex(this, stateid);
-            long index = UserProvider.getIndex(this, astid, id);
-            UserProvider.updatePresence(this, index, stateid);
-            if (id.equals(xivoId) && astid.equals(astId)) {
-                Intent iUpdate = new Intent();
-                iUpdate.setAction(Constants.ACTION_MY_STATUS_CHANGE);
-                // TODO iUpdate.putExtra("id", this.stateId);
-                sendBroadcast(iUpdate);
-            }
-        } catch (JSONException e) {
-            Log.d(TAG, "Failed to update presence");
-            return Messages.NO_MESSAGE;
-        }
-        return Messages.PRESENCE_UPDATE;
     }
 
     /**
