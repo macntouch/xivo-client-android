@@ -23,7 +23,7 @@
 		<dependency>
 			<groupId>org.xivo</groupId>
 			<artifactId>xivo-javactilib</artifactId>
-			<version>0.0.4-SNAPSHOT</version>
+			<version>0.0.5-SNAPSHOT</version>
 			<exclusions>
 			    <exclusion>
 					<groupId>org.json</groupId>

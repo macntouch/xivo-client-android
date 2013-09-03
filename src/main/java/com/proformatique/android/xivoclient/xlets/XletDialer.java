@@ -378,6 +378,7 @@ public class XletDialer extends XivoActivity {
         @Override
         protected Integer doInBackground(Void... params) {
             int result = Constants.OK;
+            completeOrCancel = true;
             try {
                 while (xivoConnectionService == null) timer(100);
                 xivoConnectionService.call(phoneNumber.getText().toString().replace("(", "")
@@ -386,6 +387,8 @@ public class XletDialer extends XivoActivity {
             } catch (RemoteException e) {
                 result = Constants.REMOTE_EXCEPTION;
             }
+            timer(5000);
+            cancelCallDialog();
             return result;
         }
         

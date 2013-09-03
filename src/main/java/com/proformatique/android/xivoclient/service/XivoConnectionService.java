@@ -134,6 +134,7 @@ public class XivoConnectionService extends Service implements CallHistoryListene
 
     public XivoConnectionService() {
         messageParser = new MessageParser();
+        messageParser.ignoreSheetPlayload();
         messageFactory = new MessageFactory();
         messageDispatcher = new MessageDispatcher();
         userUpdateManager = new UserUpdateManager(this);
@@ -376,9 +377,10 @@ public class XivoConnectionService extends Service implements CallHistoryListene
     private int call(String number) {
         Log.d(TAG, "Calling " + number);
         lastCalledNumber = number;
-        JSONObject jCall = JSONMessageFactory.getJsonCallingObject("originate",
-                SettingsActivity.getMobileNumber(getApplicationContext()), number);
-        sendLine(jCall.toString());
+        JSONObject jsonOriginate = messageFactory.createOriginate(SettingsActivity.getMobileNumber(getApplicationContext()), number);
+        sendMessage(jsonOriginate);
+//        JSONObject jCall = JSONMessageFactory.getJsonCallingObject("originate",
+//                SettingsActivity.getMobileNumber(getApplicationContext()), number);
         return Constants.OK;
     }
 
