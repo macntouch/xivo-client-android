@@ -12,28 +12,24 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.xivo.cti.message.CtiResponseMessage;
-import org.xivo.cti.model.PhoneStatus;
-import org.xivo.cti.model.UserStatus;
-import org.xivo.cti.model.Xlet;
-import org.xivo.cti.model.XiVOCall;
 import org.xivo.cti.MessageDispatcher;
 import org.xivo.cti.MessageFactory;
 import org.xivo.cti.MessageParser;
-import org.xivo.cti.listener.CallHistoryListener;
 import org.xivo.cti.listener.UserIdsListener;
 import org.xivo.cti.message.CallHistoryReply;
+import org.xivo.cti.message.CtiResponseMessage;
 import org.xivo.cti.message.LoginCapasAck;
 import org.xivo.cti.message.LoginIdAck;
 import org.xivo.cti.message.LoginPassAck;
 import org.xivo.cti.message.PhoneConfigUpdate;
+import org.xivo.cti.message.PhoneStatusUpdate;
 import org.xivo.cti.message.UserConfigUpdate;
 import org.xivo.cti.message.UserIdsList;
 import org.xivo.cti.message.UserStatusUpdate;
-import org.xivo.cti.message.PhoneStatusUpdate;
+import org.xivo.cti.model.UserStatus;
+import org.xivo.cti.model.Xlet;
 import org.xivo.cti.network.XiVOLink;
 
 import android.app.Service;
@@ -43,9 +39,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.net.ConnectivityManager;
-import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -68,7 +62,7 @@ import com.proformatique.android.xivoclient.dao.UserProvider;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.JSONMessageFactory;
 
-public class XivoConnectionService extends Service implements  UserIdsListener, XiVOLink {
+public class XivoConnectionService extends Service implements UserIdsListener, XiVOLink {
 
     private static final String TAG = "XiVO connection service";
 
@@ -284,7 +278,7 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
 
     /**
      * Check the phone status returns true if it's off hook
-     *
+     * 
      * @return
      */
     private boolean isMobileOffHook() {
@@ -338,7 +332,7 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
 
     /**
      * Change a feature value
-     *
+     * 
      * @param feature
      * @param value
      * @param phone
@@ -366,14 +360,15 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
 
     /**
      * Initiate a call
-     *
+     * 
      * @param number
      * @return OK or error code
      */
     private int call(String number) {
         Log.d(TAG, "Calling " + number);
         lastCalledNumber = number;
-        JSONObject jsonOriginate = messageFactory.createOriginate(SettingsActivity.getMobileNumber(getApplicationContext()), number);
+        JSONObject jsonOriginate = messageFactory.createOriginate(
+                SettingsActivity.getMobileNumber(getApplicationContext()), number);
         sendMessage(jsonOriginate);
         return Constants.OK;
     }
@@ -530,7 +525,7 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
 
     /**
      * Starts a network connection with the server
-     *
+     * 
      * @return connection status
      */
     private int connectToServer() {
@@ -606,7 +601,7 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
 
     /**
      * Perform authentication on the XiVO CTI server
-     *
+     * 
      * @return error or success code
      */
     private int loginCTI() {
@@ -709,7 +704,7 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
     /**
      * Parses an incoming json message from the cti server and dispatches it to
      * other methods for better message handling.
-     *
+     * 
      * @return
      */
     protected Messages parseIncomingJson(JSONObject line) {
@@ -772,7 +767,7 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
 
     /**
      * Parses phones update for a call from the user (not using his mobile)
-     *
+     * 
      * @param line
      * @throws JSONException
      */
@@ -813,7 +808,7 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
 
     /**
      * Updates channels from the information contained in a given comm.
-     *
+     * 
      * @param comm
      *            -- JSON comm
      * @param myChannel
@@ -849,7 +844,7 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
     /**
      * Parses our peer's phone update and send an intent containing his new
      * hintstatus
-     *
+     * 
      * @param line
      * @throws JSONException
      */
@@ -873,7 +868,7 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
 
     /**
      * Parses phones for a call from the user's mobile
-     *
+     * 
      * @param line
      * @throws JSONException
      */
@@ -910,7 +905,7 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
 
     /**
      * Send capacity options to the CTI server
-     *
+     * 
      * @return error or success code
      */
     private int sendCapasCTI() {
@@ -925,6 +920,7 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
         try {
             loginCapasAck = (LoginCapasAck) messageParser.parse(jsonCapas);
         } catch (JSONException e1) {
+            e1.printStackTrace();
             Log.d(TAG, "Unable to parser login capas ack : " + e1.getMessage());
             return Constants.VERSION_MISMATCH;
         }
@@ -1013,7 +1009,7 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
 
     /**
      * Sends login information to the cti server
-     *
+     * 
      * @param jLogin
      * @return error or success code
      */
@@ -1042,7 +1038,7 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
 
     /**
      * Retrieves the error when the CTI server doesnt return a LOGIN_OK
-     *
+     * 
      * @return error code
      */
     private int parseLoginError(JSONObject jsonObject) {
@@ -1070,7 +1066,7 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
 
     /**
      * Perform a read action on the stream from CTI server
-     *
+     * 
      * @return JSON object retrieved
      */
     public JSONObject readJsonObjectCTI() {
@@ -1108,7 +1104,7 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
     /**
      * Reads the next incoming line and increment the byte counter and returns
      * the line
-     *
+     * 
      * @throws IOException
      */
     private String getLine() throws IOException {
