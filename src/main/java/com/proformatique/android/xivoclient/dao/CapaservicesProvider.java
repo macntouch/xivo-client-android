@@ -1,8 +1,4 @@
-package com.proformatique.android.xivoclient.service;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+package com.proformatique.android.xivoclient.dao;
 
 import com.proformatique.android.xivoclient.tools.Constants;
 
@@ -19,66 +15,62 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
-public class HistoryProvider extends ContentProvider {
+public class CapaservicesProvider extends ContentProvider {
 	
-	private final static String TAG = "History provider";
+	private final static String TAG = "Services Provider";
 	
-	public final static String PROVIDER_NAME = Constants.PACK + ".history";
-	public final static Uri CONTENT_URI = Uri.parse("content://" + PROVIDER_NAME + "/history");
+	public final static String PROVIDER_NAME = Constants.PACK + ".services";
+	public final static Uri CONTENT_URI = Uri.parse("content://" + PROVIDER_NAME + "/capaservices");
 	private static final String CONTENT_TYPE
-		= "vnd.android.cursor.dir/vnd.proformatique.xivo.history";
+		= "vnd.android.cursor.dir/vnd.proformatique.xivo.capaservices";
 	private static final String CONTENT_ITEM_TYPE
-		= "vnd.android.cursor.item/vnd.proformatique.xivo.history";
+		= "vnd.android.cursor.item/vnd.proformatique.xivo.capaservices";
 	
 	/*
 	 * Columns
 	 */
 	public static final String _ID = "_id";
-	public static final String DURATION = "duration";
-	public static final String TERMIN = "termin";
-	public static final String DIRECTION = "direction";
-	public static final String FULLNAME = "fullname";
-	public static final String TS = "ts";
+	public static final String SERVICE = "name";
+	public static final String ENABLED = "enabled";
+	public static final String NUMBER = "number";
 	
 	/*
 	 * uri matchers
 	 */
-	private static final int HISTORIES = 1;
-	private static final int HISTORY_ID = 2;
+	private static final int SERVICES = 1;
+	private static final int SERVICE_ID = 2;
 	private static final UriMatcher uriMatcher;
 	static {
 		uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-		uriMatcher.addURI(PROVIDER_NAME, "history", HISTORIES);
-		uriMatcher.addURI(PROVIDER_NAME, "history/#", HISTORY_ID);
+		uriMatcher.addURI(PROVIDER_NAME, "capaservices", SERVICES);
+		uriMatcher.addURI(PROVIDER_NAME, "capaservices/#", SERVICE_ID);
 	}
 	
 	/*
 	 * DB info
 	 */
-	private SQLiteDatabase xivoHistoryDB;
-	private static final String DATABASE_NAME = "xivo_history";
-	private static final String DATABASE_TABLE = "history";
-	private static final int DATABASE_VERSION = 1;
+	private SQLiteDatabase capaservicesDB;
+	private static final String DATABASE_NAME = "capaservices";
+	private static final String DATABASE_TABLE = "capaservices";
+	private static final int DATABASE_VERSION = 3;
 	private static final String DATABASE_CREATE =
 		"create table " + DATABASE_TABLE + " (" +
 		_ID + " integer primary key autoincrement, " +
-		DURATION + " text not null, " +
-		TERMIN + " text not null, " +
-		FULLNAME + " text not null, " +
-		TS + " text not null, " +
-		DIRECTION + " text not null" +
+		SERVICE + " text not null, " +
+		ENABLED + " integer default 0, " +
+		NUMBER  + " text " +
 		");";
 	
 	@Override
 	public int delete(Uri uri, String selection, String[] selectionArgs) {
 		int count = 0;
 		switch(uriMatcher.match(uri)) {
-		case HISTORIES:
-			count = xivoHistoryDB.delete(DATABASE_TABLE, selection, selectionArgs);
+		case SERVICES:
+			count = capaservicesDB.delete(DATABASE_TABLE, selection, selectionArgs);
 			break;
-		case HISTORY_ID:
+		case SERVICE_ID:
 			String id = uri.getLastPathSegment();
-			count = xivoHistoryDB.delete(DATABASE_TABLE, _ID + " = " + id +
+			count = capaservicesDB.delete(DATABASE_TABLE, _ID + " = " + id +
 					(!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""),
 					selectionArgs);
 			break;
@@ -92,9 +84,9 @@ public class HistoryProvider extends ContentProvider {
 	@Override
 	public String getType(Uri uri) {
 		switch(uriMatcher.match(uri)) {
-		case HISTORIES:
+		case SERVICES:
 			return CONTENT_TYPE;
-		case HISTORY_ID:
+		case SERVICE_ID:
 			return CONTENT_ITEM_TYPE;
 		default:
 			throw new IllegalArgumentException("Unsupported URI: " + uri);
@@ -103,7 +95,7 @@ public class HistoryProvider extends ContentProvider {
 	
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
-		long rowId = xivoHistoryDB.insert(DATABASE_TABLE, "", values);
+		long rowId = capaservicesDB.insert(DATABASE_TABLE, "", values);
 		if (rowId > 0) {
 			Uri _uri = ContentUris.withAppendedId(CONTENT_URI, rowId);
 			getContext().getContentResolver().notifyChange(_uri, null);
@@ -116,21 +108,21 @@ public class HistoryProvider extends ContentProvider {
 	@Override
 	public boolean onCreate() {
 		DBHelper dbHelper = new DBHelper(getContext());
-		xivoHistoryDB = dbHelper.getWritableDatabase();
-		return xivoHistoryDB != null;
+		capaservicesDB = dbHelper.getWritableDatabase();
+		return capaservicesDB != null;
 	}
 	
 	@Override
-	public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
-			String sortOrder) {
+	public Cursor query(Uri uri, String[] projection, String selection,
+			String[] selectionArgs, String sortOrder) {
 		SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
 		sqlBuilder.setTables(DATABASE_TABLE);
 		
-		if (uriMatcher.match(uri) == HISTORY_ID)
+		if (uriMatcher.match(uri) == SERVICE_ID)
 			sqlBuilder.appendWhere(_ID + " = " + uri.getLastPathSegment());
 		
 		Cursor c = sqlBuilder.query(
-				xivoHistoryDB, projection, selection, selectionArgs, null, null, sortOrder);
+				capaservicesDB, projection, selection, selectionArgs, null, null, sortOrder);
 		c.setNotificationUri(getContext().getContentResolver(), uri);
 		return c;
 	}
@@ -140,11 +132,11 @@ public class HistoryProvider extends ContentProvider {
 			String[] selectionArgs) {
 		int count = 0;
 		switch (uriMatcher.match(uri)){
-		case HISTORIES:
-			count = xivoHistoryDB.update(DATABASE_TABLE, values, selection, selectionArgs);
+		case SERVICES:
+			count = capaservicesDB.update(DATABASE_TABLE, values, selection, selectionArgs);
 			break;
-		case HISTORY_ID:
-			count = xivoHistoryDB.update(
+		case SERVICE_ID:
+			count = capaservicesDB.update(
 					DATABASE_TABLE, values, _ID + " = " + uri.getLastPathSegment() + 
 					(!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""), 
 					selectionArgs);
@@ -174,32 +166,32 @@ public class HistoryProvider extends ContentProvider {
 		}
 	}
 	
-	/**
-	 * Returns a list of hashmap of the history entries
-	 * @param context
-	 * @return list
-	 */
-	public static List<HashMap<String, String>> getList(Context context) {
-		List<HashMap<String, String>> list = new ArrayList<HashMap<String, String>>();
-		Cursor history = context.getContentResolver().query(CONTENT_URI, null, null, null, null);
-		if (history.getCount() > 0) {
-			int iDur = history.getColumnIndex(DURATION);
-			int iTs = history.getColumnIndex(TS);
-			int iDir = history.getColumnIndex(DIRECTION);
-			int iTermin = history.getColumnIndex(TERMIN);
-			int iFullname = history.getColumnIndex(FULLNAME);
-			history.moveToFirst();
-			do {
-				HashMap<String, String> item = new HashMap<String, String>();
-				item.put("duration", history.getString(iDur));
-				item.put("direction", history.getString(iDir));
-				item.put("ts", history.getString(iTs));
-				item.put("termin", history.getString(iTermin));
-				item.put("fullname", history.getString(iFullname));
-				list.add(item);
-			} while(history.moveToNext());
+	public static void cursorToString(Cursor entry) {
+		Log.d(TAG, "Name: " + entry.getString(entry.getColumnIndex(SERVICE)));
+		Log.d(TAG, "Enabled: " + entry.getString(entry.getColumnIndex(ENABLED)));
+		Log.d(TAG, "Number: " + entry.getString(entry.getColumnIndex(NUMBER)));
+	}
+	
+	public static String getNumberForFeature(Context context, String service) {
+		Cursor row = context.getContentResolver().query(CONTENT_URI, new String[] {NUMBER, SERVICE},
+				SERVICE + " = '" + service + "'", null, null);
+		String number = "";
+		if (row.getCount() > 0) {
+			row.moveToFirst();
+			number = row.getString(row.getColumnIndex(NUMBER));
 		}
-		history.close();
-		return list;
+		row.close();
+		return number;
+	}
+	
+	public static void logFeature(Context context, String feature) {
+		Log.d(TAG, "Loging " + feature);
+		Cursor row = context.getContentResolver().query(CONTENT_URI, null,
+				SERVICES + " = '" + feature + "'", null, null);
+		if (row.getCount() > 0) {
+			row.moveToFirst();
+			cursorToString(row);
+		}
+		row.close();
 	}
 }

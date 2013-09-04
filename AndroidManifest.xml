@@ -110,22 +110,22 @@
     </receiver>
     <!-- Providers -->
     <provider
-      android:name=".service.CapaxletsProvider"
+      android:name="com.proformatique.android.xivoclient.dao.CapaxletsProvider"
       android:authorities="com.proformatique.android.xivoclient.xlet" />
     <provider
-      android:name=".service.CapapresenceProvider"
+      android:name="com.proformatique.android.xivoclient.dao.CapapresenceProvider"
       android:authorities="com.proformatique.android.xivoclient.presence" />
     <provider
-      android:name=".service.CapaservicesProvider"
+      android:name="com.proformatique.android.xivoclient.dao.CapaservicesProvider"
       android:authorities="com.proformatique.android.xivoclient.services" />
     <provider
-      android:name=".service.UserProvider"
+      android:name="com.proformatique.android.xivoclient.dao.UserProvider"
       android:authorities="com.proformatique.android.xivoclient.user" />
     <provider
-      android:name=".service.HistoryProvider"
+      android:name="com.proformatique.android.xivoclient.dao.HistoryProvider"
       android:authorities="com.proformatique.android.xivoclient.history" />
     <provider
-      android:name=".service.ShortcutProvider"
+      android:name="com.proformatique.android.xivoclient.dao.ShortcutProvider"
       android:authorities="com.proformatique.android.xivoclient.shortcut" />
   </application>
   <uses-sdk

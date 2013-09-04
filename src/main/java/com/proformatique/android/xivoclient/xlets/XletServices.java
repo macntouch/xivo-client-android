@@ -33,10 +33,10 @@ import android.widget.Toast;
 
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
-import com.proformatique.android.xivoclient.service.CapaservicesProvider;
+import com.proformatique.android.xivoclient.dao.CapaservicesProvider;
 import com.proformatique.android.xivoclient.tools.Constants;
 
-import static com.proformatique.android.xivoclient.service.CapaservicesProvider.getNumberForFeature;
+import static com.proformatique.android.xivoclient.dao.CapaservicesProvider.getNumberForFeature;
 
 public class XletServices extends XivoActivity {
 	

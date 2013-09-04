@@ -50,9 +50,9 @@ import android.widget.Toast;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
-import com.proformatique.android.xivoclient.service.CapapresenceProvider;
+import com.proformatique.android.xivoclient.dao.CapapresenceProvider;
+import com.proformatique.android.xivoclient.dao.UserProvider;
 import com.proformatique.android.xivoclient.service.IXivoConnectionService;
-import com.proformatique.android.xivoclient.service.UserProvider;
 import com.proformatique.android.xivoclient.service.XivoConnectionService;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;

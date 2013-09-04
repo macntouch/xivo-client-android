@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import com.proformatique.android.xivoclient.service.ShortcutProvider;
+import com.proformatique.android.xivoclient.dao.ShortcutProvider;
 import com.proformatique.android.xivoclient.tools.AndroidTools;
 import com.proformatique.android.xivoclient.tools.Constants;
 

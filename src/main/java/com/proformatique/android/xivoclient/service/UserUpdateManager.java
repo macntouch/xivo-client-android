@@ -18,6 +18,8 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.proformatique.android.xivoclient.R;
+import com.proformatique.android.xivoclient.dao.CapapresenceProvider;
+import com.proformatique.android.xivoclient.dao.UserProvider;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 public class UserUpdateManager implements UserUpdateListener {
@@ -68,7 +70,6 @@ public class UserUpdateManager implements UserUpdateListener {
             sendGetPhoneConfig(userConfigUpdate.getLineIds().get(0));
             xivoLink.sendGetPhoneStatus(userConfigUpdate.getLineIds().get(0));
         }
-
         xivoLink.sendGetUserStatus(userConfigUpdate.getUserId());
     }
 
@@ -95,7 +96,7 @@ public class UserUpdateManager implements UserUpdateListener {
         }
         else {
             String userId = String.valueOf(userStatusUpdate.getUserId());
-            long id = UserProvider.getUserId(context,userId,userId);
+            long id = UserProvider.getDbUserId(context,userId);
             UserProvider.updatePresence(context, id, userStatusUpdate.getStatus());
             Intent iLoadPresence = new Intent();
             iLoadPresence.setAction(Constants.ACTION_LOAD_USER_LIST);
@@ -120,8 +121,8 @@ public class UserUpdateManager implements UserUpdateListener {
     @Override
     public void onPhoneConfigUpdate(PhoneConfigUpdate phoneConfigUpdate) {
         Context context = service.getApplicationContext();
-        String userId = phoneConfigUpdate.getUserId().toString();
-        long id = UserProvider.getUserId(context,userId,userId);
+        String updatedUserId = phoneConfigUpdate.getUserId().toString();
+        long id = UserProvider.getDbUserId(context,updatedUserId);
 
         Log.d(TAG,"Phone config update " + phoneConfigUpdate.getNumber()+ " for user : " + phoneConfigUpdate.getUserId() + " internal id "+id);
 
@@ -136,27 +137,32 @@ public class UserUpdateManager implements UserUpdateListener {
     }
 
     @Override
-    public void onUserStatusUpdate(PhoneStatusUpdate phoneStatusUpdate) {
+    public void onPhoneStatusUpdate(PhoneStatusUpdate phoneStatusUpdate) {
         Context context = service.getApplicationContext();
-        long userId = UserProvider.getUserIdWithLineId(context, phoneStatusUpdate.getLineId().toString());
-
-        Log.d(TAG,"User : " + userId + " Phone "+phoneStatusUpdate.getLineId()+ " status updated "+phoneStatusUpdate.getHintStatus());
+        long updatedUserId = UserProvider.getDbUserIdFromLineId(context, phoneStatusUpdate.getLineId().toString());
+        long updatedXiVOUserId = UserProvider.getXiVOUserIdFromLineId(context, phoneStatusUpdate.getLineId().toString());
+        Log.d(TAG,"User : [" + updatedUserId + "] XiVO("+updatedXiVOUserId+") Phone "+phoneStatusUpdate.getLineId()+ " status updated ["+phoneStatusUpdate.getHintStatus()+"]");
         ContentValues values = new ContentValues();
         for(PhoneStatus phoneStatus : capacities.getPhoneStatuses()) {
-            if  (phoneStatus.getId() == phoneStatusUpdate.getHintStatus()) {
+            if  (phoneStatus.getId().equals(phoneStatusUpdate.getHintStatus())) {
                 values.put(UserProvider.HINTSTATUS_CODE, phoneStatus.getId());
                 values.put(UserProvider.HINTSTATUS_COLOR, phoneStatus.getColor());
                 values.put(UserProvider.HINTSTATUS_LONGNAME, phoneStatus.getLongName());
-                context.getContentResolver().update(Uri.parse(UserProvider.CONTENT_URI + "/" + userId), values, null, null);
-
+                Log.d(TAG,"    Phone Status [" + phoneStatus.getId() +"] "+ phoneStatus.getColor() + " "+ phoneStatus.getLongName());
+                context.getContentResolver().update(Uri.parse(UserProvider.CONTENT_URI + "/" + updatedUserId), values, null, null);
+                if (updatedXiVOUserId == this.userId) {
+                    Intent i = new Intent();
+                    i.setAction(Constants.ACTION_MY_PHONE_CHANGE);
+                    i.putExtra("color", phoneStatus.getColor());
+                    i.putExtra("longname", phoneStatus.getLongName());
+                    context.sendBroadcast(i);
+                }
             }
         }
         Intent iUpdateIntent = new Intent();
         iUpdateIntent.setAction(Constants.ACTION_LOAD_USER_LIST);
-        iUpdateIntent.putExtra("id", userId);
+        iUpdateIntent.putExtra("id", updatedUserId);
         context.sendBroadcast(iUpdateIntent);
-
-
     }
 
     public void setUserId(Integer userId) {

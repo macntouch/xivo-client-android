@@ -1,4 +1,4 @@
-package com.proformatique.android.xivoclient.service;
+package com.proformatique.android.xivoclient.dao;
 
 import com.proformatique.android.xivoclient.tools.Constants;
 

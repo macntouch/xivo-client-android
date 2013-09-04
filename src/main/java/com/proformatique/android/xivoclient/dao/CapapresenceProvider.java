@@ -1,4 +1,4 @@
-package com.proformatique.android.xivoclient.service;
+package com.proformatique.android.xivoclient.dao;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -38,7 +38,7 @@ import android.widget.AdapterView.OnItemClickListener;
 
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
-import com.proformatique.android.xivoclient.service.CapapresenceProvider;
+import com.proformatique.android.xivoclient.dao.CapapresenceProvider;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
 
 public class XletIdentityStateList extends XivoActivity {

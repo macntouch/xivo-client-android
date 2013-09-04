@@ -8,15 +8,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.proformatique.android.xivoclient.SettingsActivity;
-import com.proformatique.android.xivoclient.service.XivoConnectionService.Messages;
 
 public class JsonParserHelper {
-    
-    private final static String TAG = "JsonParserHelper";
-    
+
     /**
      * Searches a phone update message and returns the comm that contains the
      * user's mobile number as calleridnum
@@ -31,8 +27,8 @@ public class JsonParserHelper {
         String key = null;
         try {
             JSONObject comms = line.getJSONObject("status").getJSONObject("comms");
-            for (@SuppressWarnings("unchecked")Iterator<String> iter = comms.keys();
-                    iter.hasNext(); ) {
+            for (@SuppressWarnings("unchecked")
+            Iterator<String> iter = comms.keys(); iter.hasNext();) {
                 key = iter.next();
                 if (comms.getJSONObject(key).getString("calleridnum").equals(myNumber)) {
                     return comms.getJSONObject(key);
@@ -43,7 +39,7 @@ public class JsonParserHelper {
         }
         return comm;
     }
-    
+
     /**
      * Returns a list of comms containing the user's mobile number as
      * calleridnum in a of List<JSONObject> returns an empty List when no comms
@@ -73,7 +69,7 @@ public class JsonParserHelper {
             return new ArrayList<JSONObject>();
         }
     }
-    
+
     /**
      * Returns the status of a comm
      * 
@@ -87,7 +83,7 @@ public class JsonParserHelper {
             return "";
         }
     }
-    
+
     /**
      * Checks if the channels in this comm matches the supplied thisChannel and
      * peerChannel
@@ -105,7 +101,7 @@ public class JsonParserHelper {
             return false;
         }
     }
-    
+
     /**
      * Parses a phone update and retuns the calleridnum
      * 
@@ -117,8 +113,8 @@ public class JsonParserHelper {
         if (line.has("status") && line.getJSONObject("status").has("comms")) {
             JSONObject comms = line.getJSONObject("status").getJSONObject("comms");
             String key = null;
-            for (@SuppressWarnings("unchecked")Iterator<String> iter = comms.keys();
-                    iter.hasNext(); ) {
+            for (@SuppressWarnings("unchecked")
+            Iterator<String> iter = comms.keys(); iter.hasNext();) {
                 key = iter.next();
                 if (comms.getJSONObject(key).has("calleridnum")) {
                     return comms.getJSONObject(key).getString("calleridnum");
@@ -126,15 +122,5 @@ public class JsonParserHelper {
             }
         }
         return "";
-    }
-    
-    public static Messages parseGroups(Context context, JSONObject line) {
-        Log.d(TAG, "Parsing groups: " + line.toString());
-        return Messages.NO_MESSAGE;
-    }
-
-    public static Messages parseMeetme(Context context, JSONObject line) {
-        Log.d(TAG, "Not doing anything with meetme now");
-        return Messages.NO_MESSAGE;
     }
 }

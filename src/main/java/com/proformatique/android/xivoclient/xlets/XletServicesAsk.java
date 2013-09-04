@@ -26,7 +26,7 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.proformatique.android.xivoclient.R;
-import com.proformatique.android.xivoclient.service.CapaservicesProvider;
+import com.proformatique.android.xivoclient.dao.CapaservicesProvider;
 import com.proformatique.android.xivoclient.tools.Constants;
 
 public class XletServicesAsk extends Activity {

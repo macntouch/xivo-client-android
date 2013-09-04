@@ -53,7 +53,7 @@ import android.widget.Toast;
 
 import com.proformatique.android.xivoclient.R;
 import com.proformatique.android.xivoclient.XivoActivity;
-import com.proformatique.android.xivoclient.service.UserProvider;
+import com.proformatique.android.xivoclient.dao.UserProvider;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.tools.GraphicsManager;
 

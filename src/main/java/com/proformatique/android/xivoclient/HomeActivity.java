@@ -49,7 +49,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.proformatique.android.xivoclient.service.CapaxletsProvider;
+import com.proformatique.android.xivoclient.dao.CapaxletsProvider;
 import com.proformatique.android.xivoclient.tools.AndroidTools;
 import com.proformatique.android.xivoclient.tools.Constants;
 import com.proformatique.android.xivoclient.xlets.XletContactSearch;
