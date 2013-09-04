@@ -91,8 +91,6 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
     private String fullname = null;
     private final int[] mwi = new int[3];
     private int capaId = 0;
-    private String phoneStatusLongname = null;
-    private String phoneStatusColor = Constants.DEFAULT_HINT_COLOR;
     private String lastCalledNumber = null;
     private String thisChannel = null;
     private String peerChannel = null;
@@ -103,11 +101,11 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
     private boolean authenticated = false;
     private boolean authenticating = false;
 
-    private final MessageParser messageParser;
-    private final MessageFactory messageFactory;
-    private final MessageDispatcher messageDispatcher;
-    private final UserUpdateManager userUpdateManager;
-    private final CallHistoryManager callHistoryManager;
+    private MessageParser messageParser;
+    private MessageFactory messageFactory;
+    private MessageDispatcher messageDispatcher;
+    private UserUpdateManager userUpdateManager;
+    private CallHistoryManager callHistoryManager;
 
     /**
      * Messages to return from the main loop to the handler
@@ -138,14 +136,6 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
     }
 
     public XivoConnectionService() {
-        messageParser = new MessageParser();
-        messageParser.ignoreSheetPlayload();
-        messageFactory = new MessageFactory();
-        messageDispatcher = new MessageDispatcher();
-        userUpdateManager = new UserUpdateManager(this);
-        userUpdateManager.setXivoLink(this);
-        callHistoryManager = new CallHistoryManager(this);
-        addDispatchers();
     }
 
     private void addDispatchers() {
@@ -213,12 +203,12 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
 
         @Override
         public String getPhoneStatusColor() throws RemoteException {
-            return phoneStatusColor;
+            return userUpdateManager.getPhoneStatusColor();
         }
 
         @Override
         public String getPhoneStatusLongname() throws RemoteException {
-            return phoneStatusLongname;
+            return userUpdateManager.getPhoneStatusLongName();
         }
 
         @Override
@@ -408,7 +398,16 @@ public class XivoConnectionService extends Service implements  UserIdsListener, 
         filter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
         registerReceiver(receiver, new IntentFilter(filter));
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        phoneStatusLongname = getString(R.string.default_hint_longname);
+
+        messageParser = new MessageParser();
+        messageParser.ignoreSheetPlayload();
+        messageFactory = new MessageFactory();
+        messageDispatcher = new MessageDispatcher();
+        userUpdateManager = new UserUpdateManager(this);
+        userUpdateManager.setXivoLink(this);
+        callHistoryManager = new CallHistoryManager(this);
+        addDispatchers();
+
     }
 
     @Override

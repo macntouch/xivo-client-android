@@ -31,9 +31,24 @@ public class UserUpdateManager implements UserUpdateListener {
     private XiVOLink xivoLink;
     private Integer userId;
     private Capacities capacities;
+    private PhoneStatus userPhoneStatus;
 
     public UserUpdateManager(Service service) {
         this.service = service;
+        this.userPhoneStatus = new PhoneStatus("-1", Constants.DEFAULT_HINT_COLOR, service.getResources()
+                .getString(R.string.default_hint_longname));
+    }
+
+    public long getStateId() {
+        return stateId;
+    }
+
+    public String getPhoneStatusColor() {
+        return userPhoneStatus.getColor();
+    }
+
+    public String getPhoneStatusLongName() {
+        return userPhoneStatus.getLongName();
     }
 
     @Override
@@ -87,16 +102,15 @@ public class UserUpdateManager implements UserUpdateListener {
         currentStateId = presence.getLong(presence.getColumnIndex(CapapresenceProvider._ID));
         presence.close();
         if (userStatusUpdate.getUserId() == this.userId) {
-            Log.d(TAG, "My status changed new satus [" + userStatusUpdate.getStatus()+ "]");
+            Log.d(TAG, "My status changed new satus [" + userStatusUpdate.getStatus() + "]");
             stateId = currentStateId;
             Intent iUpdate = new Intent();
             iUpdate.setAction(Constants.ACTION_MY_STATUS_CHANGE);
             iUpdate.putExtra("id", stateId);
             context.sendBroadcast(iUpdate);
-        }
-        else {
+        } else {
             String userId = String.valueOf(userStatusUpdate.getUserId());
-            long id = UserProvider.getDbUserId(context,userId);
+            long id = UserProvider.getDbUserId(context, userId);
             UserProvider.updatePresence(context, id, userStatusUpdate.getStatus());
             Intent iLoadPresence = new Intent();
             iLoadPresence.setAction(Constants.ACTION_LOAD_USER_LIST);
@@ -104,10 +118,6 @@ public class UserUpdateManager implements UserUpdateListener {
 
         }
 
-    }
-
-    public long getStateId() {
-        return stateId;
     }
 
     private void sendGetPhoneConfig(Integer lineId) {
@@ -122,9 +132,11 @@ public class UserUpdateManager implements UserUpdateListener {
     public void onPhoneConfigUpdate(PhoneConfigUpdate phoneConfigUpdate) {
         Context context = service.getApplicationContext();
         String updatedUserId = phoneConfigUpdate.getUserId().toString();
-        long id = UserProvider.getDbUserId(context,updatedUserId);
+        long id = UserProvider.getDbUserId(context, updatedUserId);
 
-        Log.d(TAG,"Phone config update " + phoneConfigUpdate.getNumber()+ " for user : " + phoneConfigUpdate.getUserId() + " internal id "+id);
+        Log.d(TAG,
+                "Phone config update " + phoneConfigUpdate.getNumber() + " for user : " + phoneConfigUpdate.getUserId()
+                        + " internal id " + id);
 
         ContentValues values = new ContentValues();
         values.put(UserProvider.PHONENUM, phoneConfigUpdate.getNumber());
@@ -140,17 +152,24 @@ public class UserUpdateManager implements UserUpdateListener {
     public void onPhoneStatusUpdate(PhoneStatusUpdate phoneStatusUpdate) {
         Context context = service.getApplicationContext();
         long updatedUserId = UserProvider.getDbUserIdFromLineId(context, phoneStatusUpdate.getLineId().toString());
-        long updatedXiVOUserId = UserProvider.getXiVOUserIdFromLineId(context, phoneStatusUpdate.getLineId().toString());
-        Log.d(TAG,"User : [" + updatedUserId + "] XiVO("+updatedXiVOUserId+") Phone "+phoneStatusUpdate.getLineId()+ " status updated ["+phoneStatusUpdate.getHintStatus()+"]");
+        long updatedXiVOUserId = UserProvider
+                .getXiVOUserIdFromLineId(context, phoneStatusUpdate.getLineId().toString());
+        Log.d(TAG,
+                "User : [" + updatedUserId + "] XiVO(" + updatedXiVOUserId + ") Phone " + phoneStatusUpdate.getLineId()
+                        + " status updated [" + phoneStatusUpdate.getHintStatus() + "]");
         ContentValues values = new ContentValues();
-        for(PhoneStatus phoneStatus : capacities.getPhoneStatuses()) {
-            if  (phoneStatus.getId().equals(phoneStatusUpdate.getHintStatus())) {
+        for (PhoneStatus phoneStatus : capacities.getPhoneStatuses()) {
+            if (phoneStatus.getId().equals(phoneStatusUpdate.getHintStatus())) {
                 values.put(UserProvider.HINTSTATUS_CODE, phoneStatus.getId());
                 values.put(UserProvider.HINTSTATUS_COLOR, phoneStatus.getColor());
                 values.put(UserProvider.HINTSTATUS_LONGNAME, phoneStatus.getLongName());
-                Log.d(TAG,"    Phone Status [" + phoneStatus.getId() +"] "+ phoneStatus.getColor() + " "+ phoneStatus.getLongName());
-                context.getContentResolver().update(Uri.parse(UserProvider.CONTENT_URI + "/" + updatedUserId), values, null, null);
+                Log.d(TAG, "    Phone Status [" + phoneStatus.getId() + "] " + phoneStatus.getColor() + " "
+                        + phoneStatus.getLongName());
+                context.getContentResolver().update(Uri.parse(UserProvider.CONTENT_URI + "/" + updatedUserId), values,
+                        null, null);
                 if (updatedXiVOUserId == this.userId) {
+                    userPhoneStatus = new PhoneStatus(phoneStatus.getId(), phoneStatus.getColor(),
+                            phoneStatus.getLongName());
                     Intent i = new Intent();
                     i.setAction(Constants.ACTION_MY_PHONE_CHANGE);
                     i.putExtra("color", phoneStatus.getColor());
@@ -172,6 +191,5 @@ public class UserUpdateManager implements UserUpdateListener {
     public void setCapacities(Capacities capacities) {
         this.capacities = capacities;
     }
-
 
 }
