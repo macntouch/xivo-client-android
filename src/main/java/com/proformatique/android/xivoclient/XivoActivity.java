@@ -422,7 +422,7 @@ public class XivoActivity extends Activity implements OnClickListener {
      * @param id
      */
     private void updateMyStatus(long id) {
-        Log.d(TAG, "updateMyStatus");
+        Log.d(TAG, "updateMyStatus " + id);
         Cursor c = getContentResolver().query(
                 CapapresenceProvider.CONTENT_URI,
                 new String[] { CapapresenceProvider._ID, CapapresenceProvider.LONGNAME,

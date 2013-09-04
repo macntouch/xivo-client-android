@@ -74,6 +74,7 @@ public class UserUpdateManager implements UserUpdateListener {
 
     @Override
     public void onUserStatusUpdate(UserStatusUpdate userStatusUpdate) {
+        long currentStateId;
         Context context = service.getApplicationContext();
         Log.d(TAG, "user status updated " + userStatusUpdate.getUserId() + " satus [" + userStatusUpdate.getStatus()
                 + "]");
@@ -82,9 +83,11 @@ public class UserUpdateManager implements UserUpdateListener {
                 new String[] { CapapresenceProvider._ID, CapapresenceProvider.NAME },
                 CapapresenceProvider.NAME + " = '" + statusName + "'", null, null);
         presence.moveToFirst();
-        stateId = presence.getLong(presence.getColumnIndex(CapapresenceProvider._ID));
+        currentStateId = presence.getLong(presence.getColumnIndex(CapapresenceProvider._ID));
         presence.close();
         if (userStatusUpdate.getUserId() == this.userId) {
+            Log.d(TAG, "My status changed new satus [" + userStatusUpdate.getStatus()+ "]");
+            stateId = currentStateId;
             Intent iUpdate = new Intent();
             iUpdate.setAction(Constants.ACTION_MY_STATUS_CHANGE);
             iUpdate.putExtra("id", stateId);
@@ -137,7 +140,7 @@ public class UserUpdateManager implements UserUpdateListener {
         Context context = service.getApplicationContext();
         long userId = UserProvider.getUserIdWithLineId(context, phoneStatusUpdate.getLineId().toString());
 
-        Log.d(TAG,"User : "+userId+" Phone"+phoneStatusUpdate.getLineId()+ "status updated "+phoneStatusUpdate.getHintStatus());
+        Log.d(TAG,"User : " + userId + " Phone "+phoneStatusUpdate.getLineId()+ " status updated "+phoneStatusUpdate.getHintStatus());
         ContentValues values = new ContentValues();
         for(PhoneStatus phoneStatus : capacities.getPhoneStatuses()) {
             if  (phoneStatus.getId() == phoneStatusUpdate.getHintStatus()) {
