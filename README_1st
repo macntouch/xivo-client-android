@@ -1,0 +1,7 @@
+Following and Android evolution:
+https://github.com/excilys/androidannotations/wiki/Library-projects#referencing-ids-by-name
+
+the code needs to be refactored, the compilation fails.
+
+Not sure it's needed as there's a new version available:
+https://gitlab.com/xivoclient-android/xivoclient-android
