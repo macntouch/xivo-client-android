@@ -62,7 +62,7 @@
 				<plugin>
 					<groupId>com.jayway.maven.plugins.android.generation2</groupId>
 					<artifactId>android-maven-plugin</artifactId>
-					<version>3.5.1</version>
+					<version>3.6.0</version>
 					<extensions>true</extensions>
 				</plugin>
 				<plugin>
@@ -76,7 +76,7 @@
 									<pluginExecutionFilter>
 										<groupId>com.jayway.maven.plugins.android.generation2</groupId>
 										<artifactId>android-maven-plugin</artifactId>
-										<versionRange>[1.0.0,)</versionRange>
+										<versionRange>[3.6.0,)</versionRange>
 										<goals>
 											<goal>generate-sources</goal>
 											<goal>proguard</goal>
@@ -132,7 +132,7 @@
 								<pluginExecutionFilter>
 									<groupId>com.jayway.maven.plugins.android.generation2</groupId>
 									<artifactId>android-maven-plugin</artifactId>
-									<versionRange>3.5.1</versionRange>
+									<versionRange>3.6.0</versionRange>
 									<goals>
 										<goal>generate-sources</goal>
 										<goal>proguard</goal>
